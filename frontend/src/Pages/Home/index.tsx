@@ -4,15 +4,22 @@ import { Store } from '../../Store';
 
 function Home() {
   const navigate = useNavigate();
-  const { state } = useContext(Store);
+  const {
+    state: { userInfo },
+  } = useContext(Store);
 
   useEffect(() => {
-    if (!state.userInfo) {
+    const userJson = localStorage.getItem('user-info');
+    if (!userJson) {
       navigate('/signup');
     }
-  });
+  }, [navigate]);
 
-  return <div>Home</div>;
+  return (
+    <div className=" align-middle text-center text-lg font-bold text-blue-600">
+      Hi {userInfo?.name}
+    </div>
+  );
 }
 
 export default Home;
