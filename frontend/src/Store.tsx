@@ -5,12 +5,14 @@ const initialState: AppState = {
   userInfo: null,
 };
 
-type Action = { type: 'sign-in'; payload: User };
+type Action = { type: 'sign-in'; payload: User } | { type: 'sign-out' };
 
 const reducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
     case 'sign-in':
       return { ...state, userInfo: action.payload };
+    case 'sign-out':
+      return { ...state, userInfo: null };
     default:
       return state;
   }
