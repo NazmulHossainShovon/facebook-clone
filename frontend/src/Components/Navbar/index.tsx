@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import AvatarMenu from '../AvatarMenu';
 
 function Navbar() {
   return (
@@ -20,6 +21,7 @@ function Navbar() {
               <div className="mt-7 text-xs xl:text-sm font-bold">Contact</div>
             </div>
           </Link>
+          <AvatarMenu />
         </div>
       </div>
     </header>
