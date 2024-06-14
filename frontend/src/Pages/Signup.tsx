@@ -3,7 +3,7 @@ import Input from '../Components/Input';
 import { Button } from '../Components/Button';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useSignupMutation } from '../Hooks/userHook';
-import { SignupData, User } from '../Types/types';
+import { SignupData } from '../Types/types';
 import { Store } from '../Store';
 import { useNavigate } from 'react-router-dom';
 

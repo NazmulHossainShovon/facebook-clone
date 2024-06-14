@@ -3,8 +3,6 @@ import { Store } from '../Store';
 import { User } from '../Types/types';
 
 export default function useFindUser() {
-  console.log('useFindUser');
-
   const { dispatch } = useContext(Store);
   const [user, setUser] = useState<User>({});
 

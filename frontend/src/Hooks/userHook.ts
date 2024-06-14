@@ -9,3 +9,20 @@ export const useSignupMutation = () =>
       return res.data;
     },
   });
+
+export const useSigninMutation = () =>
+  useMutation({
+    mutationFn: async ({
+      email,
+      password,
+    }: {
+      email: string;
+      password: string;
+    }) => {
+      const res = await apiClient.post<User>('api/users/signin', {
+        email,
+        password,
+      });
+      return res.data;
+    },
+  });
