@@ -18,7 +18,7 @@ export default function AvatarMenu() {
   };
 
   const handleLogout = () => {
-    dispatch({ type: 'USER_SIGNOUT' });
+    dispatch({ type: 'sign-out' });
     localStorage.removeItem('user-info');
     navigate('/login');
   };
