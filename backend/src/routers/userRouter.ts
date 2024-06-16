@@ -15,6 +15,7 @@ userRouter.post(
         res.json({
           name: user.name,
           email: user.email,
+          image: user.image,
           token: generateToken(user),
         });
         return;

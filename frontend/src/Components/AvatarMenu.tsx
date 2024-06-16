@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 export default function AvatarMenu() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const { dispatch } = useContext(Store);
+  const { dispatch, state } = useContext(Store);
   const navigate = useNavigate();
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -25,9 +25,11 @@ export default function AvatarMenu() {
 
   return (
     <div>
-      <Avatar className="cursor-pointer" onClick={handleClick}>
-        S
-      </Avatar>
+      <Avatar
+        src={state.userInfo.image}
+        className="cursor-pointer"
+        onClick={handleClick}
+      />
       <Menu
         id="basic-menu"
         anchorEl={anchorEl}

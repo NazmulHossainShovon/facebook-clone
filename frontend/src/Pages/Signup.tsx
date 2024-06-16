@@ -6,15 +6,50 @@ import { useSignupMutation } from '../Hooks/userHook';
 import { SignupData } from '../Types/types';
 import { Store } from '../Store';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Box, LinearProgress } from '@mui/material';
+
+const uploadToSirv = async (file: File) => {
+  const clientId = import.meta.env.VITE_SIRV_ID;
+  const clientSecret = import.meta.env.VITE_SIRV_SECRET;
+
+  // Get Sirv access token
+  const tokenResponse = await axios.post('https://api.sirv.com/v2/token', {
+    clientId,
+    clientSecret,
+  });
+
+  const { token } = tokenResponse.data;
+
+  const uploadResponse = await axios.post(
+    `https://api.sirv.com/v2/files/upload?filename=%2Ffacebook%2F${file.name}`,
+    file,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'image/png',
+      },
+    }
+  );
+  return uploadResponse.data;
+};
 
 export default function Signup() {
   const { register, handleSubmit } = useForm();
-  const { mutateAsync: signup } = useSignupMutation();
+  const { mutateAsync: signup, isPending } = useSignupMutation();
   const { dispatch } = useContext(Store);
   const navigate = useNavigate();
 
   const formDataHandle: SubmitHandler = async (data: SignupData) => {
-    const res = await signup(data);
+    const imageFile = data.image[0];
+    const result = await uploadToSirv(imageFile);
+
+    const res = await signup({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      image: `https://nazmul.sirv.com/facebook/${imageFile.name}`,
+    });
     dispatch({ type: 'sign-in', payload: res });
     localStorage.setItem('user-info', JSON.stringify(res));
     navigate('/');
@@ -38,7 +73,13 @@ export default function Signup() {
           type="password"
           placeholder="Password"
         />
+        <input {...register('image')} type="file" />
         <Button>Signup</Button>
+        {isPending && (
+          <Box sx={{ width: '100%' }}>
+            <LinearProgress />
+          </Box>
+        )}
       </form>
     </div>
   );
