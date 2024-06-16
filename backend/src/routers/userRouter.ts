@@ -31,10 +31,12 @@ userRouter.post(
       name: req.body.name,
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password),
+      image: req.body.image,
     } as User);
     res.json({
       name: user.name,
       email: user.email,
+      image: user.image,
       token: generateToken(user),
     });
   })

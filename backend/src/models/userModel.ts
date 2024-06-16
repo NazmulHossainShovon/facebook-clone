@@ -9,6 +9,8 @@ export class User {
   public email!: string;
   @prop({ required: true })
   public password!: string;
+  @prop()
+  public image?: string;
 }
 
 export const UserModel = getModelForClass(User);
