@@ -9,10 +9,18 @@ function Navbar() {
   } = useContext(Store);
 
   return (
-    <div className="flex justify-start items-center gap-5 bg-TK-background   text-white h-[60px]">
-      <Link to={'/'}>Home</Link>
-      <Link to={'/signup'}>Signup</Link>
-      {userInfo && <AvatarMenu />}
+    <div className="flex justify-start pl-5 items-center gap-5 bg-TK-background   text-white h-[60px]">
+      {userInfo ? (
+        <>
+          <Link to={'/'}>Home</Link>
+          <AvatarMenu />
+        </>
+      ) : (
+        <>
+          <Link to={'/signup'}>Signup</Link>
+          <Link to={'/login'}>Login</Link>
+        </>
+      )}
     </div>
   );
 }
