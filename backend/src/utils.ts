@@ -9,7 +9,7 @@ export const generateToken = (user: User) => {
       name: user.name,
       email: user.email,
     },
-    process.env.JWT_SECRET || "somethingsecret",
+    process.env.JWT_SECRET,
     {
       expiresIn: "30d",
     }
@@ -21,18 +21,8 @@ export const isAuth = (req: Request, res: Response, next: NextFunction) => {
   const { authorization } = req.headers;
   if (authorization) {
     const token = authorization.slice(7, authorization.length); // Bearer xxxxx
-    const decode = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "somethingsecret"
-    );
-
-    req.user = decode as {
-      _id: string;
-      name: string;
-      email: string;
-      isAdmin: boolean;
-      token: string;
-    };
+    const decode = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decode;
     next();
   } else {
     res.status(401).json({ message: "No Token" });

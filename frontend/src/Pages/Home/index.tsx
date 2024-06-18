@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Store } from '../../Store';
 import { Box, Button, Modal, TextField } from '@mui/material';
+import { useCreatePost } from '../../Hooks/postHooks';
 
 const style = {
   position: 'absolute' as 'absolute',
@@ -25,6 +26,12 @@ function Home() {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const { mutateAsync: createPost } = useCreatePost();
+
+  const handlePost = async () => {
+    const res = await createPost({ post });
+    console.log(res);
+  };
 
   useEffect(() => {
     const userJson = localStorage.getItem('user-info');
@@ -51,7 +58,7 @@ function Home() {
             label="Create Post"
             multiline
           />
-          <Button onClick={() => console.log('post')}>Post</Button>
+          <Button onClick={handlePost}>Post</Button>
         </Box>
       </Modal>
       <Button onClick={handleOpen} variant="outlined">
