@@ -8,6 +8,30 @@ type PostCardProps = {
   createdAt: string;
 };
 
+function convertDateFormat(dateString) {
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  const date = new Date(dateString);
+  const day = date.getUTCDate();
+  const month = months[date.getUTCMonth()];
+  const year = date.getUTCFullYear();
+
+  return `${day} ${month} ${year}`;
+}
+
 export default function PostCard({
   text,
   authorName,
@@ -15,12 +39,12 @@ export default function PostCard({
   createdAt,
 }: PostCardProps) {
   return (
-    <div className="flex flex-col gap-3 bg-white rounded-lg p-3 border border-gray-200 shadow">
+    <div className="flex flex-col gap-3 bg-white rounded-lg w-[20%] p-3 border border-gray-200 shadow">
       <div className="flex flex-row gap-3">
         <Avatar className="mt-1" src={authorImage} />
         <div>
           <p>{authorName}</p>
-          <p>{createdAt}</p>
+          <p>{convertDateFormat(createdAt)}</p>
         </div>
       </div>
 

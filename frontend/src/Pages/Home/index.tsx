@@ -67,7 +67,7 @@ function Home() {
         Whats on your mind?
       </Button>
 
-      {data.map((post, index) => (
+      {data?.map((post, index) => (
         <PostCard
           key={index}
           text={post.post}
