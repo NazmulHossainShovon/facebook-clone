@@ -10,6 +10,9 @@ export class Post {
 
   @prop({ required: true })
   authorImage: string;
+
+  @prop({ required: true })
+  userId: string;
 }
 
 export const PostModel = getModelForClass(Post);

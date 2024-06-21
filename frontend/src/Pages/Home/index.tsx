@@ -28,11 +28,11 @@ function Home() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const { mutateAsync: createPost } = useCreatePost();
-  const { data } = useGetPosts();
+  const { data, refetch } = useGetPosts();
 
   const handlePost = async () => {
     const res = await createPost({ post });
-    console.log(res);
+    refetch();
   };
 
   useEffect(() => {
@@ -43,11 +43,10 @@ function Home() {
   }, [navigate]);
 
   return (
-    <div className="flex flex-col gap-3 items-center align-middle bg-[#F0F2F5] ">
+    <div className="flex flex-col gap-3 items-center align-middle bg-[#F0F2F5] h-screen">
       <h1 className="text-center text-lg font-bold text-blue-600">
         Hi {userInfo?.name}
       </h1>
-
       <Modal
         open={open}
         onClose={handleClose}

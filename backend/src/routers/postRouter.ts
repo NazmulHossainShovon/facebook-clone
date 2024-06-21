@@ -10,7 +10,7 @@ postRouter.get(
   "/",
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
-    const posts = await PostModel.find({ user: req.user._id });
+    const posts = await PostModel.find({ userId: req.user._id });
     res.json(posts);
   })
 );
@@ -24,6 +24,7 @@ postRouter.post(
       post: req.body.post,
       authorName: user.name,
       authorImage: user.image,
+      userId: user._id,
     });
     res.send({ message: "Post Created" });
   })
