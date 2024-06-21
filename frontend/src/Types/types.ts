@@ -16,4 +16,12 @@ type AppState = {
   userInfo: User;
 };
 
-export { User, AppState, SignupData };
+type Post = {
+  post: string;
+  authorName: string;
+  authorImage: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export { User, AppState, SignupData, Post };

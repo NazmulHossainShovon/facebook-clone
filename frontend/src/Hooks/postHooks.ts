@@ -1,5 +1,6 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import apiClient from '../ApiClient';
+import { Post } from '../Types/types';
 
 const useCreatePost = () => {
   return useMutation({
@@ -12,4 +13,14 @@ const useCreatePost = () => {
   });
 };
 
-export { useCreatePost };
+const useGetPosts = () => {
+  return useQuery({
+    queryKey: ['posts'],
+    queryFn: async () => {
+      const res = await apiClient.get<Post[]>('/api/posts');
+      return res.data;
+    },
+  });
+};
+
+export { useCreatePost, useGetPosts };

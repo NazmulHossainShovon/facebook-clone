@@ -2,7 +2,8 @@ import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Store } from '../../Store';
 import { Box, Button, Modal, TextField } from '@mui/material';
-import { useCreatePost } from '../../Hooks/postHooks';
+import { useCreatePost, useGetPosts } from '../../Hooks/postHooks';
+import PostCard from '../../Components/PostCard';
 
 const style = {
   position: 'absolute' as 'absolute',
@@ -27,6 +28,7 @@ function Home() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const { mutateAsync: createPost } = useCreatePost();
+  const { data } = useGetPosts();
 
   const handlePost = async () => {
     const res = await createPost({ post });
@@ -41,7 +43,7 @@ function Home() {
   }, [navigate]);
 
   return (
-    <div className="flex flex-col gap-3 items-center align-middle ">
+    <div className="flex flex-col gap-3 items-center align-middle bg-[#F0F2F5] ">
       <h1 className="text-center text-lg font-bold text-blue-600">
         Hi {userInfo?.name}
       </h1>
@@ -64,6 +66,16 @@ function Home() {
       <Button onClick={handleOpen} variant="outlined">
         Whats on your mind?
       </Button>
+
+      {data.map((post, index) => (
+        <PostCard
+          key={index}
+          text={post.post}
+          authorImage={post.authorImage}
+          authorName={post.authorName}
+          createdAt={post.createdAt}
+        />
+      ))}
     </div>
   );
 }
