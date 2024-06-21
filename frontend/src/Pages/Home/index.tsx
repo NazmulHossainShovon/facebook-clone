@@ -33,6 +33,7 @@ function Home() {
   const handlePost = async () => {
     const res = await createPost({ post });
     refetch();
+    handleClose();
   };
 
   useEffect(() => {

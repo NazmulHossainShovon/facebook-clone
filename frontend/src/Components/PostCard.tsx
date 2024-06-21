@@ -43,8 +43,8 @@ export default function PostCard({
       <div className="flex flex-row gap-3">
         <Avatar className="mt-1" src={authorImage} />
         <div>
-          <p>{authorName}</p>
-          <p>{convertDateFormat(createdAt)}</p>
+          <p className="font-bold">{authorName}</p>
+          <p className=" text-xs">{convertDateFormat(createdAt)}</p>
         </div>
       </div>
 
