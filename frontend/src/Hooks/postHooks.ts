@@ -23,4 +23,13 @@ const useGetPosts = () => {
   });
 };
 
-export { useCreatePost, useGetPosts };
+const useDeletePost = () => {
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const res = await apiClient.delete(`/api/posts/delete/${id}`);
+      return res.data;
+    },
+  });
+};
+
+export { useCreatePost, useGetPosts, useDeletePost };

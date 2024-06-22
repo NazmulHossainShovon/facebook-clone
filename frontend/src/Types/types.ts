@@ -22,6 +22,8 @@ type Post = {
   authorImage: string;
   createdAt: string;
   updatedAt: string;
+  userId: string;
+  _id: string;
 };
 
 export { User, AppState, SignupData, Post };

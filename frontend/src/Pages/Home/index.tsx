@@ -32,7 +32,7 @@ function Home() {
 
   const handlePost = async () => {
     const res = await createPost({ post });
-    refetch();
+    await refetch();
     handleClose();
   };
 
@@ -42,6 +42,7 @@ function Home() {
       navigate('/signup');
     }
   }, [navigate]);
+  console.log(data);
 
   return (
     <div className="flex flex-col gap-3 items-center align-middle bg-[#F0F2F5] h-screen">
@@ -74,6 +75,8 @@ function Home() {
           authorImage={post.authorImage}
           authorName={post.authorName}
           createdAt={post.createdAt}
+          id={post._id}
+          refetch={refetch}
         />
       ))}
     </div>
