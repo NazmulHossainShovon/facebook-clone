@@ -2,6 +2,7 @@ import { modelOptions, prop, getModelForClass } from "@typegoose/typegoose";
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Post {
+  _id: string;
   @prop({ required: true })
   post: string;
 

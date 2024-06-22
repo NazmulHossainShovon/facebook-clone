@@ -29,3 +29,11 @@ postRouter.post(
     res.send({ message: "Post Created" });
   })
 );
+
+postRouter.delete(
+  "/delete/:id",
+  asyncHandler(async (req: Request, res: Response) => {
+    await PostModel.findByIdAndDelete(req.params.id);
+    res.json({ message: "Post Deleted" });
+  })
+);
