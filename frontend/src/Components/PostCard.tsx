@@ -1,11 +1,15 @@
-import { Avatar } from '@mui/material';
-import React from 'react';
+import { MoreHoriz } from '@mui/icons-material';
+import { Avatar, Button, Menu, MenuItem } from '@mui/material';
+import React, { useState } from 'react';
+import { useDeletePost } from '../Hooks/postHooks';
 
 type PostCardProps = {
+  id: string;
   text: string;
   authorName: string;
   authorImage: string;
   createdAt: string;
+  refetch: () => void;
 };
 
 function convertDateFormat(dateString) {
@@ -37,14 +41,57 @@ export default function PostCard({
   authorName,
   authorImage,
   createdAt,
+  id,
+  refetch,
 }: PostCardProps) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { mutateAsync: deletePost } = useDeletePost();
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleDelete = async () => {
+    await deletePost({ id });
+    await refetch();
+    setAnchorEl(null);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
-    <div className="flex flex-col gap-3 bg-white rounded-lg w-[20%] p-3 border border-gray-200 shadow">
-      <div className="flex flex-row gap-3">
-        <Avatar className="mt-1" src={authorImage} />
+    <div className="flex flex-col gap-3 bg-white rounded-lg w-[30%] p-3 border border-gray-200 shadow">
+      <div className="flex flex-row justify-between">
+        <div className="flex flex-row gap-3">
+          <Avatar className="mt-1" src={authorImage} />
+          <div>
+            <p className="font-bold">{authorName}</p>
+            <p className=" text-xs">{convertDateFormat(createdAt)}</p>
+          </div>
+        </div>
+        {/* options button and menu */}
         <div>
-          <p className="font-bold">{authorName}</p>
-          <p className=" text-xs">{convertDateFormat(createdAt)}</p>
+          <Button
+            id="basic-button"
+            aria-controls={open ? 'basic-menu' : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? 'true' : undefined}
+            onClick={handleClick}
+          >
+            <MoreHoriz />
+          </Button>
+          <Menu
+            id="basic-menu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            MenuListProps={{
+              'aria-labelledby': 'basic-button',
+            }}
+          >
+            <MenuItem onClick={handleDelete}>Delete Post</MenuItem>
+          </Menu>
         </div>
       </div>
 
