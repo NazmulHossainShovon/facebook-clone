@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Store } from '../../Store';
+import { Store } from '../Store';
 import { Box, Button, Modal, TextField } from '@mui/material';
-import { useCreatePost, useGetPosts } from '../../Hooks/postHooks';
-import PostCard from '../../Components/PostCard';
+import { useCreatePost, useGetPosts } from '../Hooks/postHooks';
+import PostCard from '../Components/PostCard';
 
 const style = {
   position: 'absolute' as 'absolute',
@@ -18,7 +18,7 @@ const style = {
   p: 4,
 };
 
-function Home() {
+function UserProfile() {
   const navigate = useNavigate();
   const {
     state: { userInfo },
@@ -83,4 +83,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default UserProfile;
