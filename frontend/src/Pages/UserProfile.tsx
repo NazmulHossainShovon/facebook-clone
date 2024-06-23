@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Store } from '../Store';
-import { Box, Button, Modal, TextField } from '@mui/material';
+import { Avatar, Box, Button, Modal, TextField } from '@mui/material';
 import { useCreatePost, useGetPosts } from '../Hooks/postHooks';
 import PostCard from '../Components/PostCard';
 
@@ -42,13 +42,13 @@ function UserProfile() {
       navigate('/signup');
     }
   }, [navigate]);
-  console.log(data);
 
   return (
     <div className="flex flex-col gap-3 items-center align-middle bg-[#F0F2F5] h-screen">
-      <h1 className="text-center text-lg font-bold text-blue-600">
-        Hi {userInfo?.name}
-      </h1>
+      <div className="flex flex-col gap-3 bg-white rounded-lg w-[30%] p-3 border border-gray-200 shadow">
+        <Avatar src={userInfo?.image} className=" w-32 h-32" />
+        <h2>{userInfo?.name}</h2>
+      </div>
       <Modal
         open={open}
         onClose={handleClose}

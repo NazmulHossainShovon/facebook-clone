@@ -2,7 +2,7 @@ import { Menu, MenuItem } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import React, { useContext } from 'react';
 import { Store } from '../Store';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function AvatarMenu() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -40,6 +40,9 @@ export default function AvatarMenu() {
         }}
       >
         <MenuItem onClick={handleLogout}>Logout</MenuItem>
+        <MenuItem>
+          <Link to={`/${state.userInfo.name}`}>Profile</Link>
+        </MenuItem>
       </Menu>
     </div>
   );
