@@ -5,6 +5,11 @@ type User = {
   token: string;
 };
 
+type People = {
+  name: string;
+  image: string;
+};
+
 type SignupData = {
   name: string;
   email: string;
@@ -14,6 +19,7 @@ type SignupData = {
 
 type AppState = {
   userInfo: User;
+  searchQuery: string;
 };
 
 type Post = {
@@ -26,4 +32,4 @@ type Post = {
   _id: string;
 };
 
-export { User, AppState, SignupData, Post };
+export { User, AppState, SignupData, Post, People };

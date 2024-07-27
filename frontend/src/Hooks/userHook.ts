@@ -1,5 +1,5 @@
-import { useMutation } from '@tanstack/react-query';
-import { User } from '../Types/types';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { People, User } from '../Types/types';
 import apiClient from '../ApiClient';
 
 export const useSignupMutation = () =>
@@ -27,6 +27,17 @@ export const useSigninMutation = () =>
       const res = await apiClient.post<User>('api/users/signin', {
         email,
         password,
+      });
+      return res.data;
+    },
+  });
+
+export const useSearchUsers = (query: string) =>
+  useQuery({
+    queryKey: [query],
+    queryFn: async () => {
+      const res = await apiClient.get<People[]>('api/search', {
+        params: { query },
       });
       return res.data;
     },

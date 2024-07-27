@@ -4,6 +4,7 @@ import express from "express";
 import mongoose from "mongoose";
 import { userRouter } from "./routers/userRouter";
 import { postRouter } from "./routers/postRouter";
+import { searchRouter } from "./routers/searchRouter";
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/users", userRouter);
 app.use("/api/posts", postRouter);
+app.use("/api/search", searchRouter);
 
 const PORT: number = parseInt((process.env.PORT || "4000") as string, 10);
 
