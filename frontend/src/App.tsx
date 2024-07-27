@@ -7,6 +7,7 @@ import Login from './Pages/Login';
 import { useContext } from 'react';
 import { Store } from './Store';
 import Home from './Pages/Home';
+import Search from './Pages/Search';
 
 const App: React.FC = () => {
   useFindUser();
@@ -20,6 +21,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path={`/${userInfo?.name}`} element={<UserProfile />} />
+        <Route path="search/:searchQuery" element={<Search />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
       </Routes>
