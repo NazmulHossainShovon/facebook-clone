@@ -1,10 +1,29 @@
 import { useParams } from 'react-router-dom';
 import { useSearchUsers } from '../Hooks/userHook';
+import { Avatar, Card } from '@mui/material';
 
 export default function Search() {
   const { searchQuery } = useParams();
-  const { data } = useSearchUsers(searchQuery);
-  console.log(data);
+  const { data, isLoading } = useSearchUsers(searchQuery);
 
-  return <div> Search Result</div>;
+  if (isLoading) {
+    return <h2>Loading</h2>;
+  } else {
+    return (
+      <Card className="flex flex-col gap-2 w-1/3 p-5 mx-auto">
+        <h2>Search Results</h2>
+        {data?.map((person, index) => {
+          return (
+            <div
+              className="flex flex-row p-2 gap-2 border border-gray-200 "
+              key={index}
+            >
+              <Avatar src={person.image} />
+              <p> {person.name} </p>
+            </div>
+          );
+        })}
+      </Card>
+    );
+  }
 }
