@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useSearchUsers } from '../Hooks/userHook';
 import { Avatar, Card } from '@mui/material';
 
@@ -14,13 +14,14 @@ export default function Search() {
         <h2>Search Results</h2>
         {data?.map((person, index) => {
           return (
-            <div
+            <Link
               className="flex flex-row p-2 gap-2 border border-gray-200 "
               key={index}
+              to={`/${person.name}`}
             >
               <Avatar src={person.image} />
               <p> {person.name} </p>
-            </div>
+            </Link>
           );
         })}
       </Card>
