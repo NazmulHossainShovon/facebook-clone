@@ -32,6 +32,17 @@ export const useSigninMutation = () =>
     },
   });
 
+export const useGetUserInfo = (userName: string) =>
+  useQuery({
+    queryKey: ['user', userName],
+    queryFn: async () => {
+      const res = await apiClient.get<User>('api/users', {
+        params: { userName },
+      });
+      return res.data;
+    },
+  });
+
 export const useSearchUsers = (query: string) =>
   useQuery({
     queryKey: [query],

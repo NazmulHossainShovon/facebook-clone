@@ -10,7 +10,7 @@ postRouter.get(
   "/",
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
-    const posts = await PostModel.find({ userId: req.user._id });
+    const posts = await PostModel.find({ authorName: req.query.userName });
     res.json(posts);
   })
 );

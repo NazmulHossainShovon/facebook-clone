@@ -13,11 +13,13 @@ const useCreatePost = () => {
   });
 };
 
-const useGetPosts = () => {
+const useGetPosts = (userName: string) => {
   return useQuery({
-    queryKey: ['posts'],
+    queryKey: ['posts', userName],
     queryFn: async () => {
-      const res = await apiClient.get<Post[]>('/api/posts');
+      const res = await apiClient.get<Post[]>('/api/posts', {
+        params: { userName },
+      });
       return res.data;
     },
   });

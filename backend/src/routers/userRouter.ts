@@ -25,6 +25,15 @@ userRouter.post(
   })
 );
 
+userRouter.get(
+  "/",
+  isAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const user = await UserModel.findOne({ name: req.query.userName });
+    res.json(user);
+  })
+);
+
 userRouter.post(
   "/signup",
   asyncHandler(async (req: Request, res: Response) => {
