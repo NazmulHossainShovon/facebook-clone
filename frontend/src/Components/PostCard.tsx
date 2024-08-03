@@ -9,6 +9,7 @@ type PostCardProps = {
   authorName: string;
   authorImage: string;
   createdAt: string;
+  isLoggedInUser: boolean;
   refetch: () => void;
 };
 
@@ -43,6 +44,7 @@ export default function PostCard({
   createdAt,
   id,
   refetch,
+  isLoggedInUser,
 }: PostCardProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { mutateAsync: deletePost } = useDeletePost();
@@ -90,7 +92,10 @@ export default function PostCard({
               'aria-labelledby': 'basic-button',
             }}
           >
-            <MenuItem onClick={handleDelete}>Delete Post</MenuItem>
+            {isLoggedInUser && (
+              <MenuItem onClick={handleDelete}>Delete Post</MenuItem>
+            )}
+            <MenuItem>Share</MenuItem>
           </Menu>
         </div>
       </div>
