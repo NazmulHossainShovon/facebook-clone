@@ -34,4 +34,15 @@ const useDeletePost = () => {
   });
 };
 
-export { useCreatePost, useGetPosts, useDeletePost };
+const useLikePost = () => {
+  return useMutation({
+    mutationFn: async (userName: string) => {
+      const res = await apiClient.post('/api/posts/like', {
+        userName,
+      });
+      return res.data;
+    },
+  });
+};
+
+export { useCreatePost, useGetPosts, useDeletePost, useLikePost };

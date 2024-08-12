@@ -37,3 +37,11 @@ postRouter.delete(
     res.json({ message: "Post Deleted" });
   })
 );
+
+postRouter.post(
+  "/like",
+  isAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    res.json({ message: req.body.userName });
+  })
+);

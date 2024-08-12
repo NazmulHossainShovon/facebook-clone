@@ -1,7 +1,8 @@
 import { MoreHoriz } from '@mui/icons-material';
 import { Avatar, Button, Menu, MenuItem } from '@mui/material';
-import React, { useState } from 'react';
-import { useDeletePost } from '../Hooks/postHooks';
+import React, { useContext, useState } from 'react';
+import { useDeletePost, useLikePost } from '../Hooks/postHooks';
+import { Store } from '../Store';
 
 type PostCardProps = {
   id: string;
@@ -47,8 +48,13 @@ export default function PostCard({
   isLoggedInUser,
 }: PostCardProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const {
+    state: { userInfo },
+  } = useContext(Store);
   const { mutateAsync: deletePost } = useDeletePost();
+  const { mutateAsync: likePost } = useLikePost();
   const open = Boolean(anchorEl);
+
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -60,6 +66,11 @@ export default function PostCard({
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLike = async () => {
+    const data = await likePost(userInfo.name);
+    console.log(data);
   };
 
   return (
@@ -101,6 +112,9 @@ export default function PostCard({
       </div>
 
       <p>{text}</p>
+      <Button onClick={handleLike} variant="outlined">
+        Like
+      </Button>
     </div>
   );
 }
