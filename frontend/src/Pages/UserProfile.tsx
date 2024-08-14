@@ -83,6 +83,7 @@ function UserProfile() {
           createdAt={post.createdAt}
           id={post._id}
           refetch={refetch}
+          likers={post.likers}
           isLoggedInUser={isLoggedInUser}
         />
       ))}

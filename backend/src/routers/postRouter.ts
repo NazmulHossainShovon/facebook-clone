@@ -38,10 +38,16 @@ postRouter.delete(
   })
 );
 
-postRouter.post(
+postRouter.put(
   "/like",
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
-    res.json({ message: req.body.userName });
+    const updatedPost = await PostModel.findOneAndUpdate(
+      { _id: req.body.postId, likers: { $ne: req.body.userName } },
+      { $push: { likers: req.body.userName } },
+      { new: true } // To return the updated document
+    );
+
+    res.json(updatedPost);
   })
 );

@@ -14,6 +14,9 @@ export class Post {
 
   @prop({ required: true })
   userId: string;
+
+  @prop({ required: true })
+  likers: string[];
 }
 
 export const PostModel = getModelForClass(Post);

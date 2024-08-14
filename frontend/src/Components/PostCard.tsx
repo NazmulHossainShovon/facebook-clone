@@ -12,6 +12,7 @@ type PostCardProps = {
   createdAt: string;
   isLoggedInUser: boolean;
   refetch: () => void;
+  likers: string[];
 };
 
 function convertDateFormat(dateString) {
@@ -46,6 +47,7 @@ export default function PostCard({
   id,
   refetch,
   isLoggedInUser,
+  likers,
 }: PostCardProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const {
@@ -69,8 +71,8 @@ export default function PostCard({
   };
 
   const handleLike = async () => {
-    const data = await likePost(userInfo.name);
-    console.log(data);
+    const data = await likePost({ userName: userInfo.name, postId: id });
+    await refetch();
   };
 
   return (
@@ -113,7 +115,7 @@ export default function PostCard({
 
       <p>{text}</p>
       <Button onClick={handleLike} variant="outlined">
-        Like
+        {likers.includes(userInfo.name) ? 'Unlike' : 'Like'}
       </Button>
     </div>
   );

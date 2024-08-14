@@ -36,9 +36,12 @@ const useDeletePost = () => {
 
 const useLikePost = () => {
   return useMutation({
-    mutationFn: async (userName: string) => {
-      const res = await apiClient.post('/api/posts/like', {
+    mutationFn: async ({ userName, postId }) => {
+      console.log(postId);
+
+      const res = await apiClient.put<Post>('/api/posts/like', {
         userName,
+        postId,
       });
       return res.data;
     },

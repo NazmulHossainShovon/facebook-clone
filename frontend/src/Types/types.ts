@@ -29,6 +29,7 @@ type Post = {
   createdAt: string;
   updatedAt: string;
   userId: string;
+  likers: string[];
   _id: string;
 };
 
