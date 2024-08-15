@@ -51,3 +51,16 @@ postRouter.put(
     res.json(updatedPost);
   })
 );
+
+postRouter.put(
+  "/unlike",
+  isAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    await PostModel.findOneAndUpdate(
+      { _id: req.body.postId },
+      { $pull: { likers: req.body.userName } }
+    );
+
+    res.json({ message: "unliked" });
+  })
+);

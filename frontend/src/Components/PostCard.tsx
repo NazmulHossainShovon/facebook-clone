@@ -1,7 +1,7 @@
 import { MoreHoriz } from '@mui/icons-material';
 import { Avatar, Button, Menu, MenuItem } from '@mui/material';
 import React, { useContext, useState } from 'react';
-import { useDeletePost, useLikePost } from '../Hooks/postHooks';
+import { useDeletePost, useLikePost, useUnlikePost } from '../Hooks/postHooks';
 import { Store } from '../Store';
 
 type PostCardProps = {
@@ -55,6 +55,7 @@ export default function PostCard({
   } = useContext(Store);
   const { mutateAsync: deletePost } = useDeletePost();
   const { mutateAsync: likePost } = useLikePost();
+  const { mutateAsync: unlikePost } = useUnlikePost();
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -71,7 +72,12 @@ export default function PostCard({
   };
 
   const handleLike = async () => {
-    const data = await likePost({ userName: userInfo.name, postId: id });
+    if (likers.includes(userInfo.name)) {
+      await unlikePost({ userName: userInfo.name, postId: id });
+    } else {
+      const data = await likePost({ userName: userInfo.name, postId: id });
+    }
+
     await refetch();
   };
 
