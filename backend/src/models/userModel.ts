@@ -11,6 +11,10 @@ export class User {
   public password!: string;
   @prop()
   public image?: string;
+  @prop()
+  public receivedFriendReqs: string[];
+  @prop()
+  public sentFriendReqs: string[];
 }
 
 export const UserModel = getModelForClass(User);

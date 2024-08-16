@@ -53,3 +53,15 @@ export const useSearchUsers = (query: string) =>
       return res.data;
     },
   });
+
+export const useSendFriendRequest = () => {
+  return useMutation({
+    mutationFn: async ({ sender, receiver }) => {
+      const res = await apiClient.put('api/users/friendRequest', {
+        sender,
+        receiver,
+      });
+      return res.data;
+    },
+  });
+};

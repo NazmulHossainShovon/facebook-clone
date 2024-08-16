@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Avatar, Box, Button, Modal, TextField } from '@mui/material';
 import { useCreatePost, useGetPosts } from '../Hooks/postHooks';
 import PostCard from '../Components/PostCard';
-import { useGetUserInfo } from '../Hooks/userHook';
+import { useGetUserInfo, useSendFriendRequest } from '../Hooks/userHook';
 import { Store } from '../Store';
 
 const style = {
@@ -32,12 +32,17 @@ function UserProfile() {
   const { mutateAsync: createPost } = useCreatePost();
   const { data: userData } = useGetUserInfo(userName);
   const { data, refetch } = useGetPosts(userName);
+  const { mutateAsync: sendRequest } = useSendFriendRequest();
   const isLoggedInUser = userInfo.name === userName;
 
   const handlePost = async () => {
     const res = await createPost({ post });
     await refetch();
     handleClose();
+  };
+
+  const sendFriendRequest = async () => {
+    await sendRequest({ sender: userInfo.name, receiver: userName });
   };
 
   useEffect(() => {
@@ -52,6 +57,9 @@ function UserProfile() {
       <div className="flex flex-col gap-3 bg-white rounded-lg w-[30%] p-3 border border-gray-200 shadow">
         <Avatar src={userData?.image} className=" w-32 h-32" />
         <h2>{userData?.name}</h2>
+        {!isLoggedInUser && (
+          <Button onClick={sendFriendRequest}>Add Friend +</Button>
+        )}
       </div>
       <Modal
         open={open}

@@ -79,3 +79,11 @@ userRouter.put(
     res.status(404).json({ message: "User not found" });
   })
 );
+
+userRouter.put(
+  "/friendRequest",
+  isAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    console.log(req.body);
+  })
+);
