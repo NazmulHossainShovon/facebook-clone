@@ -84,6 +84,11 @@ userRouter.put(
   "/friendRequest",
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
-    console.log(req.body);
+    await UserModel.findOneAndUpdate(
+      { name: req.body.receiver },
+      { $push: { receivedFriendReqs: req.body.sender } }
+    );
+
+    res.json({ message: "Friend request sent" });
   })
 );

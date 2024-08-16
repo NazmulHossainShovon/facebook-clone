@@ -2,6 +2,8 @@ type User = {
   name: string;
   email: string;
   image: string;
+  receivedFriendReqs: string[];
+  sentFriendReqs: string[];
   token: string;
 };
 

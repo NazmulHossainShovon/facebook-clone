@@ -30,7 +30,7 @@ function UserProfile() {
     state: { userInfo },
   } = useContext(Store);
   const { mutateAsync: createPost } = useCreatePost();
-  const { data: userData } = useGetUserInfo(userName);
+  const { data: userData, refetch: refetchUser } = useGetUserInfo(userName);
   const { data, refetch } = useGetPosts(userName);
   const { mutateAsync: sendRequest } = useSendFriendRequest();
   const isLoggedInUser = userInfo.name === userName;
@@ -43,6 +43,7 @@ function UserProfile() {
 
   const sendFriendRequest = async () => {
     await sendRequest({ sender: userInfo.name, receiver: userName });
+    await refetchUser();
   };
 
   useEffect(() => {
@@ -58,7 +59,11 @@ function UserProfile() {
         <Avatar src={userData?.image} className=" w-32 h-32" />
         <h2>{userData?.name}</h2>
         {!isLoggedInUser && (
-          <Button onClick={sendFriendRequest}>Add Friend +</Button>
+          <Button onClick={sendFriendRequest}>
+            {userData?.receivedFriendReqs.includes(userInfo.name)
+              ? 'Request Sent'
+              : 'Add Friend +'}
+          </Button>
         )}
       </div>
       <Modal
