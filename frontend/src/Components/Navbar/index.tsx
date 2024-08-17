@@ -4,6 +4,7 @@ import { useContext, useState } from 'react';
 import { Store } from '../../Store';
 import Input from '../Input';
 import SearchIcon from '@mui/icons-material/Search';
+import FriendReqsMenu from '../FriendReqsMenu';
 
 function Navbar() {
   const {
@@ -32,6 +33,7 @@ function Navbar() {
               className=" cursor-pointer"
             />
           </div>
+          <FriendReqsMenu />
         </>
       ) : (
         <>

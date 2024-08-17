@@ -17,6 +17,7 @@ userRouter.post(
           email: user.email,
           image: user.image,
           token: generateToken(user),
+          receivedFriendReqs: user.receivedFriendReqs,
         });
         return;
       }
