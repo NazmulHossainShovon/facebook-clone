@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Box, LinearProgress } from '@mui/material';
 
-const uploadToSirv = async (file: File) => {
+const uploadToSirv = async (file: File, userName: string) => {
   const clientId = import.meta.env.VITE_SIRV_ID;
   const clientSecret = import.meta.env.VITE_SIRV_SECRET;
 
@@ -22,7 +22,7 @@ const uploadToSirv = async (file: File) => {
   const { token } = tokenResponse.data;
 
   const uploadResponse = await axios.post(
-    `https://api.sirv.com/v2/files/upload?filename=%2Ffacebook%2F${file.name}`,
+    `https://api.sirv.com/v2/files/upload?filename=%2Ffacebook%2F${userName}.png`,
     file,
     {
       headers: {
@@ -42,13 +42,13 @@ export default function Signup() {
 
   const formDataHandle: SubmitHandler = async (data: SignupData) => {
     const imageFile = data.image[0];
-    const result = await uploadToSirv(imageFile);
+    const result = await uploadToSirv(imageFile, data.name);
 
     const res = await signup({
       name: data.name,
       email: data.email,
       password: data.password,
-      image: `https://nazmul.sirv.com/facebook/${imageFile.name}`,
+      image: `https://nazmul.sirv.com/facebook/${data.name}.png`,
     });
     dispatch({ type: 'sign-in', payload: res });
     localStorage.setItem('user-info', JSON.stringify(res));
