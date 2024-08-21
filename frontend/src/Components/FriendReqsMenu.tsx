@@ -18,8 +18,6 @@ export default function FriendReqsMenu() {
     setAnchorEl(null);
   };
 
-  console.log(userInfo);
-
   return (
     <div>
       <PeopleAltIcon className="cursor-pointer" onClick={handleClick} />

@@ -93,3 +93,16 @@ userRouter.put(
     res.json({ message: "Friend request sent" });
   })
 );
+
+userRouter.put(
+  "/cancelRequest",
+  isAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    await UserModel.findOneAndUpdate(
+      { name: req.body.receiver },
+      { $pull: { receivedFriendReqs: req.body.sender } }
+    );
+
+    res.json({ message: "Canceled friend request" });
+  })
+);

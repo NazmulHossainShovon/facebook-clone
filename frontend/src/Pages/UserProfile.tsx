@@ -3,7 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Avatar, Box, Button, Modal, TextField } from '@mui/material';
 import { useCreatePost, useGetPosts } from '../Hooks/postHooks';
 import PostCard from '../Components/PostCard';
-import { useGetUserInfo, useSendFriendRequest } from '../Hooks/userHook';
+import {
+  useCancelFriendRequest,
+  useGetUserInfo,
+  useSendFriendRequest,
+} from '../Hooks/userHook';
 import { Store } from '../Store';
 
 const style = {
@@ -33,6 +37,7 @@ function UserProfile() {
   const { data: userData, refetch: refetchUser } = useGetUserInfo(userName);
   const { data, refetch } = useGetPosts(userName);
   const { mutateAsync: sendRequest } = useSendFriendRequest();
+  const { mutateAsync: cancelRequest } = useCancelFriendRequest();
   const isLoggedInUser = userInfo.name === userName;
 
   const handlePost = async () => {
@@ -43,6 +48,11 @@ function UserProfile() {
 
   const sendFriendRequest = async () => {
     await sendRequest({ sender: userInfo.name, receiver: userName });
+    await refetchUser();
+  };
+
+  const handleCancelRequest = async () => {
+    await cancelRequest({ sender: userInfo.name, receiver: userName });
     await refetchUser();
   };
 
@@ -59,11 +69,14 @@ function UserProfile() {
         <Avatar src={userData?.image} className=" w-32 h-32" />
         <h2>{userData?.name}</h2>
         {!isLoggedInUser && (
-          <Button onClick={sendFriendRequest}>
-            {userData?.receivedFriendReqs.includes(userInfo.name)
-              ? 'Request Sent'
-              : 'Add Friend +'}
-          </Button>
+          <>
+            {userData?.receivedFriendReqs.includes(userInfo.name) && (
+              <Button onClick={handleCancelRequest}>Cancel Request</Button>
+            )}
+            {!userData?.receivedFriendReqs.includes(userInfo.name) && (
+              <Button onClick={sendFriendRequest}>Send Request </Button>
+            )}
+          </>
         )}
       </div>
       <Modal
