@@ -89,6 +89,10 @@ userRouter.put(
       { name: req.body.receiver },
       { $push: { receivedFriendReqs: req.body.sender } }
     );
+    await UserModel.findOneAndUpdate(
+      { name: req.body.sender },
+      { $push: { sentFriendReqs: req.body.receiver } }
+    );
 
     res.json({ message: "Friend request sent" });
   })
@@ -101,6 +105,10 @@ userRouter.put(
     await UserModel.findOneAndUpdate(
       { name: req.body.receiver },
       { $pull: { receivedFriendReqs: req.body.sender } }
+    );
+    await UserModel.findOneAndUpdate(
+      { name: req.body.sender },
+      { $pull: { sentFriendReqs: req.body.receiver } }
     );
 
     res.json({ message: "Canceled friend request" });

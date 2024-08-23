@@ -70,10 +70,11 @@ function UserProfile() {
         <h2>{userData?.name}</h2>
         {!isLoggedInUser && (
           <>
-            {userData?.receivedFriendReqs.includes(userInfo.name) && (
+            {userData?.receivedFriendReqs.includes(userInfo.name) ? (
               <Button onClick={handleCancelRequest}>Cancel Request</Button>
-            )}
-            {!userData?.receivedFriendReqs.includes(userInfo.name) && (
+            ) : userData?.sentFriendReqs.includes(userInfo.name) ? (
+              <Button>Accept Request</Button>
+            ) : (
               <Button onClick={sendFriendRequest}>Send Request </Button>
             )}
           </>
