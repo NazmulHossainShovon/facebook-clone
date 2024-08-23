@@ -10,9 +10,6 @@ export class Post {
   authorName: string;
 
   @prop({ required: true })
-  authorImage: string;
-
-  @prop({ required: true })
   userId: string;
 
   @prop({ required: true })

@@ -1,7 +1,6 @@
 type User = {
   name: string;
   email: string;
-  image: string;
   friends: string[];
   receivedFriendReqs: string[];
   sentFriendReqs: string[];

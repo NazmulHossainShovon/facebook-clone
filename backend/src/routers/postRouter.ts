@@ -23,7 +23,6 @@ postRouter.post(
     const post = await PostModel.create({
       post: req.body.post,
       authorName: user.name,
-      authorImage: user.image,
       userId: user._id,
     });
     res.send({ message: "Post Created" });
