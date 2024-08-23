@@ -89,3 +89,15 @@ export const useAcceptFriendRequest = () => {
     },
   });
 };
+
+export const useUnfriend = () => {
+  return useMutation({
+    mutationFn: async ({ user1, user2 }) => {
+      const res = await apiClient.put('api/users/unfriend', {
+        user1,
+        user2,
+      });
+      return res.data;
+    },
+  });
+};

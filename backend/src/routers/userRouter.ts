@@ -139,3 +139,20 @@ userRouter.put(
     res.json({ message: "Accepted friend request" });
   })
 );
+
+userRouter.put(
+  "/unfriend",
+  isAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    await UserModel.findOneAndUpdate(
+      { name: req.body.user1 },
+      { $pull: { friends: req.body.user2 } }
+    );
+    await UserModel.findOneAndUpdate(
+      { name: req.body.user2 },
+      { $pull: { friends: req.body.user1 } }
+    );
+
+    res.json({ message: "successfully unfriend" });
+  })
+);

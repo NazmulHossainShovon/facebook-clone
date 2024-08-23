@@ -10,6 +10,7 @@ import {
   useSendFriendRequest,
 } from '../Hooks/userHook';
 import { Store } from '../Store';
+import FriendOptionsMenu from '../Components/FriendOptionsMenu';
 
 const style = {
   position: 'absolute' as 'absolute',
@@ -82,7 +83,7 @@ function UserProfile() {
             ) : userData?.sentFriendReqs.includes(userInfo.name) ? (
               <Button onClick={handleAcceptRequest}>Accept Request</Button>
             ) : userData?.friends.includes(userInfo.name) ? (
-              <Button>Friends</Button>
+              <FriendOptionsMenu tempUser={userName} refetch={refetchUser} />
             ) : (
               <Button onClick={sendFriendRequest}>Send Request </Button>
             )}
