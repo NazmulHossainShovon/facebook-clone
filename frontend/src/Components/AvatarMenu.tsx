@@ -26,7 +26,7 @@ export default function AvatarMenu() {
   return (
     <div>
       <Avatar
-        src={state.userInfo.image}
+        src={`https://nazmul.sirv.com/facebook/${state.userInfo.name}.png`}
         className="cursor-pointer"
         onClick={handleClick}
       />

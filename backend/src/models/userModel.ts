@@ -10,8 +10,6 @@ export class User {
   @prop({ required: true })
   public password!: string;
   @prop()
-  public image?: string;
-  @prop()
   public receivedFriendReqs: string[];
   @prop()
   public sentFriendReqs: string[];

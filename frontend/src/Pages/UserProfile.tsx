@@ -74,7 +74,10 @@ function UserProfile() {
   return (
     <div className="flex flex-col gap-3 items-center align-middle bg-[#F0F2F5] h-screen">
       <div className="flex flex-col gap-3 bg-white rounded-lg w-[30%] p-3 border border-gray-200 shadow">
-        <Avatar src={userData?.image} className=" w-32 h-32" />
+        <Avatar
+          src={`https://nazmul.sirv.com/facebook/${userName}.png`}
+          className=" w-32 h-32"
+        />
         <h2>{userData?.name}</h2>
         {!isLoggedInUser && (
           <>
@@ -115,7 +118,6 @@ function UserProfile() {
         <PostCard
           key={index}
           text={post.post}
-          authorImage={post.authorImage}
           authorName={post.authorName}
           createdAt={post.createdAt}
           id={post._id}

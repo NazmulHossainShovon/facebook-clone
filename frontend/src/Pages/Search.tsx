@@ -19,7 +19,9 @@ export default function Search() {
               key={index}
               to={`/${person.name}`}
             >
-              <Avatar src={person.image} />
+              <Avatar
+                src={`https://nazmul.sirv.com/facebook/${person.name}.png`}
+              />
               <p> {person.name} </p>
             </Link>
           );

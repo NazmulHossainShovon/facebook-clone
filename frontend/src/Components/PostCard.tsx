@@ -8,7 +8,6 @@ type PostCardProps = {
   id: string;
   text: string;
   authorName: string;
-  authorImage: string;
   createdAt: string;
   isLoggedInUser: boolean;
   refetch: () => void;
@@ -42,7 +41,6 @@ function convertDateFormat(dateString) {
 export default function PostCard({
   text,
   authorName,
-  authorImage,
   createdAt,
   id,
   refetch,
@@ -85,7 +83,10 @@ export default function PostCard({
     <div className="flex flex-col gap-3 bg-white rounded-lg w-[30%] p-3 border border-gray-200 shadow">
       <div className="flex flex-row justify-between">
         <div className="flex flex-row gap-3">
-          <Avatar className="mt-1" src={authorImage} />
+          <Avatar
+            className="mt-1"
+            src={`https://nazmul.sirv.com/facebook/${authorName}.png`}
+          />
           <div>
             <p className="font-bold">{authorName}</p>
             <p className=" text-xs">{convertDateFormat(createdAt)}</p>
