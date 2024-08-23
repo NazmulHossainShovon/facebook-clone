@@ -15,6 +15,8 @@ export class User {
   public receivedFriendReqs: string[];
   @prop()
   public sentFriendReqs: string[];
+  @prop()
+  public friends: string[];
 }
 
 export const UserModel = getModelForClass(User);

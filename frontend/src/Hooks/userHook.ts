@@ -77,3 +77,15 @@ export const useCancelFriendRequest = () => {
     },
   });
 };
+
+export const useAcceptFriendRequest = () => {
+  return useMutation({
+    mutationFn: async ({ sender, receiver }) => {
+      const res = await apiClient.put('api/users/acceptRequest', {
+        sender,
+        receiver,
+      });
+      return res.data;
+    },
+  });
+};

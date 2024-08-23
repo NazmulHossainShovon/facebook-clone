@@ -4,6 +4,7 @@ import { Avatar, Box, Button, Modal, TextField } from '@mui/material';
 import { useCreatePost, useGetPosts } from '../Hooks/postHooks';
 import PostCard from '../Components/PostCard';
 import {
+  useAcceptFriendRequest,
   useCancelFriendRequest,
   useGetUserInfo,
   useSendFriendRequest,
@@ -38,6 +39,7 @@ function UserProfile() {
   const { data, refetch } = useGetPosts(userName);
   const { mutateAsync: sendRequest } = useSendFriendRequest();
   const { mutateAsync: cancelRequest } = useCancelFriendRequest();
+  const { mutateAsync: acceptRequest } = useAcceptFriendRequest();
   const isLoggedInUser = userInfo.name === userName;
 
   const handlePost = async () => {
@@ -53,6 +55,11 @@ function UserProfile() {
 
   const handleCancelRequest = async () => {
     await cancelRequest({ sender: userInfo.name, receiver: userName });
+    await refetchUser();
+  };
+
+  const handleAcceptRequest = async () => {
+    await acceptRequest({ sender: userName, receiver: userInfo.name });
     await refetchUser();
   };
 
@@ -73,7 +80,9 @@ function UserProfile() {
             {userData?.receivedFriendReqs.includes(userInfo.name) ? (
               <Button onClick={handleCancelRequest}>Cancel Request</Button>
             ) : userData?.sentFriendReqs.includes(userInfo.name) ? (
-              <Button>Accept Request</Button>
+              <Button onClick={handleAcceptRequest}>Accept Request</Button>
+            ) : userData?.friends.includes(userInfo.name) ? (
+              <Button>Friends</Button>
             ) : (
               <Button onClick={sendFriendRequest}>Send Request </Button>
             )}
