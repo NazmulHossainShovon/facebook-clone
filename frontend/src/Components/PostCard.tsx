@@ -1,8 +1,9 @@
 import { MoreHoriz } from '@mui/icons-material';
-import { Avatar, Button, Menu, MenuItem } from '@mui/material';
+import { Avatar, Box, Button, Menu, MenuItem, Modal } from '@mui/material';
 import React, { useContext, useState } from 'react';
 import { useDeletePost, useLikePost, useUnlikePost } from '../Hooks/postHooks';
 import { Store } from '../Store';
+import { modalStyle } from '../Constants/constants';
 
 type PostCardProps = {
   id: string;
@@ -54,7 +55,11 @@ export default function PostCard({
   const { mutateAsync: deletePost } = useDeletePost();
   const { mutateAsync: likePost } = useLikePost();
   const { mutateAsync: unlikePost } = useUnlikePost();
+  const [modalOpen, setModalOpen] = useState(false);
   const open = Boolean(anchorEl);
+
+  const handleModalOpen = () => setModalOpen(true);
+  const handleModalClose = () => setModalOpen(false);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -121,9 +126,28 @@ export default function PostCard({
       </div>
 
       <p>{text}</p>
-      <Button onClick={handleLike} variant="outlined">
-        {likers.includes(userInfo.name) ? 'Unlike' : 'Like'}
-      </Button>
+      <div className="flex flex-row justify-center gap-3 w-full">
+        <Button onClick={handleLike} variant="outlined">
+          {likers.includes(userInfo.name) ? 'Unlike' : 'Like'}
+        </Button>
+        <button
+          onClick={handleModalOpen}
+          className=" hover:underline hover:cursor-pointer"
+        >
+          {' '}
+          {likers.length} people{' '}
+        </button>
+        <Modal
+          open={modalOpen}
+          onClose={handleModalClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={modalStyle}>
+            <p>likers</p>
+          </Box>
+        </Modal>
+      </div>
     </div>
   );
 }

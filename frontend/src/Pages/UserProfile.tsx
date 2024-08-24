@@ -11,19 +11,7 @@ import {
 } from '../Hooks/userHook';
 import { Store } from '../Store';
 import FriendOptionsMenu from '../Components/FriendOptionsMenu';
-
-const style = {
-  position: 'absolute' as 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  height: 450,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-};
+import { modalStyle } from '../Constants/constants';
 
 function UserProfile() {
   const navigate = useNavigate();
@@ -99,7 +87,7 @@ function UserProfile() {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
+        <Box sx={modalStyle}>
           <TextField
             onChange={e => setPost(e.target.value)}
             label="Create Post"
