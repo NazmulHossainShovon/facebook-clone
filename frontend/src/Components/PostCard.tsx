@@ -4,6 +4,7 @@ import React, { useContext, useState } from 'react';
 import { useDeletePost, useLikePost, useUnlikePost } from '../Hooks/postHooks';
 import { Store } from '../Store';
 import { modalStyle } from '../Constants/constants';
+import { Link } from 'react-router-dom';
 
 type PostCardProps = {
   id: string;
@@ -143,8 +144,31 @@ export default function PostCard({
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
         >
-          <Box sx={modalStyle}>
-            <p>likers</p>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: '20px',
+              flexDirection: 'column',
+              ...modalStyle,
+            }}
+          >
+            {likers.map(liker => (
+              <Box
+                key={liker}
+                sx={{ display: 'flex', gap: '10px', flexDirection: 'row' }}
+              >
+                <Link
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+                  to={`/${liker}`}
+                >
+                  <Avatar
+                    className="mt-1"
+                    src={`https://nazmul.sirv.com/facebook/${liker}.png`}
+                  />
+                  <p>{liker}</p>
+                </Link>
+              </Box>
+            ))}
           </Box>
         </Modal>
       </div>
