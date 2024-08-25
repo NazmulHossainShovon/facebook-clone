@@ -160,6 +160,7 @@ export default function PostCard({
                 <Link
                   style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
                   to={`/${liker}`}
+                  onClick={handleModalClose}
                 >
                   <Avatar
                     className="mt-1"
