@@ -44,7 +44,20 @@ function UserProfile() {
   };
 
   const handleCancelRequest = async () => {
-    await cancelRequest({ sender: userInfo.name, receiver: userName });
+    const res = await cancelRequest({
+      sender: userInfo.name,
+      receiver: userName,
+    });
+    dispatch({ type: 'sign-in', payload: res.sender });
+    await refetchUser();
+  };
+
+  const handleReject = async () => {
+    const res = await cancelRequest({
+      sender: userName,
+      receiver: userInfo.name,
+    });
+    dispatch({ type: 'sign-in', payload: res.receiver });
     await refetchUser();
   };
 
@@ -77,7 +90,10 @@ function UserProfile() {
             {userData?.receivedFriendReqs.includes(userInfo.name) ? (
               <Button onClick={handleCancelRequest}>Cancel Request</Button>
             ) : userData?.sentFriendReqs.includes(userInfo.name) ? (
-              <Button onClick={handleAcceptRequest}>Accept Request</Button>
+              <div className="flex flex-row gap-3">
+                <Button onClick={handleAcceptRequest}>Accept Request</Button>
+                <Button onClick={handleReject}>Reject</Button>
+              </div>
             ) : userData?.friends.includes(userInfo.name) ? (
               <FriendOptionsMenu tempUser={userName} refetch={refetchUser} />
             ) : (
