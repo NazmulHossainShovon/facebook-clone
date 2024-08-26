@@ -127,16 +127,17 @@ userRouter.put(
       { name: req.body.sender },
       { $push: { friends: req.body.receiver } }
     );
-    await UserModel.findOneAndUpdate(
+    const updatedUser = await UserModel.findOneAndUpdate(
       { name: req.body.receiver },
-      { $pull: { receivedFriendReqs: req.body.sender } }
+      { $pull: { receivedFriendReqs: req.body.sender } },
+      { new: true }
     );
     await UserModel.findOneAndUpdate(
       { name: req.body.sender },
       { $pull: { sentFriendReqs: req.body.receiver } }
     );
 
-    res.json({ message: "Accepted friend request" });
+    res.json(updatedUser);
   })
 );
 

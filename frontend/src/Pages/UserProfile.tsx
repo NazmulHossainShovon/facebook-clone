@@ -22,6 +22,7 @@ function UserProfile() {
   const handleClose = () => setOpen(false);
   const {
     state: { userInfo },
+    dispatch,
   } = useContext(Store);
   const { mutateAsync: createPost } = useCreatePost();
   const { data: userData, refetch: refetchUser } = useGetUserInfo(userName);
@@ -48,7 +49,11 @@ function UserProfile() {
   };
 
   const handleAcceptRequest = async () => {
-    await acceptRequest({ sender: userName, receiver: userInfo.name });
+    const updatedUser = await acceptRequest({
+      sender: userName,
+      receiver: userInfo.name,
+    });
+    dispatch({ type: 'sign-in', payload: updatedUser });
     await refetchUser();
   };
 
