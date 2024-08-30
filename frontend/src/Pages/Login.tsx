@@ -18,8 +18,8 @@ export default function Login() {
     password: string;
   }) => {
     const res = await signin(data);
-    dispatch({ type: 'sign-in', payload: res });
-    localStorage.setItem('user-info', JSON.stringify(res));
+    dispatch({ type: 'sign-in', payload: res.user });
+    localStorage.setItem('user-token', res.token);
     navigate('/');
   };
 

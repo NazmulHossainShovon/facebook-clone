@@ -10,6 +10,7 @@ type Action = { type: 'sign-in'; payload: User } | { type: 'sign-out' };
 const reducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
     case 'sign-in':
+      localStorage.setItem('user-info', JSON.stringify(action.payload));
       return { ...state, userInfo: action.payload };
     case 'sign-out':
       return { ...state, userInfo: null };

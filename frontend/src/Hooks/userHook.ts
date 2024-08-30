@@ -24,10 +24,13 @@ export const useSigninMutation = () =>
       email: string;
       password: string;
     }) => {
-      const res = await apiClient.post<User>('api/users/signin', {
-        email,
-        password,
-      });
+      const res = await apiClient.post<{ user: User; token: string }>(
+        'api/users/signin',
+        {
+          email,
+          password,
+        }
+      );
       return res.data;
     },
   });
@@ -57,7 +60,7 @@ export const useSearchUsers = (query: string) =>
 export const useSendFriendRequest = () => {
   return useMutation({
     mutationFn: async ({ sender, receiver }) => {
-      const res = await apiClient.put('api/users/friendRequest', {
+      const res = await apiClient.put<User>('api/users/friendRequest', {
         sender,
         receiver,
       });

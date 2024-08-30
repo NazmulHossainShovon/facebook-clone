@@ -39,7 +39,11 @@ function UserProfile() {
   };
 
   const sendFriendRequest = async () => {
-    await sendRequest({ sender: userInfo.name, receiver: userName });
+    const updatedUser = await sendRequest({
+      sender: userInfo.name,
+      receiver: userName,
+    });
+    dispatch({ type: 'sign-in', payload: updatedUser });
     await refetchUser();
   };
 

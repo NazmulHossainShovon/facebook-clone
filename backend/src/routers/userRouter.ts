@@ -9,15 +9,15 @@ export const userRouter = express.Router();
 userRouter.post(
   "/signin",
   asyncHandler(async (req: Request, res: Response) => {
-    const user = await UserModel.findOne({ email: req.body.email });
+    const user = await UserModel.findOne({
+      email: req.body.email,
+    }).lean<User>();
     if (user) {
       if (bcrypt.compareSync(req.body.password, user.password)) {
+        const { password, ...userExceptPassword } = user;
         res.json({
-          name: user.name,
-          email: user.email,
-          image: user.image,
+          user: userExceptPassword,
           token: generateToken(user),
-          receivedFriendReqs: user.receivedFriendReqs,
         });
         return;
       }
@@ -89,12 +89,13 @@ userRouter.put(
       { name: req.body.receiver },
       { $push: { receivedFriendReqs: req.body.sender } }
     );
-    await UserModel.findOneAndUpdate(
+    const updatedUser = await UserModel.findOneAndUpdate(
       { name: req.body.sender },
-      { $push: { sentFriendReqs: req.body.receiver } }
-    );
+      { $push: { sentFriendReqs: req.body.receiver } },
+      { new: true }
+    ).select("-password");
 
-    res.json({ message: "Friend request sent" });
+    res.json(updatedUser);
   })
 );
 
@@ -106,12 +107,12 @@ userRouter.put(
       { name: req.body.receiver },
       { $pull: { receivedFriendReqs: req.body.sender } },
       { new: true }
-    );
+    ).select("-password");
     const updatedSender = await UserModel.findOneAndUpdate(
       { name: req.body.sender },
       { $pull: { sentFriendReqs: req.body.receiver } },
       { new: true }
-    );
+    ).select("-password");
 
     res.json({ receiver: updatedReceiver, sender: updatedSender });
   })
@@ -133,7 +134,7 @@ userRouter.put(
       { name: req.body.receiver },
       { $pull: { receivedFriendReqs: req.body.sender } },
       { new: true }
-    );
+    ).select("-password");
     await UserModel.findOneAndUpdate(
       { name: req.body.sender },
       { $pull: { sentFriendReqs: req.body.receiver } }
