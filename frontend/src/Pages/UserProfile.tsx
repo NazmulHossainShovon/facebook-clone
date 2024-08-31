@@ -83,7 +83,7 @@ function UserProfile() {
 
   return (
     <div className="flex flex-col gap-3 items-center align-middle bg-[#F0F2F5] h-screen">
-      <div className="flex flex-col gap-3 bg-white rounded-lg w-[30%] p-3 border border-gray-200 shadow">
+      <div className="flex flex-col gap-3 bg-white rounded-lg w-[90%] md:w-[30%] p-3 border border-gray-200 shadow">
         <Avatar
           src={`https://nazmul.sirv.com/facebook/${userName}.png`}
           className=" w-32 h-32"

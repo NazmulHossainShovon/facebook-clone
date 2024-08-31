@@ -86,7 +86,7 @@ export default function PostCard({
   };
 
   return (
-    <div className="flex flex-col gap-3 bg-white rounded-lg w-[30%] p-3 border border-gray-200 shadow">
+    <div className="flex flex-col gap-3 bg-white rounded-lg w-[90%] md:w-[30%] p-3 border border-gray-200 shadow">
       <div className="flex flex-row justify-between">
         <div className="flex flex-row gap-3">
           <Avatar
