@@ -10,7 +10,7 @@ export default function Search() {
     return <h2>Loading</h2>;
   } else {
     return (
-      <Card className="flex flex-col gap-2 w-1/3 p-5 mx-auto">
+      <Card className="flex flex-col gap-2 w-[90%] md:w-1/3 p-5 mx-auto">
         <h2>Search Results</h2>
         {data?.map((person, index) => {
           return (
