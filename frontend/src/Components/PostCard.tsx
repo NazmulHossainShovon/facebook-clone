@@ -1,10 +1,11 @@
 import { MoreHoriz } from '@mui/icons-material';
 import { Avatar, Box, Button, Menu, MenuItem, Modal } from '@mui/material';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { useDeletePost, useLikePost, useUnlikePost } from '../Hooks/postHooks';
 import { Store } from '../Store';
 import { modalStyle } from '../Constants/constants';
 import { Link } from 'react-router-dom';
+import EditPostModal from './EditPostModal';
 
 type PostCardProps = {
   id: string;
@@ -58,6 +59,11 @@ export default function PostCard({
   const { mutateAsync: unlikePost } = useUnlikePost();
   const [modalOpen, setModalOpen] = useState(false);
   const open = Boolean(anchorEl);
+  const editModalRef = useRef();
+
+  const openEditModal = () => {
+    editModalRef.current.handleModalOpen();
+  };
 
   const handleModalOpen = () => setModalOpen(true);
   const handleModalClose = () => setModalOpen(false);
@@ -119,9 +125,11 @@ export default function PostCard({
             }}
           >
             {isLoggedInUser && (
-              <MenuItem onClick={handleDelete}>Delete Post</MenuItem>
+              <>
+                <MenuItem onClick={handleDelete}>Delete Post</MenuItem>
+                <MenuItem onClick={openEditModal}>Edit</MenuItem>
+              </>
             )}
-            <MenuItem>Share</MenuItem>
           </Menu>
         </div>
       </div>
@@ -172,6 +180,7 @@ export default function PostCard({
             ))}
           </Box>
         </Modal>
+        <EditPostModal ref={editModalRef} />
       </div>
     </div>
   );
