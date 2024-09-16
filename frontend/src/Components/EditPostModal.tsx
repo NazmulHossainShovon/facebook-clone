@@ -1,8 +1,10 @@
-import { Box, Modal } from '@mui/material';
+import { Box, Button, Modal, TextField } from '@mui/material';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { modalStyle } from '../Constants/constants';
 
 const EditPostModal = forwardRef((props, ref) => {
+  const { post } = props;
+
   const [modalOpen, setModalOpen] = useState(false);
 
   useImperativeHandle(ref, () => ({
@@ -27,7 +29,13 @@ const EditPostModal = forwardRef((props, ref) => {
         }}
       >
         {' '}
-        <p>edit post</p>{' '}
+        <TextField
+          onChange={e => console.log(e.target.value)}
+          label="Create Post"
+          defaultValue={post}
+          multiline
+        />
+        <Button>Post</Button>
       </Box>
     </Modal>
   );
