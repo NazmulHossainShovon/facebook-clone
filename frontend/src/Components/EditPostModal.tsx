@@ -1,17 +1,25 @@
 import { Box, Button, Modal, TextField } from '@mui/material';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { modalStyle } from '../Constants/constants';
+import { useUpdatePost } from '../Hooks/postHooks';
 
 const EditPostModal = forwardRef((props, ref) => {
-  const { post } = props;
+  const { post, id } = props;
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [updatedPost, setUpdatedPost] = useState(post);
+  const { mutateAsync: updatePost } = useUpdatePost();
 
   useImperativeHandle(ref, () => ({
     handleModalOpen: () => setModalOpen(true),
   }));
 
   const handleModalClose = () => setModalOpen(false);
+
+  const handleUpdatePost = async () => {
+    await updatePost({ post: updatedPost, id: id });
+    handleModalClose();
+  };
 
   return (
     <Modal
@@ -30,12 +38,12 @@ const EditPostModal = forwardRef((props, ref) => {
       >
         {' '}
         <TextField
-          onChange={e => console.log(e.target.value)}
-          label="Create Post"
+          onChange={e => setUpdatedPost(e.target.value)}
+          label="Update Post"
           defaultValue={post}
           multiline
         />
-        <Button>Post</Button>
+        <Button onClick={handleUpdatePost}>Update</Button>
       </Box>
     </Modal>
   );

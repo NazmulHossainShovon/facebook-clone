@@ -180,7 +180,7 @@ export default function PostCard({
             ))}
           </Box>
         </Modal>
-        <EditPostModal post={text} ref={editModalRef} />
+        <EditPostModal id={id} post={text} ref={editModalRef} />
       </div>
     </div>
   );

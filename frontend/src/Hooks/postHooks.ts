@@ -58,10 +58,23 @@ const useUnlikePost = () => {
   });
 };
 
+const useUpdatePost = () => {
+  return useMutation({
+    mutationFn: async ({ id, post }: { id: string; post: string }) => {
+      const res = await apiClient.put('/api/posts/update', {
+        id,
+        post,
+      });
+      return res.data;
+    },
+  });
+};
+
 export {
   useCreatePost,
   useGetPosts,
   useDeletePost,
   useLikePost,
   useUnlikePost,
+  useUpdatePost,
 };

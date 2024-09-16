@@ -63,3 +63,19 @@ postRouter.put(
     res.json({ message: "unliked" });
   })
 );
+
+postRouter.put(
+  "/update",
+  isAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const updatedPost = await PostModel.findByIdAndUpdate(
+      req.body.id,
+      {
+        $set: { post: req.body.post },
+      },
+      { new: true }
+    );
+
+    res.json({ message: "updated", doc: updatedPost });
+  })
+);
