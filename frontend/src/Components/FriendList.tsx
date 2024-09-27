@@ -1,26 +1,27 @@
-import { Avatar, Menu, MenuItem } from '@mui/material';
-import { Store } from '../Store';
+import { Avatar, Button, Menu, MenuItem } from '@mui/material';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import { useContext, useState } from 'react';
+import { Store } from '../Store';
 
-export default function FriendReqsMenu() {
+export default function FriendList() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
   const {
     state: { userInfo },
   } = useContext(Store);
-  const open = Boolean(anchorEl);
-
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
   };
 
   return (
     <div>
-      <PeopleAltIcon className="cursor-pointer" onClick={handleClick} />
+      <Button onClick={handleClick} className=" text-right" variant="contained">
+        Friends
+      </Button>
       <Menu
         id="basic-menu"
         anchorEl={anchorEl}
@@ -29,13 +30,12 @@ export default function FriendReqsMenu() {
         MenuListProps={{
           'aria-labelledby': 'basic-button',
         }}
-        className="p-2"
       >
-        <MenuItem disabled>Friend Requests</MenuItem>
-        {userInfo.receivedFriendReqs?.map(user => (
+        <MenuItem disabled>Friend List</MenuItem>
+        {userInfo.friends?.map(user => (
           <MenuItem
             onClick={handleClose}
-            className="flex flex-row gap-2"
+            className="flex  flex-row gap-2"
             key={user}
           >
             <Link to={`/${user}`}>
@@ -44,9 +44,6 @@ export default function FriendReqsMenu() {
             </Link>
           </MenuItem>
         ))}
-        {userInfo.receivedFriendReqs?.length === 0 && (
-          <MenuItem disabled>No Friend Requests</MenuItem>
-        )}
       </Menu>
     </div>
   );

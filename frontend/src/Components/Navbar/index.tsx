@@ -7,6 +7,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 import FriendReqsMenu from '../FriendReqsMenu';
 import { Box, Button, Drawer } from '@mui/material';
+import FriendList from '../FriendList';
 
 function Navbar() {
   const {
@@ -41,7 +42,7 @@ function Navbar() {
             />
           </div>
           <FriendReqsMenu />
-
+          <FriendList />
           <MenuIcon className="block md:hidden" onClick={toggleDrawer(true)} />
           <Drawer open={open} onClose={toggleDrawer(false)}>
             <Box
