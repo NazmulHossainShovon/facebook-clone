@@ -15,6 +15,7 @@ type PostCardProps = {
   isLoggedInUser: boolean;
   refetch: () => void;
   likers: string[];
+  onPostUpdate?: (updatedPost: Post) => void;
 };
 
 function convertDateFormat(dateString) {
@@ -49,6 +50,7 @@ export default function PostCard({
   refetch,
   isLoggedInUser,
   likers,
+  onPostUpdate,
 }: PostCardProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const {
@@ -137,14 +139,14 @@ export default function PostCard({
       <p>{text}</p>
       <div className="flex flex-row justify-center gap-3 w-full">
         <Button onClick={handleLike} variant="outlined">
-          {likers.includes(userInfo.name) ? 'Unlike' : 'Like'}
+          {likers?.includes(userInfo.name) ? 'Unlike' : 'Like'}
         </Button>
         <button
           onClick={handleModalOpen}
           className=" hover:underline hover:cursor-pointer"
         >
           {' '}
-          {likers.length} people{' '}
+          {likers?.length} people{' '}
         </button>
         <Modal
           open={modalOpen}
@@ -160,7 +162,7 @@ export default function PostCard({
               ...modalStyle,
             }}
           >
-            {likers.map(liker => (
+            {likers?.map(liker => (
               <Box
                 key={liker}
                 sx={{ display: 'flex', gap: '10px', flexDirection: 'row' }}
@@ -180,7 +182,12 @@ export default function PostCard({
             ))}
           </Box>
         </Modal>
-        <EditPostModal id={id} post={text} ref={editModalRef} />
+        <EditPostModal
+          onPostUpdate={onPostUpdate}
+          id={id}
+          post={text}
+          ref={editModalRef}
+        />
       </div>
     </div>
   );

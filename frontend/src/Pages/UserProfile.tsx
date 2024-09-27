@@ -12,6 +12,7 @@ import {
 import { Store } from '../Store';
 import FriendOptionsMenu from '../Components/FriendOptionsMenu';
 import { modalStyle } from '../Constants/constants';
+import { Post } from '../Types/types';
 
 function UserProfile() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ function UserProfile() {
   const { mutateAsync: sendRequest } = useSendFriendRequest();
   const { mutateAsync: cancelRequest } = useCancelFriendRequest();
   const { mutateAsync: acceptRequest } = useAcceptFriendRequest();
+  const [allPosts, setAllPosts] = useState<Post[]>([]);
   const isLoggedInUser = userInfo.name === userName;
 
   const handlePost = async () => {
@@ -74,12 +76,24 @@ function UserProfile() {
     await refetchUser();
   };
 
+  const handlePostUpdate = (updatedPost: Post) => {
+    setAllPosts(prevPosts =>
+      prevPosts.map(post => (post._id === updatedPost._id ? updatedPost : post))
+    );
+  };
+
   useEffect(() => {
     const userJson = localStorage.getItem('user-info');
     if (!userJson) {
       navigate('/signup');
     }
   }, [navigate]);
+
+  useEffect(() => {
+    if (data) {
+      setAllPosts(data);
+    }
+  }, [data]);
 
   return (
     <div className="flex flex-col gap-3 items-center align-middle bg-[#F0F2F5] h-screen">
@@ -127,7 +141,7 @@ function UserProfile() {
         </Button>
       )}
 
-      {data?.map((post, index) => (
+      {allPosts.map((post, index) => (
         <PostCard
           key={index}
           text={post.post}
@@ -137,6 +151,7 @@ function UserProfile() {
           refetch={refetch}
           likers={post.likers}
           isLoggedInUser={isLoggedInUser}
+          onPostUpdate={handlePostUpdate}
         />
       ))}
     </div>

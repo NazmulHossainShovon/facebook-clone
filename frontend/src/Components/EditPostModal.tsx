@@ -4,7 +4,7 @@ import { modalStyle } from '../Constants/constants';
 import { useUpdatePost } from '../Hooks/postHooks';
 
 const EditPostModal = forwardRef((props, ref) => {
-  const { post, id } = props;
+  const { post, id, onPostUpdate } = props;
 
   const [modalOpen, setModalOpen] = useState(false);
   const [updatedPost, setUpdatedPost] = useState(post);
@@ -17,7 +17,8 @@ const EditPostModal = forwardRef((props, ref) => {
   const handleModalClose = () => setModalOpen(false);
 
   const handleUpdatePost = async () => {
-    await updatePost({ post: updatedPost, id: id });
+    const result = await updatePost({ post: updatedPost, id: id });
+    onPostUpdate(result.doc);
     handleModalClose();
   };
 
