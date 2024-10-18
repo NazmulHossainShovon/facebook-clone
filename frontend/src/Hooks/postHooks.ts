@@ -25,6 +25,15 @@ const useGetPosts = (userName: string) => {
   });
 };
 
+const useGetFriendPosts = () =>
+  useQuery({
+    queryKey: ['friendsPosts'],
+    queryFn: async () => {
+      const res = await apiClient.get<Post[]>('/api/posts/friends');
+      return res.data;
+    },
+  });
+
 const useDeletePost = () => {
   return useMutation({
     mutationFn: async ({ id }: { id: string }) => {
@@ -80,4 +89,5 @@ export {
   useLikePost,
   useUnlikePost,
   useUpdatePost,
+  useGetFriendPosts,
 };

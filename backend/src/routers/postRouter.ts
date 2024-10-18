@@ -15,6 +15,18 @@ postRouter.get(
   })
 );
 
+postRouter.get(
+  "/friends",
+  isAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const currentUser = await UserModel.findById(req.user._id);
+    const friendsPosts = await PostModel.find({
+      authorName: { $in: currentUser.friends },
+    }).sort({ createdAt: -1 });
+    res.json(friendsPosts);
+  })
+);
+
 postRouter.post(
   "/create",
   isAuth,

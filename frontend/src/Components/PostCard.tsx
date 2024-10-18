@@ -13,7 +13,7 @@ type PostCardProps = {
   authorName: string;
   createdAt: string;
   isLoggedInUser: boolean;
-  refetch: () => void;
+  refetch?: () => void;
   likers: string[];
   onPostUpdate?: (updatedPost: Post) => void;
 };
