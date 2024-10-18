@@ -16,6 +16,7 @@ export default function FriendOptionsMenu({
   const open = Boolean(anchorEl);
   const {
     state: { userInfo },
+    dispatch,
   } = useContext(Store);
   const { mutateAsync: unfriend } = useUnfriend();
 
@@ -27,7 +28,8 @@ export default function FriendOptionsMenu({
   };
 
   const handleUnfriend = async () => {
-    await unfriend({ user1: userInfo.name, user2: tempUser });
+    const res = await unfriend({ user1: userInfo.name, user2: tempUser });
+    dispatch({ type: 'sign-in', payload: res.currentUser });
     await refetch();
   };
 

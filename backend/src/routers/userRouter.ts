@@ -148,15 +148,16 @@ userRouter.put(
   "/unfriend",
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
-    await UserModel.findOneAndUpdate(
+    const updatedUser = await UserModel.findOneAndUpdate(
       { name: req.body.user1 },
-      { $pull: { friends: req.body.user2 } }
-    );
+      { $pull: { friends: req.body.user2 } },
+      { new: true }
+    ).select("-password");
     await UserModel.findOneAndUpdate(
       { name: req.body.user2 },
       { $pull: { friends: req.body.user1 } }
     );
 
-    res.json({ message: "successfully unfriend" });
+    res.json({ message: "successfully unfriend", currentUser: updatedUser });
   })
 );
