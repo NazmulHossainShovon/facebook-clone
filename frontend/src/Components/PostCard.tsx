@@ -97,10 +97,13 @@ export default function PostCard({
     <div className="flex flex-col gap-3 bg-white rounded-lg w-[90%] md:w-[30%] p-3 border border-gray-200 shadow">
       <div className="flex flex-row justify-between">
         <div className="flex flex-row gap-3">
-          <Avatar
-            className="mt-1"
-            src={`https://nazmul.sirv.com/facebook/${authorName}.png`}
-          />
+          <Link to={`/${authorName}`}>
+            <Avatar
+              className="mt-1"
+              src={`https://nazmul.sirv.com/facebook/${authorName}.png`}
+            />
+          </Link>
+
           <div>
             <p className="font-bold">{authorName}</p>
             <p className=" text-xs">{convertDateFormat(createdAt)}</p>
