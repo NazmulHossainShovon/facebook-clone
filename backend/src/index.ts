@@ -5,6 +5,8 @@ import mongoose from "mongoose";
 import { userRouter } from "./routers/userRouter";
 import { postRouter } from "./routers/postRouter";
 import { searchRouter } from "./routers/searchRouter";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 dotenv.config();
 
@@ -20,6 +22,13 @@ mongoose
   });
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
 app.use(
   cors({
     credentials: true,
@@ -36,6 +45,14 @@ app.use("/api/search", searchRouter);
 
 const PORT: number = parseInt((process.env.PORT || "4000") as string, 10);
 
-app.listen(PORT, () => {
+io.on("connection", (socket) => {
+  console.log("a user connected");
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
+});
+
+httpServer.listen(PORT, () => {
   console.log(`server started at http://localhost:${PORT}`);
 });

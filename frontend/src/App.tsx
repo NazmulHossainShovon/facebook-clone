@@ -8,6 +8,9 @@ import { Store } from './Store';
 import Home from './Pages/Home';
 import Search from './Pages/Search';
 import ProtectedRoute from './Components/ProtectedRoute';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:4000');
 
 const App: React.FC = () => {
   const { dispatch } = useContext(Store);
