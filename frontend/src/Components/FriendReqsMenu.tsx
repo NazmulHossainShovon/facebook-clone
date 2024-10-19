@@ -1,4 +1,4 @@
-import { Avatar, Menu, MenuItem } from '@mui/material';
+import { Avatar, Badge, Menu, MenuItem } from '@mui/material';
 import { Store } from '../Store';
 import { Link } from 'react-router-dom';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
@@ -20,7 +20,10 @@ export default function FriendReqsMenu() {
 
   return (
     <div>
-      <PeopleAltIcon className="cursor-pointer" onClick={handleClick} />
+      <Badge badgeContent={userInfo.receivedFriendReqs?.length} color="error">
+        <PeopleAltIcon className="cursor-pointer" onClick={handleClick} />
+      </Badge>
+
       <Menu
         id="basic-menu"
         anchorEl={anchorEl}
