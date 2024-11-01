@@ -35,4 +35,4 @@ function StoreProvider(props: PropsWithChildren) {
   return <Store.Provider value={{ state, dispatch }} {...props} />;
 }
 
-export { Store, StoreProvider };
+export { Store, StoreProvider, socket };

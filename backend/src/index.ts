@@ -10,7 +10,7 @@ import { Server } from "socket.io";
 
 dotenv.config();
 
-const userSocketMap = new Map<string, string>();
+export const userSocketMap = new Map<string, string>();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 mongoose.set("strictQuery", true);
@@ -25,7 +25,7 @@ mongoose
 
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
+export const io = new Server(httpServer, {
   cors: {
     origin: "http://localhost:5173",
     methods: ["GET", "POST"],
@@ -52,9 +52,7 @@ io.on("connection", (socket) => {
     userSocketMap.set(userName, socket.id);
   });
 
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-  });
+  socket.on("disconnect", () => {});
 });
 
 httpServer.listen(PORT, () => {

@@ -1,8 +1,8 @@
 import { Avatar, Badge, Menu, MenuItem } from '@mui/material';
-import { Store } from '../Store';
+import { socket, Store } from '../Store';
 import { Link } from 'react-router-dom';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 export default function FriendReqsMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -17,6 +17,16 @@ export default function FriendReqsMenu() {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  useEffect(() => {
+    socket.on('friendRequest', data => {
+      console.log(data);
+    });
+
+    return () => {
+      socket.off('friendRequest');
+    };
+  }, []);
 
   return (
     <div>

@@ -3,6 +3,7 @@ import asyncHandler from "express-async-handler";
 import bcrypt from "bcryptjs";
 import { User, UserModel } from "../models/userModel";
 import { generateToken, isAuth } from "../utils";
+import { io, userSocketMap } from "..";
 
 export const userRouter = express.Router();
 // POST /api/users/signin
@@ -94,6 +95,11 @@ userRouter.put(
       { $push: { sentFriendReqs: req.body.receiver } },
       { new: true }
     ).select("-password");
+
+    const receiverSocketId = userSocketMap.get(req.body.receiver);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("friendRequest", { from: req.body.sender });
+    }
 
     res.json(updatedUser);
   })
