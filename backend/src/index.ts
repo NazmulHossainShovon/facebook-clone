@@ -10,6 +10,8 @@ import { Server } from "socket.io";
 
 dotenv.config();
 
+const userSocketMap = new Map<string, string>();
+
 const MONGODB_URI = process.env.MONGODB_URI;
 mongoose.set("strictQuery", true);
 mongoose
@@ -46,7 +48,9 @@ app.use("/api/search", searchRouter);
 const PORT: number = parseInt((process.env.PORT || "4000") as string, 10);
 
 io.on("connection", (socket) => {
-  console.log("a user connected");
+  socket.on("storeUser", (userName: string) => {
+    userSocketMap.set(userName, socket.id);
+  });
 
   socket.on("disconnect", () => {
     console.log("user disconnected");
