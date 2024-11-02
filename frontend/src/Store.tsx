@@ -8,7 +8,10 @@ const initialState: AppState = {
 
 const socket = io('http://localhost:4000');
 
-type Action = { type: 'sign-in'; payload: User } | { type: 'sign-out' };
+type Action =
+  | { type: 'sign-in'; payload: User }
+  | { type: 'sign-out' }
+  | { type: 'new-friend-req'; payload: string };
 
 const reducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
@@ -18,6 +21,17 @@ const reducer = (state: AppState, action: Action): AppState => {
       return { ...state, userInfo: action.payload };
     case 'sign-out':
       return { ...state, userInfo: null };
+    case 'new-friend-req':
+      return {
+        ...state,
+        userInfo: {
+          ...state.userInfo,
+          receivedFriendReqs: [
+            ...state.userInfo.receivedFriendReqs,
+            action.payload,
+          ],
+        },
+      };
     default:
       return state;
   }

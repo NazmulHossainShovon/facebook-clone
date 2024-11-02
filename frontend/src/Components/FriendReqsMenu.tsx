@@ -8,6 +8,7 @@ export default function FriendReqsMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const {
     state: { userInfo },
+    dispatch,
   } = useContext(Store);
   const open = Boolean(anchorEl);
 
@@ -20,7 +21,7 @@ export default function FriendReqsMenu() {
 
   useEffect(() => {
     socket.on('friendRequest', data => {
-      console.log(data);
+      dispatch({ type: 'new-friend-req', payload: data.from });
     });
 
     return () => {
