@@ -1,4 +1,4 @@
-import { Avatar, Badge, Menu, MenuItem } from '@mui/material';
+import { Avatar, Badge, Menu, MenuItem, Snackbar } from '@mui/material';
 import { socket, Store } from '../Store';
 import { Link } from 'react-router-dom';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
@@ -6,6 +6,8 @@ import { useContext, useEffect, useState } from 'react';
 
 export default function FriendReqsMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
   const {
     state: { userInfo },
     dispatch,
@@ -19,9 +21,14 @@ export default function FriendReqsMenu() {
     setAnchorEl(null);
   };
 
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
+
   useEffect(() => {
     socket.on('friendRequest', data => {
       dispatch({ type: 'new-friend-req', payload: data.from });
+      setOpenSnackbar(true);
     });
 
     return () => {
@@ -62,6 +69,13 @@ export default function FriendReqsMenu() {
           <MenuItem disabled>No Friend Requests</MenuItem>
         )}
       </Menu>
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        message="Note archived"
+        onClose={handleCloseSnackbar}
+      />
     </div>
   );
 }
