@@ -73,7 +73,7 @@ export default function FriendReqsMenu() {
       <Snackbar
         open={openSnackbar}
         autoHideDuration={3000}
-        message="Note archived"
+        message="You have a new friend request"
         onClose={handleCloseSnackbar}
       />
     </div>
