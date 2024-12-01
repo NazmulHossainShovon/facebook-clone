@@ -1,4 +1,4 @@
-import { PropsWithChildren, createContext, useReducer } from 'react';
+import { PropsWithChildren, createContext, useEffect, useReducer } from 'react';
 import { AppState, User } from './Types/types';
 import { io } from 'socket.io-client';
 
@@ -16,8 +16,8 @@ type Action =
 const reducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
     case 'sign-in':
-      socket.emit('storeUser', action.payload.name);
       localStorage.setItem('user-info', JSON.stringify(action.payload));
+      socket.emit('storeUser', action.payload.name);
       return { ...state, userInfo: action.payload };
     case 'sign-out':
       return { ...state, userInfo: null };
@@ -46,6 +46,13 @@ const Store = createContext({
 
 function StoreProvider(props: PropsWithChildren) {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  useEffect(() => {
+    if (state.userInfo) {
+      localStorage.setItem('user-info', JSON.stringify(state.userInfo));
+    }
+  }, [state]);
+
   return <Store.Provider value={{ state, dispatch }} {...props} />;
 }
 
