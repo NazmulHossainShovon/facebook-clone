@@ -8,7 +8,7 @@ import {
   Modal,
   TextField,
 } from '@mui/material';
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   useCommentPost,
   useDeletePost,
@@ -20,6 +20,7 @@ import { modalStyle } from '../Constants/constants';
 import { Link } from 'react-router-dom';
 import EditPostModal from './EditPostModal';
 import CommentIcon from '@mui/icons-material/Comment';
+import { CommentType } from '../Types/types';
 
 type PostCardProps = {
   id: string;
@@ -29,6 +30,7 @@ type PostCardProps = {
   isLoggedInUser: boolean;
   refetch?: () => void;
   likers: string[];
+  comments: CommentType[];
   onPostUpdate?: (updatedPost: Post) => void;
 };
 
@@ -65,6 +67,7 @@ export default function PostCard({
   isLoggedInUser,
   likers,
   onPostUpdate,
+  comments,
 }: PostCardProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const {
@@ -77,6 +80,7 @@ export default function PostCard({
   const [modalOpen, setModalOpen] = useState(false);
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [comment, setComment] = useState('');
+  const [allComments, setAllComments] = useState<CommentType[]>([]);
   const open = Boolean(anchorEl);
   const editModalRef = useRef();
 
@@ -113,8 +117,20 @@ export default function PostCard({
   };
 
   const handleComment = async () => {
-    await commentPost({ userName: userInfo.name, postId: id, comment });
+    const updatedPost = await commentPost({
+      userName: userInfo.name,
+      postId: id,
+      comment,
+    });
+
+    setAllComments(updatedPost.comments);
+
+    setComment('');
   };
+
+  useEffect(() => {
+    setAllComments(comments);
+  }, [comments]);
 
   return (
     <div className="flex flex-col gap-3 bg-white rounded-lg w-[90%] md:w-[30%] p-3 border border-gray-200 shadow">
@@ -230,6 +246,18 @@ export default function PostCard({
                 label="write a comment"
               />
               <Button onClick={handleComment}>Comment</Button>
+            </div>
+
+            <div>
+              {allComments?.map((comment, index) => (
+                <div key={index} className="flex flex-row gap-3 pl-4">
+                  <Avatar
+                    className="mt-1"
+                    src={`https://nazmul.sirv.com/facebook/${comment.userName}.png`}
+                  />
+                  <p>{comment.comment}</p>
+                </div>
+              ))}
             </div>
           </Box>
         </Modal>

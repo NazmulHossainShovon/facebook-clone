@@ -152,6 +152,7 @@ function UserProfile() {
           likers={post.likers}
           isLoggedInUser={isLoggedInUser}
           onPostUpdate={handlePostUpdate}
+          comments={post.comments}
         />
       ))}
     </div>

@@ -24,6 +24,12 @@ type AppState = {
   searchQuery: string;
 };
 
+type CommentType = {
+  comment: string;
+  userName: string;
+  createdAt: string;
+};
+
 type Post = {
   post: string;
   authorName: string;
@@ -33,6 +39,7 @@ type Post = {
   userId: string;
   likers: string[];
   _id: string;
+  comments: CommentType[];
 };
 
-export { User, AppState, SignupData, Post, People };
+export { User, AppState, SignupData, Post, People, CommentType };

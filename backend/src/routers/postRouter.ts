@@ -92,7 +92,7 @@ postRouter.put(
       { new: true } // To return the updated document
     );
 
-    res.json("new comment added");
+    res.json(updatedPost);
   })
 );
 
