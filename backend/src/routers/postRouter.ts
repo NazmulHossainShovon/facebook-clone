@@ -80,15 +80,19 @@ postRouter.put(
   "/comment",
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
-    console.log(req.body.userName);
+    const newComment = {
+      userName: req.body.userName,
+      comment: req.body.comment,
+      createdAt: new Date(),
+    };
 
-    // const updatedPost = await PostModel.findOneAndUpdate(
-    //   { _id: req.body.postId },
-    //   { $push: { comments: req.body.comment } },
-    //   { new: true } // To return the updated document
-    // );
+    const updatedPost = await PostModel.findOneAndUpdate(
+      { _id: req.body.postId },
+      { $push: { comments: newComment } },
+      { new: true } // To return the updated document
+    );
 
-    // res.json(updatedPost);
+    res.json("new comment added");
   })
 );
 

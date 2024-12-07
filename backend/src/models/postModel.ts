@@ -14,6 +14,20 @@ export class Post {
 
   @prop({ required: true })
   likers: string[];
+
+  @prop({ type: () => [Comment], default: [] })
+  comments: Comment[];
+}
+
+class Comment {
+  @prop({ required: true })
+  userName: string;
+
+  @prop({ required: true })
+  comment: string;
+
+  @prop({ default: Date.now() })
+  createdAt: Date;
 }
 
 export const PostModel = getModelForClass(Post);
