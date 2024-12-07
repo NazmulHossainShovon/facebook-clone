@@ -6,6 +6,7 @@ import { Store } from '../Store';
 import { modalStyle } from '../Constants/constants';
 import { Link } from 'react-router-dom';
 import EditPostModal from './EditPostModal';
+import CommentIcon from '@mui/icons-material/Comment';
 
 type PostCardProps = {
   id: string;
@@ -60,6 +61,7 @@ export default function PostCard({
   const { mutateAsync: likePost } = useLikePost();
   const { mutateAsync: unlikePost } = useUnlikePost();
   const [modalOpen, setModalOpen] = useState(false);
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
   const open = Boolean(anchorEl);
   const editModalRef = useRef();
 
@@ -69,6 +71,8 @@ export default function PostCard({
 
   const handleModalOpen = () => setModalOpen(true);
   const handleModalClose = () => setModalOpen(false);
+  const handleCommentModalOpen = () => setCommentModalOpen(true);
+  const handleCommentModalClose = () => setCommentModalOpen(false);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -140,7 +144,7 @@ export default function PostCard({
       </div>
 
       <p>{text}</p>
-      <div className="flex flex-row justify-center gap-3 w-full">
+      <div className="flex flex-row justify-center items-center gap-3 w-full">
         <Button onClick={handleLike} variant="outlined">
           {likers?.includes(userInfo.name) ? 'Unlike' : 'Like'}
         </Button>
@@ -183,6 +187,27 @@ export default function PostCard({
                 </Link>
               </Box>
             ))}
+          </Box>
+        </Modal>
+        <CommentIcon
+          className="cursor-pointer"
+          onClick={handleCommentModalOpen}
+        />
+        <Modal
+          open={commentModalOpen}
+          onClose={handleCommentModalClose}
+          aria-labelledby="comment-modal"
+          aria-describedby="modal-modal-description"
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              gap: '20px',
+              flexDirection: 'column',
+              ...modalStyle,
+            }}
+          >
+            comments
           </Box>
         </Modal>
         <EditPostModal
