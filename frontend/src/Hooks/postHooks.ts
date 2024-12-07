@@ -67,6 +67,19 @@ const useUnlikePost = () => {
   });
 };
 
+const useCommentPost = () => {
+  return useMutation({
+    mutationFn: async ({ userName, postId, comment }) => {
+      const res = await apiClient.put<Post>('/api/posts/comment', {
+        userName,
+        postId,
+        comment,
+      });
+      return res.data;
+    },
+  });
+};
+
 const useUpdatePost = () => {
   return useMutation({
     mutationFn: async ({ id, post }: { id: string; post: string }) => {
@@ -90,4 +103,5 @@ export {
   useUnlikePost,
   useUpdatePost,
   useGetFriendPosts,
+  useCommentPost,
 };

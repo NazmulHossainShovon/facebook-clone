@@ -1,7 +1,20 @@
 import { MoreHoriz } from '@mui/icons-material';
-import { Avatar, Box, Button, Menu, MenuItem, Modal } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Button,
+  Menu,
+  MenuItem,
+  Modal,
+  TextField,
+} from '@mui/material';
 import React, { useContext, useRef, useState } from 'react';
-import { useDeletePost, useLikePost, useUnlikePost } from '../Hooks/postHooks';
+import {
+  useCommentPost,
+  useDeletePost,
+  useLikePost,
+  useUnlikePost,
+} from '../Hooks/postHooks';
 import { Store } from '../Store';
 import { modalStyle } from '../Constants/constants';
 import { Link } from 'react-router-dom';
@@ -60,8 +73,10 @@ export default function PostCard({
   const { mutateAsync: deletePost } = useDeletePost();
   const { mutateAsync: likePost } = useLikePost();
   const { mutateAsync: unlikePost } = useUnlikePost();
+  const { mutateAsync: commentPost } = useCommentPost();
   const [modalOpen, setModalOpen] = useState(false);
   const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const [comment, setComment] = useState('');
   const open = Boolean(anchorEl);
   const editModalRef = useRef();
 
@@ -95,6 +110,10 @@ export default function PostCard({
     }
 
     await refetch();
+  };
+
+  const handleComment = async () => {
+    await commentPost({ userName: userInfo.name, postId: id, comment });
   };
 
   return (
@@ -201,13 +220,17 @@ export default function PostCard({
         >
           <Box
             sx={{
-              display: 'flex',
-              gap: '20px',
-              flexDirection: 'column',
               ...modalStyle,
             }}
           >
-            comments
+            <div className="flex flex-row gap-3 pl-4">
+              <TextField
+                onChange={e => setComment(e.target.value)}
+                value={comment}
+                label="write a comment"
+              />
+              <Button onClick={handleComment}>Comment</Button>
+            </div>
           </Box>
         </Modal>
         <EditPostModal
