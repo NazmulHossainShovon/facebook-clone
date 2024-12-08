@@ -3,7 +3,7 @@ import { useGetFriendPosts } from '../Hooks/postHooks';
 import PostCard from '../Components/PostCard';
 
 export default function Home() {
-  const { data } = useGetFriendPosts();
+  const { data, refetch } = useGetFriendPosts();
 
   return (
     <div className=" flex flex-col gap-4 items-center">
@@ -18,6 +18,7 @@ export default function Home() {
           likers={post.likers}
           isLoggedInUser={false}
           comments={post.comments}
+          refetch={refetch}
         />
       ))}
     </div>

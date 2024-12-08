@@ -1,5 +1,5 @@
 import { MoreHoriz } from '@mui/icons-material';
-import { Box, Button, Menu, MenuItem, Modal, TextField } from '@mui/material';
+import { Box, Modal, TextField } from '@mui/material';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   useCommentPost,
@@ -14,6 +14,16 @@ import EditPostModal from './EditPostModal';
 import CommentIcon from '@mui/icons-material/Comment';
 import { CommentType } from '../Types/types';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Button } from './ui/button';
+import { twMerge } from 'tailwind-merge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
+import MenuDotsIcon from '@/icons/MenuDotsIcon';
 
 type PostCardProps = {
   id: string;
@@ -146,37 +156,36 @@ export default function PostCard({
         </div>
         {/* options button and menu */}
         <div>
-          <Button
-            id="basic-button"
-            aria-controls={open ? 'basic-menu' : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? 'true' : undefined}
-            onClick={handleClick}
-          >
-            <MoreHoriz />
-          </Button>
-          <Menu
-            id="basic-menu"
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            MenuListProps={{
-              'aria-labelledby': 'basic-button',
-            }}
-          >
-            {isLoggedInUser && (
-              <>
-                <MenuItem onClick={handleDelete}>Delete Post</MenuItem>
-                <MenuItem onClick={openEditModal}>Edit</MenuItem>
-              </>
-            )}
-          </Menu>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <MenuDotsIcon />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {isLoggedInUser && (
+                <>
+                  <DropdownMenuItem onClick={handleDelete}>
+                    Delete Post
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={openEditModal}>
+                    Edit
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
       <p>{text}</p>
       <div className="flex flex-row justify-center items-center gap-3 w-full">
-        <Button onClick={handleLike} variant="outlined">
+        <Button
+          className={twMerge(
+            'bg-white text-slate-400 hover:bg-slate-100',
+            likers?.includes(userInfo.name) && 'text-blue-600'
+          )}
+          onClick={handleLike}
+        >
           {likers?.includes(userInfo.name) ? 'Unlike' : 'Like'}
         </Button>
         <button
