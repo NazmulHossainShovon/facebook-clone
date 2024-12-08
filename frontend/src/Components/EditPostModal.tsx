@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useUpdatePost } from '../Hooks/postHooks';
-import { Dialog, DialogContent, DialogTrigger } from './ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogTrigger } from './ui/dialog';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 
@@ -26,7 +26,9 @@ const EditPostModal = props => {
             label="Update Post"
             defaultValue={post}
           />
-          <Button onClick={handleUpdatePost}>Update</Button>
+          <DialogClose asChild>
+            <Button onClick={handleUpdatePost}>Update</Button>
+          </DialogClose>
         </div>
       </DialogContent>
     </Dialog>
