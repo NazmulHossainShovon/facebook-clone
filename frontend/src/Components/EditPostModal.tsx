@@ -1,54 +1,37 @@
-import { Box, Button, Modal, TextField } from '@mui/material';
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
-import { modalStyle } from '../Constants/constants';
+import React, { useState } from 'react';
 import { useUpdatePost } from '../Hooks/postHooks';
+import { Dialog, DialogContent, DialogTrigger } from './ui/dialog';
+import { Button } from './ui/button';
+import { Textarea } from './ui/textarea';
 
-const EditPostModal = forwardRef((props, ref) => {
+const EditPostModal = props => {
   const { post, id, onPostUpdate } = props;
-
-  const [modalOpen, setModalOpen] = useState(false);
   const [updatedPost, setUpdatedPost] = useState(post);
   const { mutateAsync: updatePost } = useUpdatePost();
-
-  useImperativeHandle(ref, () => ({
-    handleModalOpen: () => setModalOpen(true),
-  }));
-
-  const handleModalClose = () => setModalOpen(false);
 
   const handleUpdatePost = async () => {
     const result = await updatePost({ post: updatedPost, id: id });
     onPostUpdate(result.doc);
-    handleModalClose();
   };
 
   return (
-    <Modal
-      open={modalOpen}
-      onClose={handleModalClose}
-      aria-labelledby="modal-modal-title"
-      aria-describedby="modal-modal-description"
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          gap: '20px',
-          flexDirection: 'column',
-          ...modalStyle,
-        }}
-      >
-        {' '}
-        <TextField
-          onChange={e => setUpdatedPost(e.target.value)}
-          label="Update Post"
-          defaultValue={post}
-          multiline
-        />
-        <Button onClick={handleUpdatePost}>Update</Button>
-      </Box>
-    </Modal>
+    <Dialog>
+      <DialogTrigger className="w-full text-left pl-2 hover:bg-slate-100">
+        Edit
+      </DialogTrigger>
+      <DialogContent>
+        <div className="w-[50%] flex flex-col gap-7">
+          <Textarea
+            onChange={e => setUpdatedPost(e.target.value)}
+            label="Update Post"
+            defaultValue={post}
+          />
+          <Button onClick={handleUpdatePost}>Update</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
-});
+};
 
 EditPostModal.displayName = 'EditPostModal';
 

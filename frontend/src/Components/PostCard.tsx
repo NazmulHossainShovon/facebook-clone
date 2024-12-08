@@ -24,6 +24,14 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import MenuDotsIcon from '@/icons/MenuDotsIcon';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from './ui/dialog';
 
 type PostCardProps = {
   id: string;
@@ -72,7 +80,6 @@ export default function PostCard({
   onPostUpdate,
   comments,
 }: PostCardProps) {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const {
     state: { userInfo },
   } = useContext(Store);
@@ -80,32 +87,12 @@ export default function PostCard({
   const { mutateAsync: likePost } = useLikePost();
   const { mutateAsync: unlikePost } = useUnlikePost();
   const { mutateAsync: commentPost } = useCommentPost();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [comment, setComment] = useState('');
   const [allComments, setAllComments] = useState<CommentType[]>([]);
-  const open = Boolean(anchorEl);
-  const editModalRef = useRef();
 
-  const openEditModal = () => {
-    editModalRef.current.handleModalOpen();
-  };
-
-  const handleModalOpen = () => setModalOpen(true);
-  const handleModalClose = () => setModalOpen(false);
-  const handleCommentModalOpen = () => setCommentModalOpen(true);
-  const handleCommentModalClose = () => setCommentModalOpen(false);
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
   const handleDelete = async () => {
     await deletePost({ id });
     await refetch();
-    setAnchorEl(null);
-  };
-
-  const handleClose = () => {
     setAnchorEl(null);
   };
 
@@ -142,7 +129,6 @@ export default function PostCard({
           <Link to={`/${authorName}`}>
             <Avatar>
               <AvatarImage
-                className="mt-1"
                 src={`https://nazmul.sirv.com/facebook/${authorName}.png`}
               />
               <AvatarFallback>CN</AvatarFallback>
@@ -167,9 +153,12 @@ export default function PostCard({
                     Delete Post
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={openEditModal}>
-                    Edit
-                  </DropdownMenuItem>
+
+                  <EditPostModal
+                    onPostUpdate={onPostUpdate}
+                    id={id}
+                    post={text}
+                  />
                 </>
               )}
             </DropdownMenuContent>
@@ -188,62 +177,39 @@ export default function PostCard({
         >
           {likers?.includes(userInfo.name) ? 'Unlike' : 'Like'}
         </Button>
-        <button
-          onClick={handleModalOpen}
-          className=" hover:underline hover:cursor-pointer"
-        >
-          {' '}
-          {likers?.length} people{' '}
-        </button>
-        <Modal
-          open={modalOpen}
-          onClose={handleModalClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              gap: '20px',
-              flexDirection: 'column',
-              ...modalStyle,
-            }}
-          >
+
+        <Dialog>
+          <DialogTrigger>
+            <button className=" hover:underline hover:cursor-pointer">
+              {' '}
+              {likers?.length} people{' '}
+            </button>
+          </DialogTrigger>
+          <DialogContent>
             {likers?.map(liker => (
-              <Box
-                key={liker}
-                sx={{ display: 'flex', gap: '10px', flexDirection: 'row' }}
-              >
+              <div key={liker}>
                 <Link
                   style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
                   to={`/${liker}`}
-                  onClick={handleModalClose}
                 >
-                  <Avatar
-                    className="mt-1"
-                    src={`https://nazmul.sirv.com/facebook/${liker}.png`}
-                  />
+                  <Avatar>
+                    <AvatarImage
+                      src={`https://nazmul.sirv.com/facebook/${liker}.png`}
+                    />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
                   <p>{liker}</p>
                 </Link>
-              </Box>
+              </div>
             ))}
-          </Box>
-        </Modal>
-        <CommentIcon
-          className="cursor-pointer"
-          onClick={handleCommentModalOpen}
-        />
-        <Modal
-          open={commentModalOpen}
-          onClose={handleCommentModalClose}
-          aria-labelledby="comment-modal"
-          aria-describedby="modal-modal-description"
-        >
-          <Box
-            sx={{
-              ...modalStyle,
-            }}
-          >
+          </DialogContent>
+        </Dialog>
+
+        <Dialog>
+          <DialogTrigger>
+            <CommentIcon className="cursor-pointer" />
+          </DialogTrigger>
+          <DialogContent>
             <div className="flex flex-row gap-3 pl-4">
               <TextField
                 onChange={e => setComment(e.target.value)}
@@ -256,22 +222,19 @@ export default function PostCard({
             <div>
               {allComments?.map((comment, index) => (
                 <div key={index} className="flex flex-row gap-3 pl-4">
-                  <Avatar
-                    className="mt-1"
-                    src={`https://nazmul.sirv.com/facebook/${comment.userName}.png`}
-                  />
+                  <Avatar>
+                    <AvatarImage
+                      src={`https://nazmul.sirv.com/facebook/${comment.userName}.png`}
+                    />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+
                   <p>{comment.comment}</p>
                 </div>
               ))}
             </div>
-          </Box>
-        </Modal>
-        <EditPostModal
-          onPostUpdate={onPostUpdate}
-          id={id}
-          post={text}
-          ref={editModalRef}
-        />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
