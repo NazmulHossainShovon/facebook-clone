@@ -17,6 +17,7 @@ export default function Home() {
           id={post._id}
           likers={post.likers}
           isLoggedInUser={false}
+          comments={post.comments}
         />
       ))}
     </div>
