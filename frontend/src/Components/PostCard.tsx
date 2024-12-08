@@ -1,13 +1,5 @@
 import { MoreHoriz } from '@mui/icons-material';
-import {
-  Avatar,
-  Box,
-  Button,
-  Menu,
-  MenuItem,
-  Modal,
-  TextField,
-} from '@mui/material';
+import { Box, Button, Menu, MenuItem, Modal, TextField } from '@mui/material';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   useCommentPost,
@@ -21,6 +13,7 @@ import { Link } from 'react-router-dom';
 import EditPostModal from './EditPostModal';
 import CommentIcon from '@mui/icons-material/Comment';
 import { CommentType } from '../Types/types';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 type PostCardProps = {
   id: string;
@@ -137,10 +130,13 @@ export default function PostCard({
       <div className="flex flex-row justify-between">
         <div className="flex flex-row gap-3">
           <Link to={`/${authorName}`}>
-            <Avatar
-              className="mt-1"
-              src={`https://nazmul.sirv.com/facebook/${authorName}.png`}
-            />
+            <Avatar>
+              <AvatarImage
+                className="mt-1"
+                src={`https://nazmul.sirv.com/facebook/${authorName}.png`}
+              />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
           </Link>
 
           <div>
