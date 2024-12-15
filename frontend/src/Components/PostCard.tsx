@@ -1,6 +1,5 @@
-import { MoreHoriz } from '@mui/icons-material';
-import { Box, Modal, TextField } from '@mui/material';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import { TextField } from '@mui/material';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   useCommentPost,
   useDeletePost,
@@ -8,7 +7,6 @@ import {
   useUnlikePost,
 } from '../Hooks/postHooks';
 import { Store } from '../Store';
-import { modalStyle } from '../Constants/constants';
 import { Link } from 'react-router-dom';
 import EditPostModal from './EditPostModal';
 import CommentIcon from '@mui/icons-material/Comment';
@@ -32,6 +30,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog';
+import { Textarea } from './ui/textarea';
+import { Label } from './ui/label';
 
 type PostCardProps = {
   id: string;
@@ -210,29 +210,39 @@ export default function PostCard({
             <CommentIcon className="cursor-pointer" />
           </DialogTrigger>
           <DialogContent>
-            <div className="flex flex-row gap-3 pl-4">
-              <TextField
-                onChange={e => setComment(e.target.value)}
-                value={comment}
-                label="write a comment"
-              />
-              <Button onClick={handleComment}>Comment</Button>
-            </div>
-
-            <div>
-              {allComments?.map((comment, index) => (
-                <div key={index} className="flex flex-row gap-3 pl-4">
-                  <Avatar>
-                    <AvatarImage
-                      src={`https://nazmul.sirv.com/facebook/${comment.userName}.png`}
-                    />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-
-                  <p>{comment.comment}</p>
+            <DialogDescription className=" flex flex-col gap-2 p-3">
+              <div className="flex flex-row gap-3 pl-4">
+                <div className="grid w-full gap-1.5">
+                  <Label htmlFor="comment">write a comment</Label>
+                  <Textarea
+                    onChange={e => setComment(e.target.value)}
+                    id="comment"
+                    value={comment}
+                    rows={3}
+                    className=" resize-none"
+                  />
                 </div>
-              ))}
-            </div>
+
+                <Button className="relative top-4" onClick={handleComment}>
+                  Comment
+                </Button>
+              </div>
+
+              <div>
+                {allComments?.map((comment, index) => (
+                  <div key={index} className="flex flex-row gap-3 pl-4">
+                    <Avatar>
+                      <AvatarImage
+                        src={`https://nazmul.sirv.com/facebook/${comment.userName}.png`}
+                      />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+
+                    <p>{comment.comment}</p>
+                  </div>
+                ))}
+              </div>
+            </DialogDescription>
           </DialogContent>
         </Dialog>
       </div>
