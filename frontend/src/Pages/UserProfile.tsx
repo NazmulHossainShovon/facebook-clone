@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Avatar, Box, Button, Modal, TextField } from '@mui/material';
 import { useCreatePost, useGetPosts } from '../Hooks/postHooks';
 import PostCard from '../Components/PostCard';
 import {
@@ -11,16 +10,22 @@ import {
 } from '../Hooks/userHook';
 import { Store } from '../Store';
 import FriendOptionsMenu from '../Components/FriendOptionsMenu';
-import { modalStyle } from '../Constants/constants';
 import { Post } from '../Types/types';
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+import { Button } from '@/Components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTrigger,
+} from '@/Components/ui/dialog';
+import { Textarea } from '@/Components/ui/textarea';
+import { Label } from '@/Components/ui/label';
 
 function UserProfile() {
   const navigate = useNavigate();
   const { userName } = useParams();
   const [post, setPost] = useState('');
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
   const {
     state: { userInfo },
     dispatch,
@@ -37,7 +42,6 @@ function UserProfile() {
   const handlePost = async () => {
     const res = await createPost({ post });
     await refetch();
-    handleClose();
   };
 
   const sendFriendRequest = async () => {
@@ -98,10 +102,14 @@ function UserProfile() {
   return (
     <div className="flex flex-col gap-3 items-center align-middle bg-[#F0F2F5] h-screen">
       <div className="flex flex-col gap-3 bg-white rounded-lg w-[90%] md:w-[30%] p-3 border border-gray-200 shadow">
-        <Avatar
-          src={`https://nazmul.sirv.com/facebook/${userName}.png`}
-          className=" w-32 h-32"
-        />
+        <Avatar className=" w-20 h-20 ">
+          <AvatarImage
+            src={`https://nazmul.sirv.com/facebook/${userName}.png`}
+            className=" object-cover"
+          />
+          <AvatarFallback>CN</AvatarFallback>
+        </Avatar>
+
         <h2>{userData?.name}</h2>
         {!isLoggedInUser && (
           <>
@@ -120,26 +128,26 @@ function UserProfile() {
           </>
         )}
       </div>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={modalStyle}>
-          <TextField
-            onChange={e => setPost(e.target.value)}
-            label="Create Post"
-            multiline
-          />
-          <Button onClick={handlePost}>Post</Button>
-        </Box>
-      </Modal>
-      {isLoggedInUser && (
-        <Button onClick={handleOpen} variant="outlined">
-          Whats on your mind?
-        </Button>
-      )}
+
+      <Dialog>
+        <DialogTrigger>
+          {isLoggedInUser && <Button>Whats on your mind?</Button>}
+        </DialogTrigger>
+        <DialogContent>
+          <DialogDescription className="flex flex-col gap-3 p-3">
+            <div className="grid w-full gap-1.5">
+              <Label htmlFor="message">Create Post</Label>
+              <Textarea
+                onChange={e => setPost(e.target.value)}
+                id="message"
+                rows={10}
+                className=" resize-none"
+              />
+            </div>
+            <Button onClick={handlePost}>Post</Button>
+          </DialogDescription>
+        </DialogContent>
+      </Dialog>
 
       {allPosts.map((post, index) => (
         <PostCard
