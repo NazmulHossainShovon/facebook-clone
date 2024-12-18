@@ -54,12 +54,8 @@ export default function FriendReqsMenu() {
       >
         <MenuItem disabled>Friend Requests</MenuItem>
         {userInfo.receivedFriendReqs?.map(user => (
-          <MenuItem
-            onClick={handleClose}
-            className="flex flex-row gap-2"
-            key={user}
-          >
-            <Link to={`/${user}`}>
+          <MenuItem onClick={handleClose} key={user}>
+            <Link className="flex flex-row gap-2" to={`/${user}`}>
               <Avatar src={`https://nazmul.sirv.com/facebook/${user}.png`} />
               <div>{user}</div>
             </Link>

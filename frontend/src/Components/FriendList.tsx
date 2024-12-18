@@ -1,7 +1,14 @@
-import { Avatar, Button, Menu, MenuItem } from '@mui/material';
+import { Avatar, Menu, MenuItem } from '@mui/material';
 import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Store } from '../Store';
+import { Button } from './ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 
 export default function FriendList() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -19,32 +26,27 @@ export default function FriendList() {
 
   return (
     <div>
-      <Button onClick={handleClick} className=" text-right" variant="contained">
-        Friends
-      </Button>
-      <Menu
-        id="basic-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        MenuListProps={{
-          'aria-labelledby': 'basic-button',
-        }}
-      >
-        <MenuItem disabled>Friend List</MenuItem>
-        {userInfo.friends?.map(user => (
-          <MenuItem
-            onClick={handleClose}
-            className="flex  flex-row gap-2"
-            key={user}
+      <DropdownMenu>
+        <DropdownMenuTrigger>
+          <Button
+            onClick={handleClick}
+            className=" text-right"
+            variant="contained"
           >
-            <Link to={`/${user}`}>
-              <Avatar src={`https://nazmul.sirv.com/facebook/${user}.png`} />
-              <div>{user}</div>
-            </Link>
-          </MenuItem>
-        ))}
-      </Menu>
+            Friends
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          {userInfo.friends?.map(user => (
+            <DropdownMenuItem onClick={handleClose} key={user}>
+              <Link className="flex  flex-row gap-2" to={`/${user}`}>
+                <Avatar src={`https://nazmul.sirv.com/facebook/${user}.png`} />
+                <div>{user}</div>
+              </Link>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

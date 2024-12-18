@@ -6,7 +6,7 @@ import Input from '../Input';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 import FriendReqsMenu from '../FriendReqsMenu';
-import { Box, Button, Drawer } from '@mui/material';
+import { Box, Drawer } from '@mui/material';
 import FriendList from '../FriendList';
 
 function Navbar() {

@@ -130,6 +130,7 @@ export default function PostCard({
             <Avatar>
               <AvatarImage
                 src={`https://nazmul.sirv.com/facebook/${authorName}.png`}
+                className=" object-cover"
               />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
