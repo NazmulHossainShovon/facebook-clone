@@ -43,23 +43,18 @@ function Navbar() {
           </div>
           <FriendReqsMenu />
           <FriendList />
-          <MenuIcon className="block md:hidden" onClick={toggleDrawer(true)} />
+          <MenuIcon className=" xl:invisible" onClick={toggleDrawer(true)} />
           <Drawer open={open} onClose={toggleDrawer(false)}>
-            <Box
-              sx={{ width: 250, paddingLeft: '10px', paddingTop: '10px' }}
-              role="presentation"
-            >
-              <div className="flex m-3 flex-row ml-5 items-center gap-2">
-                <Input
-                  placeholder="Search anything..."
-                  onChange={e => setSearchQuery(e.target.value)}
-                />
-                <SearchIcon
-                  onClick={handleSearchQuery}
-                  className=" cursor-pointer"
-                />
-              </div>
-            </Box>
+            <div className=" flex m-3 flex-row ml-5 items-center gap-2">
+              <Input
+                placeholder="Search anything..."
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+              <SearchIcon
+                onClick={handleSearchQuery}
+                className=" cursor-pointer"
+              />
+            </div>
           </Drawer>
         </>
       ) : (
