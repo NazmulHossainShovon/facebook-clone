@@ -24,6 +24,7 @@ import {
 import MenuDotsIcon from '@/icons/MenuDotsIcon';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -229,17 +230,26 @@ export default function PostCard({
                 </Button>
               </div>
 
-              <div>
+              <div className=" flex flex-col gap-4 h-60 overflow-y-scroll">
                 {allComments?.map((comment, index) => (
                   <div key={index} className="flex flex-row gap-3 pl-4">
-                    <Avatar>
-                      <AvatarImage
-                        src={`https://nazmul.sirv.com/facebook/${comment.userName}.png`}
-                      />
-                      <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
+                    <Link to={`/${comment.userName}`}>
+                      <DialogClose>
+                        <Avatar>
+                          <AvatarImage
+                            src={`https://nazmul.sirv.com/facebook/${comment.userName}.png`}
+                          />
+                          <AvatarFallback>CN</AvatarFallback>
+                        </Avatar>
+                      </DialogClose>
+                    </Link>
 
-                    <p>{comment.comment}</p>
+                    <div className=" flex flex-col gap-1">
+                      <p className=" font-bold text-black">
+                        {comment.userName}
+                      </p>
+                      <p>{comment.comment}</p>
+                    </div>
                   </div>
                 ))}
               </div>

@@ -24,7 +24,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex flex-col gap-5 items-center">
+    <div className="flex flex-col gap-5 pt-8 items-center">
       <h2>Login</h2>
       <form
         onSubmit={handleSubmit(formDataHandle)}
