@@ -6,7 +6,7 @@ export default function Home() {
   const { data, refetch } = useGetFriendPosts();
 
   return (
-    <div className=" flex flex-col gap-4 items-center">
+    <div className=" flex flex-col gap-4 pt-8 items-center">
       <h2>Home Page</h2>
       {data?.map((post, index) => (
         <PostCard

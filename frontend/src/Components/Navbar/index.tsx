@@ -6,7 +6,7 @@ import Input from '../Input';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 import FriendReqsMenu from '../FriendReqsMenu';
-import { Box, Drawer } from '@mui/material';
+import { Drawer } from '@mui/material';
 import FriendList from '../FriendList';
 
 function Navbar() {
@@ -26,7 +26,7 @@ function Navbar() {
   };
 
   return (
-    <div className="flex justify-between md:justify-start pl-5 items-center gap-5 bg-TK-background  text-white h-[60px]">
+    <div className=" fixed top-0 left-0 z-50 w-full flex justify-between md:justify-start pl-5 items-center gap-5 bg-TK-background  text-white h-[60px]">
       {userInfo ? (
         <>
           <Link to={'/'}>Home</Link>
