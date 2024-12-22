@@ -89,10 +89,15 @@ const useDeleteComment = () => {
       postId: string;
       commentId: string;
     }) => {
-      const res = await apiClient.delete('/api/posts/comment', {
-        postId,
-        commentId,
-      });
+      const res = await apiClient.delete<{ message: string; post: Post }>(
+        '/api/posts/comment',
+        {
+          data: {
+            postId,
+            commentId,
+          },
+        }
+      );
       return res.data;
     },
   });

@@ -49,6 +49,22 @@ postRouter.delete(
   })
 );
 
+postRouter.delete(
+  "/comment",
+  asyncHandler(async (req: Request, res: Response) => {
+    const { postId, commentId } = req.body;
+
+    const modifiedPost = await PostModel.findByIdAndUpdate(
+      { _id: postId },
+      { $pull: { comments: { _id: commentId } } },
+      {
+        new: true,
+      }
+    );
+    res.json({ message: "Comment Deleted", post: modifiedPost });
+  })
+);
+
 postRouter.put(
   "/like",
   isAuth,

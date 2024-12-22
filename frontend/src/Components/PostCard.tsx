@@ -120,7 +120,8 @@ export default function PostCard({
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    await deleteComment({ postId: id, commentId });
+    const res = await deleteComment({ postId: id, commentId });
+    setAllComments(res.post.comments);
   };
 
   useEffect(() => {
@@ -257,11 +258,13 @@ export default function PostCard({
                       </p>
                       <p className=" text-black">{comment.comment}</p>
                     </div>
-                    <DeleteIcon
-                      onClick={() => handleDeleteComment(comment._id)}
-                      className=" cursor-pointer"
-                      fontSize="small"
-                    />
+                    {comment.userName === userInfo.name && (
+                      <DeleteIcon
+                        onClick={() => handleDeleteComment(comment._id)}
+                        className=" cursor-pointer"
+                        fontSize="small"
+                      />
+                    )}
                   </div>
                 ))}
               </div>
