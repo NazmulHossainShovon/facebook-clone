@@ -28,6 +28,7 @@ type CommentType = {
   comment: string;
   userName: string;
   createdAt: string;
+  _id: string;
 };
 
 type Post = {

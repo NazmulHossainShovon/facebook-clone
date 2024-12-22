@@ -1,7 +1,7 @@
-import { TextField } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
 import {
   useCommentPost,
+  useDeleteComment,
   useDeletePost,
   useLikePost,
   useUnlikePost,
@@ -10,6 +10,7 @@ import { Store } from '../Store';
 import { Link } from 'react-router-dom';
 import EditPostModal from './EditPostModal';
 import CommentIcon from '@mui/icons-material/Comment';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { CommentType } from '../Types/types';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
@@ -27,8 +28,6 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from './ui/dialog';
 import { Textarea } from './ui/textarea';
@@ -88,6 +87,7 @@ export default function PostCard({
   const { mutateAsync: likePost } = useLikePost();
   const { mutateAsync: unlikePost } = useUnlikePost();
   const { mutateAsync: commentPost } = useCommentPost();
+  const { mutateAsync: deleteComment } = useDeleteComment();
   const [comment, setComment] = useState('');
   const [allComments, setAllComments] = useState<CommentType[]>([]);
 
@@ -117,6 +117,10 @@ export default function PostCard({
     setAllComments(updatedPost.comments);
 
     setComment('');
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    await deleteComment({ postId: id, commentId });
   };
 
   useEffect(() => {
@@ -230,9 +234,12 @@ export default function PostCard({
                 </Button>
               </div>
 
-              <div className=" flex flex-col gap-4 h-60 overflow-y-scroll">
+              <div className=" flex flex-col gap-4 h-60 pr-3 overflow-y-scroll">
                 {allComments?.map((comment, index) => (
-                  <div key={index} className="flex flex-row gap-3 pl-4">
+                  <div
+                    key={index}
+                    className="flex flex-row bg-slate-200  rounded-md gap-3 p-2"
+                  >
                     <Link to={`/${comment.userName}`}>
                       <DialogClose>
                         <Avatar>
@@ -244,12 +251,17 @@ export default function PostCard({
                       </DialogClose>
                     </Link>
 
-                    <div className=" flex flex-col gap-1">
+                    <div className="w-[75%] flex flex-col gap-1">
                       <p className=" font-bold text-black">
                         {comment.userName}
                       </p>
-                      <p>{comment.comment}</p>
+                      <p className=" text-black">{comment.comment}</p>
                     </div>
+                    <DeleteIcon
+                      onClick={() => handleDeleteComment(comment._id)}
+                      className=" cursor-pointer"
+                      fontSize="small"
+                    />
                   </div>
                 ))}
               </div>

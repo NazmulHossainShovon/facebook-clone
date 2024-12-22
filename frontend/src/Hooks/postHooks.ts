@@ -80,6 +80,24 @@ const useCommentPost = () => {
   });
 };
 
+const useDeleteComment = () => {
+  return useMutation({
+    mutationFn: async ({
+      postId,
+      commentId,
+    }: {
+      postId: string;
+      commentId: string;
+    }) => {
+      const res = await apiClient.delete('/api/posts/comment', {
+        postId,
+        commentId,
+      });
+      return res.data;
+    },
+  });
+};
+
 const useUpdatePost = () => {
   return useMutation({
     mutationFn: async ({ id, post }: { id: string; post: string }) => {
@@ -104,4 +122,5 @@ export {
   useUpdatePost,
   useGetFriendPosts,
   useCommentPost,
+  useDeleteComment,
 };
