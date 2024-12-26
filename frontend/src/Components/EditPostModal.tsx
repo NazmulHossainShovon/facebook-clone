@@ -3,8 +3,15 @@ import { useUpdatePost } from '../Hooks/postHooks';
 import { Dialog, DialogClose, DialogContent, DialogTrigger } from './ui/dialog';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
+import { Post } from '@/Types/types';
 
-const EditPostModal = props => {
+type EditPostModalProps = {
+  post: string;
+  id: string;
+  onPostUpdate: (post: Post) => void;
+};
+
+const EditPostModal = (props: EditPostModalProps) => {
   const { post, id, onPostUpdate } = props;
   const [updatedPost, setUpdatedPost] = useState(post);
   const { mutateAsync: updatePost } = useUpdatePost();
@@ -23,7 +30,6 @@ const EditPostModal = props => {
         <div className="w-[50%] flex flex-col gap-7">
           <Textarea
             onChange={e => setUpdatedPost(e.target.value)}
-            label="Update Post"
             defaultValue={post}
           />
           <DialogClose asChild>

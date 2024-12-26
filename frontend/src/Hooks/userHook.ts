@@ -35,7 +35,7 @@ export const useSigninMutation = () =>
     },
   });
 
-export const useGetUserInfo = (userName: string) =>
+export const useGetUserInfo = (userName: string | undefined) =>
   useQuery({
     queryKey: ['user', userName],
     queryFn: async () => {
@@ -59,7 +59,13 @@ export const useSearchUsers = (query: string) =>
 
 export const useSendFriendRequest = () => {
   return useMutation({
-    mutationFn: async ({ sender, receiver }) => {
+    mutationFn: async ({
+      sender,
+      receiver,
+    }: {
+      sender: string;
+      receiver: string | undefined;
+    }) => {
       const res = await apiClient.put<User>('api/users/friendRequest', {
         sender,
         receiver,
@@ -71,7 +77,13 @@ export const useSendFriendRequest = () => {
 
 export const useCancelFriendRequest = () => {
   return useMutation({
-    mutationFn: async ({ sender, receiver }) => {
+    mutationFn: async ({
+      sender,
+      receiver,
+    }: {
+      sender: string | undefined;
+      receiver: string | undefined;
+    }) => {
       const res = await apiClient.put<{ receiver: any; sender: any }>(
         'api/users/cancelRequest',
         {
@@ -86,7 +98,13 @@ export const useCancelFriendRequest = () => {
 
 export const useAcceptFriendRequest = () => {
   return useMutation({
-    mutationFn: async ({ sender, receiver }) => {
+    mutationFn: async ({
+      sender,
+      receiver,
+    }: {
+      sender: string | undefined;
+      receiver: string;
+    }) => {
       const res = await apiClient.put<User>('api/users/acceptRequest', {
         sender,
         receiver,
@@ -98,7 +116,13 @@ export const useAcceptFriendRequest = () => {
 
 export const useUnfriend = () => {
   return useMutation({
-    mutationFn: async ({ user1, user2 }) => {
+    mutationFn: async ({
+      user1,
+      user2,
+    }: {
+      user1: string;
+      user2: string | undefined;
+    }) => {
       const res = await apiClient.put('api/users/unfriend', {
         user1,
         user2,

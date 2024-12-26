@@ -4,7 +4,7 @@ import { Store } from '../Store';
 import { useUnfriend } from '../Hooks/userHook';
 
 type FriendOptionsProps = {
-  tempUser: string;
+  tempUser?: string;
   refetch: () => void;
 };
 
@@ -20,7 +20,7 @@ export default function FriendOptionsMenu({
   } = useContext(Store);
   const { mutateAsync: unfriend } = useUnfriend();
 
-  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {

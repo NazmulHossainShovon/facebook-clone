@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 import EditPostModal from './EditPostModal';
 import CommentIcon from '@mui/icons-material/Comment';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { CommentType } from '../Types/types';
+import { CommentType, Post } from '../Types/types';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { twMerge } from 'tailwind-merge';
@@ -39,13 +39,13 @@ type PostCardProps = {
   authorName: string;
   createdAt: string;
   isLoggedInUser: boolean;
-  refetch?: () => void;
+  refetch: () => void;
   likers: string[];
   comments: CommentType[];
-  onPostUpdate?: (updatedPost: Post) => void;
+  onPostUpdate: (updatedPost: Post) => void;
 };
 
-function convertDateFormat(dateString) {
+function convertDateFormat(dateString: string) {
   const months = [
     'January',
     'February',
@@ -94,7 +94,6 @@ export default function PostCard({
   const handleDelete = async () => {
     await deletePost({ id });
     await refetch();
-    setAnchorEl(null);
   };
 
   const handleLike = async () => {

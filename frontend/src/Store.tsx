@@ -3,7 +3,15 @@ import { AppState, User } from './Types/types';
 import { io } from 'socket.io-client';
 
 const initialState: AppState = {
-  userInfo: null,
+  userInfo: {
+    name: '',
+    email: '',
+    friends: [],
+    receivedFriendReqs: [],
+    sentFriendReqs: [],
+    token: '',
+  },
+  searchQuery: '',
 };
 
 const socket = io('http://localhost:4000');
@@ -20,7 +28,17 @@ const reducer = (state: AppState, action: Action): AppState => {
       socket.emit('storeUser', action.payload.name);
       return { ...state, userInfo: action.payload };
     case 'sign-out':
-      return { ...state, userInfo: null };
+      return {
+        ...state,
+        userInfo: {
+          name: '',
+          email: '',
+          friends: [],
+          receivedFriendReqs: [],
+          sentFriendReqs: [],
+          token: '',
+        },
+      };
     case 'new-friend-req':
       return {
         ...state,
@@ -48,7 +66,7 @@ function StoreProvider(props: PropsWithChildren) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    if (state.userInfo) {
+    if (state.userInfo.name) {
       localStorage.setItem('user-info', JSON.stringify(state.userInfo));
     }
   }, [state]);

@@ -13,7 +13,7 @@ const useCreatePost = () => {
   });
 };
 
-const useGetPosts = (userName: string) => {
+const useGetPosts = (userName: string | undefined) => {
   return useQuery({
     queryKey: ['posts', userName],
     queryFn: async () => {
@@ -45,7 +45,13 @@ const useDeletePost = () => {
 
 const useLikePost = () => {
   return useMutation({
-    mutationFn: async ({ userName, postId }) => {
+    mutationFn: async ({
+      userName,
+      postId,
+    }: {
+      userName: string;
+      postId: string;
+    }) => {
       const res = await apiClient.put<Post>('/api/posts/like', {
         userName,
         postId,
@@ -57,7 +63,13 @@ const useLikePost = () => {
 
 const useUnlikePost = () => {
   return useMutation({
-    mutationFn: async ({ userName, postId }) => {
+    mutationFn: async ({
+      userName,
+      postId,
+    }: {
+      userName: string;
+      postId: string;
+    }) => {
       const res = await apiClient.put('/api/posts/unlike', {
         userName,
         postId,
@@ -69,7 +81,15 @@ const useUnlikePost = () => {
 
 const useCommentPost = () => {
   return useMutation({
-    mutationFn: async ({ userName, postId, comment }) => {
+    mutationFn: async ({
+      userName,
+      postId,
+      comment,
+    }: {
+      userName: string;
+      postId: string;
+      comment: string;
+    }) => {
       const res = await apiClient.put<Post>('/api/posts/comment', {
         userName,
         postId,
