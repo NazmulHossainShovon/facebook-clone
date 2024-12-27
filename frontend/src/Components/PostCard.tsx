@@ -149,13 +149,16 @@ export default function PostCard({
         {/* options button and menu */}
         <div>
           <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger data-testid="options">
               <MenuDotsIcon />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {isLoggedInUser && (
                 <>
-                  <DropdownMenuItem onClick={handleDelete}>
+                  <DropdownMenuItem
+                    data-testid="delete-post"
+                    onClick={handleDelete}
+                  >
                     Delete Post
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
