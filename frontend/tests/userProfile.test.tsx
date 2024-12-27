@@ -1,7 +1,7 @@
 import * as userHooks from '../src/Hooks/userHook';
 import * as postHooks from '../src/Hooks/postHooks';
 import { BrowserRouter } from 'react-router-dom';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import UserProfile from '../src/Pages/UserProfile';
 import { Store } from '../src/Store';
