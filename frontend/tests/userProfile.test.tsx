@@ -78,6 +78,17 @@ describe('UserProfile', () => {
           authorImage: '',
           updatedAt: '',
         },
+        {
+          _id: 2,
+          post: 'test',
+          authorName: 'test',
+          createdAt: 'test',
+          userId: 'test',
+          likers: [],
+          comments: [],
+          authorImage: '',
+          updatedAt: '',
+        },
       ],
       refetch: jest.fn(),
     });
@@ -118,6 +129,19 @@ describe('UserProfile', () => {
 
     const button = screen.getByText('Whats on your mind?');
     expect(button).toBeInTheDocument();
+  });
+
+  it('should show current user posts', () => {
+    render(
+      <BrowserRouter>
+        <Store.Provider value={mockStoreValue}>
+          <UserProfile />
+        </Store.Provider>
+      </BrowserRouter>
+    );
+
+    const postCard = screen.getAllByTestId('post-card');
+    expect(postCard).toHaveLength(2);
   });
 
   it('should show post delete button', async () => {
