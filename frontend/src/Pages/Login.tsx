@@ -1,19 +1,24 @@
 import React, { useContext } from 'react';
 import Input from '../Components/Input';
 import { Button } from '../Components/Button';
-import { useForm } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import { useSigninMutation } from '../Hooks/userHook';
 import { Store } from '../Store';
 import { useNavigate } from 'react-router-dom';
 import { Box, LinearProgress } from '@mui/material';
 
+interface FormData {
+  email: string;
+  password: string;
+}
+
 export default function Login() {
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit } = useForm<FormData>();
   const { mutateAsync: signin, isPending } = useSigninMutation();
   const { dispatch } = useContext(Store);
   const navigate = useNavigate();
 
-  const formDataHandle: SubmitHandler = async (data: {
+  const formDataHandle: SubmitHandler<FormData> = async (data: {
     email: string;
     password: string;
   }) => {

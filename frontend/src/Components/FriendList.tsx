@@ -1,4 +1,4 @@
-import { Avatar, Menu, MenuItem } from '@mui/material';
+import { Avatar } from '@mui/material';
 import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Store } from '../Store';
@@ -16,7 +16,7 @@ export default function FriendList() {
   const {
     state: { userInfo },
   } = useContext(Store);
-  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -28,11 +28,7 @@ export default function FriendList() {
     <div>
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <Button
-            onClick={handleClick}
-            className=" text-right"
-            variant="contained"
-          >
+          <Button onClick={handleClick} className=" text-right">
             Friends
           </Button>
         </DropdownMenuTrigger>

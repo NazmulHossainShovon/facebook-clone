@@ -4,7 +4,7 @@ import { Avatar, Card } from '@mui/material';
 
 export default function Search() {
   const { searchQuery } = useParams();
-  const { data, isLoading } = useSearchUsers(searchQuery);
+  const { data, isLoading } = useSearchUsers(searchQuery || '');
 
   if (isLoading) {
     return <h2>Loading</h2>;

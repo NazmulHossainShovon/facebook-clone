@@ -11,9 +11,11 @@ export default function ProtectedRoute() {
     if (userInfo) {
       return <Outlet />;
     } else {
-      <Box sx={{ display: 'flex' }}>
-        <CircularProgress />
-      </Box>;
+      return (
+        <Box sx={{ display: 'flex' }}>
+          <CircularProgress />
+        </Box>
+      );
     }
   } else {
     return <Navigate to="/login" />;

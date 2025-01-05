@@ -5,7 +5,7 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { useContext, useEffect, useState } from 'react';
 
 export default function FriendReqsMenu() {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = useState<null | SVGSVGElement>(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const {
@@ -14,7 +14,7 @@ export default function FriendReqsMenu() {
   } = useContext(Store);
   const open = Boolean(anchorEl);
 
-  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (event: React.MouseEvent<SVGSVGElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {

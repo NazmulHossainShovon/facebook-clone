@@ -43,4 +43,4 @@ type Post = {
   comments: CommentType[];
 };
 
-export { User, AppState, SignupData, Post, People, CommentType };
+export type { User, AppState, SignupData, Post, People, CommentType };

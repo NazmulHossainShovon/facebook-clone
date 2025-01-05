@@ -10,7 +10,7 @@ export default function AvatarMenu() {
   const { dispatch, state } = useContext(Store);
   const navigate = useNavigate();
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {

@@ -35,12 +35,14 @@ const uploadToSirv = async (file: File, userName: string) => {
 };
 
 export default function Signup() {
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit } = useForm<SignupData>();
   const { mutateAsync: signup, isPending } = useSignupMutation();
   const { dispatch } = useContext(Store);
   const navigate = useNavigate();
 
-  const formDataHandle: SubmitHandler = async (data: SignupData) => {
+  const formDataHandle: SubmitHandler<SignupData> = async (
+    data: SignupData
+  ) => {
     const imageFile = data.image[0];
     const result = await uploadToSirv(imageFile, data.name);
 

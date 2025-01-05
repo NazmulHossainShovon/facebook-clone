@@ -19,6 +19,9 @@ export default function Home() {
           isLoggedInUser={false}
           comments={post.comments}
           refetch={refetch}
+          onPostUpdate={() => {
+            return null;
+          }}
         />
       ))}
     </div>
