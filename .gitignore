@@ -1,6 +1,7 @@
 /node_modules
 /build
 .env
+.env.production
 
 # System Files
 .DS_Store
