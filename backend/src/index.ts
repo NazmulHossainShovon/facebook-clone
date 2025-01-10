@@ -27,14 +27,20 @@ const app = express();
 const httpServer = createServer(app);
 export const io = new Server(httpServer, {
   cors: {
-    origin: "*",
+    origin: [
+      "http://localhost:5173",
+      "https://facebook-clone-vooq.onrender.com",
+    ],
     methods: ["GET", "POST"],
   },
 });
 app.use(
   cors({
-    credentials: false,
-    origin: "*",
+    credentials: true,
+    origin: [
+      "http://localhost:5173",
+      "https://facebook-clone-vooq.onrender.com",
+    ],
   })
 );
 
