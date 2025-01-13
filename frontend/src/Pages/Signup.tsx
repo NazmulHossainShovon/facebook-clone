@@ -44,7 +44,10 @@ export default function Signup() {
     data: SignupData
   ) => {
     const imageFile = data.image[0];
-    const result = await uploadToSirv(imageFile, data.name);
+
+    if (imageFile) {
+      await uploadToSirv(imageFile, data.name);
+    }
 
     const res = await signup({
       name: data.name,
@@ -75,7 +78,11 @@ export default function Signup() {
           type="password"
           placeholder="Password"
         />
-        <input {...register('image')} type="file" />
+        <div className=" flex flex-col gap-1">
+          <label htmlFor="image">Profile Image</label>
+          <input id="image" {...register('image')} type="file" />
+        </div>
+
         <Button>Signup</Button>
         {isPending && (
           <Box sx={{ width: '100%' }}>
