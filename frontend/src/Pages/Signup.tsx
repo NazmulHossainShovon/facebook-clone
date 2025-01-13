@@ -55,8 +55,10 @@ export default function Signup() {
       password: data.password,
       image: `https://nazmul.sirv.com/facebook/${data.name}.png`,
     });
-    dispatch({ type: 'sign-in', payload: res });
-    localStorage.setItem('user-info', JSON.stringify(res));
+    console.log(res);
+
+    dispatch({ type: 'sign-in', payload: res.user });
+    localStorage.setItem('user-token', res.token);
     navigate('/');
   };
 

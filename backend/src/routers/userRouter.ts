@@ -44,11 +44,10 @@ userRouter.post(
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password),
       image: req.body.image,
-    } as User);
+    });
+    const { password, ...userExceptPassword } = user.toObject();
     res.json({
-      name: user.name,
-      email: user.email,
-      image: user.image,
+      user: userExceptPassword,
       token: generateToken(user),
     });
   })
