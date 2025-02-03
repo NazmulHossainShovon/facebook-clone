@@ -2,32 +2,34 @@ import { modelOptions, prop, getModelForClass } from "@typegoose/typegoose";
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Post {
-  _id: string;
-  @prop({ required: true })
-  post: string;
+  @prop()
+  _id?: string;
 
   @prop({ required: true })
-  authorName: string;
+  post!: string;
 
   @prop({ required: true })
-  userId: string;
+  authorName!: string;
 
   @prop({ required: true })
-  likers: string[];
+  userId!: string;
+
+  @prop({ required: true })
+  likers!: string[];
 
   @prop({ type: () => [Comment], default: [] })
-  comments: Comment[];
+  comments: Comment[] = [];
 }
 
 class Comment {
   @prop({ required: true })
-  userName: string;
+  userName!: string;
 
   @prop({ required: true })
-  comment: string;
+  comment!: string;
 
   @prop({ default: Date.now() })
-  createdAt: Date;
+  createdAt!: Date;
 }
 
 export const PostModel = getModelForClass(Post);

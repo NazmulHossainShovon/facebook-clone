@@ -10,11 +10,11 @@ export class User {
   @prop({ required: true })
   public password!: string;
   @prop()
-  public receivedFriendReqs: string[];
+  public receivedFriendReqs!: string[];
   @prop()
-  public sentFriendReqs: string[];
+  public sentFriendReqs!: string[];
   @prop()
-  public friends: string[];
+  public friends!: string[];
 }
 
 export const UserModel = getModelForClass(User);

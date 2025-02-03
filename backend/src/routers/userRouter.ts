@@ -54,34 +54,6 @@ userRouter.post(
 );
 
 userRouter.put(
-  "/profile",
-  isAuth,
-  asyncHandler(async (req: Request, res: Response) => {
-    const user = await UserModel.findById(req.user._id);
-    if (user) {
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
-      user.defaultAddress = req.body.defaultAddress || user.defaultAddress;
-      if (req.body.password) {
-        user.password = bcrypt.hashSync(req.body.password, 8);
-      }
-      const updatedUser = await user.save();
-      res.send({
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        isAdmin: updatedUser.isAdmin,
-        defaultAddress: updatedUser.defaultAddress,
-        token: generateToken(updatedUser),
-      });
-      return;
-    }
-
-    res.status(404).json({ message: "User not found" });
-  })
-);
-
-userRouter.put(
   "/friendRequest",
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {

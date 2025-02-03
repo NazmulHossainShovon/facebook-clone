@@ -21,7 +21,7 @@ postRouter.get(
   asyncHandler(async (req: Request, res: Response) => {
     const currentUser = await UserModel.findById(req.user._id);
     const friendsPosts = await PostModel.find({
-      authorName: { $in: currentUser.friends },
+      authorName: { $in: currentUser?.friends },
     }).sort({ createdAt: -1 });
     res.json(friendsPosts);
   })
@@ -34,8 +34,8 @@ postRouter.post(
     const user = await UserModel.findById(req.user._id);
     const post = await PostModel.create({
       post: req.body.post,
-      authorName: user.name,
-      userId: user._id,
+      authorName: user?.name,
+      userId: user?._id,
     });
     res.send({ message: "Post Created" });
   })
