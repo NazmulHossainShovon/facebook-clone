@@ -15,8 +15,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogTrigger,
 } from '@/Components/ui/dialog';
 import { Textarea } from '@/Components/ui/textarea';
@@ -100,7 +102,7 @@ function UserProfile() {
   }, [data]);
 
   return (
-    <div className=" pt-[60px] h-full flex flex-col gap-3 items-center align-middle bg-[#F0F2F5]">
+    <div className=" pt-[60px] h-full flex grow flex-col gap-3 items-center align-middle bg-[#F0F2F5]">
       <div className="flex flex-col gap-3 bg-white rounded-lg w-[90%] md:w-[30%] p-3 border border-gray-200 shadow">
         <Avatar className=" w-20 h-20 ">
           <AvatarImage
@@ -141,11 +143,13 @@ function UserProfile() {
                 onChange={e => setPost(e.target.value)}
                 id="message"
                 rows={10}
-                className=" resize-none"
+                className=" resize-none text-black"
               />
             </div>
-            <Button onClick={handlePost}>Post</Button>
           </DialogDescription>
+          <DialogFooter>
+            <DialogClose onClick={handlePost}>Post</DialogClose>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
