@@ -100,7 +100,7 @@ function UserProfile() {
   }, [data]);
 
   return (
-    <div className=" pt-[60px] flex flex-col gap-3 items-center align-middle bg-[#F0F2F5]">
+    <div className=" pt-[60px] h-full flex flex-col gap-3 items-center align-middle bg-[#F0F2F5]">
       <div className="flex flex-col gap-3 bg-white rounded-lg w-[90%] md:w-[30%] p-3 border border-gray-200 shadow">
         <Avatar className=" w-20 h-20 ">
           <AvatarImage
