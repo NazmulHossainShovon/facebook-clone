@@ -23,6 +23,7 @@ import {
 } from '@/Components/ui/dialog';
 import { Textarea } from '@/Components/ui/textarea';
 import { Label } from '@/Components/ui/label';
+import Pagination from '@/Components/Pagination';
 
 function UserProfile() {
   const navigate = useNavigate();
@@ -39,6 +40,8 @@ function UserProfile() {
   const { mutateAsync: cancelRequest } = useCancelFriendRequest();
   const { mutateAsync: acceptRequest } = useAcceptFriendRequest();
   const [allPosts, setAllPosts] = useState<Post[]>([]);
+  const [totalPages, setTotalPages] = useState<number>(2);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const isLoggedInUser = userInfo.name === userName;
 
   const handlePost = async () => {
@@ -86,6 +89,10 @@ function UserProfile() {
     setAllPosts(prevPosts =>
       prevPosts.map(post => (post._id === updatedPost._id ? updatedPost : post))
     );
+  };
+
+  const handlePageClick = (event: PageClickEvent): void => {
+    setCurrentPage(event.selected + 1);
   };
 
   useEffect(() => {
@@ -148,7 +155,12 @@ function UserProfile() {
             </div>
           </DialogDescription>
           <DialogFooter>
-            <DialogClose onClick={handlePost}>Post</DialogClose>
+            <DialogClose
+              className=" bg-black text-white p-2 rounded"
+              onClick={handlePost}
+            >
+              Post
+            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -167,6 +179,7 @@ function UserProfile() {
           comments={post.comments}
         />
       ))}
+      <Pagination handlePageClick={handlePageClick} totalPages={totalPages} />
     </div>
   );
 }
