@@ -2,6 +2,16 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import apiClient from '../ApiClient';
 import { Post } from '../Types/types';
 
+type GetPostsHookType = {
+  userName: string | undefined;
+  currentPage: number;
+};
+
+type GetPostHookResponseType = {
+  posts: Post[];
+  totalPages: number;
+};
+
 const useCreatePost = () => {
   return useMutation({
     mutationFn: async ({ post }: { post: string }) => {
@@ -13,12 +23,12 @@ const useCreatePost = () => {
   });
 };
 
-const useGetPosts = (userName: string | undefined) => {
+const useGetPosts = ({ userName, currentPage }: GetPostsHookType) => {
   return useQuery({
-    queryKey: ['posts', userName],
+    queryKey: ['posts', userName, currentPage],
     queryFn: async () => {
-      const res = await apiClient.get<Post[]>('/api/posts', {
-        params: { userName },
+      const res = await apiClient.get<GetPostHookResponseType>('/api/posts', {
+        params: { userName, currentPage },
       });
       return res.data;
     },

@@ -35,13 +35,14 @@ function UserProfile() {
   } = useContext(Store);
   const { mutateAsync: createPost } = useCreatePost();
   const { data: userData, refetch: refetchUser } = useGetUserInfo(userName);
-  const { data, refetch } = useGetPosts(userName);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const { data, refetch } = useGetPosts({ userName, currentPage });
   const { mutateAsync: sendRequest } = useSendFriendRequest();
   const { mutateAsync: cancelRequest } = useCancelFriendRequest();
   const { mutateAsync: acceptRequest } = useAcceptFriendRequest();
   const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [totalPages, setTotalPages] = useState<number>(2);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+
   const isLoggedInUser = userInfo.name === userName;
 
   const handlePost = async () => {
@@ -104,7 +105,10 @@ function UserProfile() {
 
   useEffect(() => {
     if (data) {
-      setAllPosts(data);
+      console.log(data);
+
+      setAllPosts(data.posts);
+      setTotalPages(data.totalPages);
     }
   }, [data]);
 

@@ -10,8 +10,17 @@ postRouter.get(
   "/",
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
-    const posts = await PostModel.find({ authorName: req.query.userName });
-    res.json(posts);
+    const page = parseInt(req.query.currentPage as string) || 1;
+    const limit = 3; // Number of posts per page
+    const skip = (page - 1) * limit; // Calculate how many posts to skip
+    const posts = await PostModel.find({ authorName: req.query.userName })
+      .skip(skip)
+      .limit(limit);
+    const totalPosts = await PostModel.countDocuments({
+      authorName: req.query.userName,
+    });
+    const totalPages = Math.ceil(totalPosts / limit);
+    res.json({ posts, totalPages });
   })
 );
 
