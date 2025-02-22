@@ -3,6 +3,7 @@ import { UserModel } from "../models/userModel";
 import { isAuth } from "../utils";
 import express, { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
+import { applyPagination, getPaginationParams } from "./utils/pagination";
 
 export const postRouter = express.Router();
 
@@ -10,16 +11,13 @@ postRouter.get(
   "/",
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
-    const page = parseInt(req.query.currentPage as string) || 1;
-    const limit = 3; // Number of posts per page
-    const skip = (page - 1) * limit; // Calculate how many posts to skip
-    const posts = await PostModel.find({ authorName: req.query.userName })
-      .skip(skip)
-      .limit(limit);
-    const totalPosts = await PostModel.countDocuments({
-      authorName: req.query.userName,
-    });
-    const totalPages = Math.ceil(totalPosts / limit);
+    const pagination = getPaginationParams(req);
+    const query = { authorName: req.query.userName };
+    const { data: posts, totalPages } = await applyPagination(
+      PostModel,
+      query,
+      pagination
+    );
     res.json({ posts, totalPages });
   })
 );
