@@ -47,6 +47,10 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
 app.use("/api/users", userRouter);
 app.use("/api/posts", postRouter);
 app.use("/api/search", searchRouter);
