@@ -43,4 +43,16 @@ type Post = {
   comments: CommentType[];
 };
 
-export type { User, AppState, SignupData, Post, People, CommentType };
+type PageClickEvent = {
+  selected: number;
+};
+
+export type {
+  User,
+  AppState,
+  SignupData,
+  Post,
+  People,
+  CommentType,
+  PageClickEvent,
+};

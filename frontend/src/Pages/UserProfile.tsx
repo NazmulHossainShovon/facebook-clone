@@ -10,7 +10,7 @@ import {
 } from '../Hooks/userHook';
 import { Store } from '../Store';
 import FriendOptionsMenu from '../Components/FriendOptionsMenu';
-import { Post } from '../Types/types';
+import { PageClickEvent, Post } from '../Types/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import {
@@ -105,8 +105,6 @@ function UserProfile() {
 
   useEffect(() => {
     if (data) {
-      console.log(data);
-
       setAllPosts(data.posts);
       setTotalPages(data.totalPages);
     }

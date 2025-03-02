@@ -26,11 +26,17 @@ postRouter.get(
   "/friends",
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
+    const pagination = getPaginationParams(req);
     const currentUser = await UserModel.findById(req.user._id);
-    const friendsPosts = await PostModel.find({
+    const query = {
       authorName: { $in: currentUser?.friends },
-    }).sort({ createdAt: -1 });
-    res.json(friendsPosts);
+    };
+    const { data: posts, totalPages } = await applyPagination(
+      PostModel,
+      query,
+      pagination
+    );
+    res.json({ posts, totalPages });
   })
 );
 

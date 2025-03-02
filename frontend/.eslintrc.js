@@ -18,10 +18,11 @@ module.exports = {
     'plugin:prettier/recommended',
   ],
   rules: {
-    "no-use-before-define": "error",
-    "no-unused-vars": "error",
-    "indent": ["error", 2],
-    "react/react-in-jsx-scope": "off",
+    'no-use-before-define': 'error',
+    'no-unused-vars': 'error',
+    indent: ['error', 2],
+    'react/react-in-jsx-scope': 'off',
+    'no-undef': 'error',
   },
   settings: {
     react: {

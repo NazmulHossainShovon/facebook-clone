@@ -12,6 +12,10 @@ type GetPostHookResponseType = {
   totalPages: number;
 };
 
+type GetFriendsPostsHookType = {
+  currentPage: number;
+};
+
 const useCreatePost = () => {
   return useMutation({
     mutationFn: async ({ post }: { post: string }) => {
@@ -35,11 +39,16 @@ const useGetPosts = ({ userName, currentPage }: GetPostsHookType) => {
   });
 };
 
-const useGetFriendPosts = () =>
+const useGetFriendPosts = ({ currentPage }: GetFriendsPostsHookType) =>
   useQuery({
-    queryKey: ['friendsPosts'],
+    queryKey: ['friendsPosts', currentPage],
     queryFn: async () => {
-      const res = await apiClient.get<Post[]>('/api/posts/friends');
+      const res = await apiClient.get<GetPostHookResponseType>(
+        '/api/posts/friends',
+        {
+          params: { currentPage },
+        }
+      );
       return res.data;
     },
   });
