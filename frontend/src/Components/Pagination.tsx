@@ -1,8 +1,6 @@
 import React from 'react';
 import ReactPaginate from 'react-paginate';
 
-import { PageClickEvent } from '../containers/invoice-table/InvoiceListContainer';
-
 import PaginationNext from './PaginationNext';
 import PaginationPrevious from './PaginationPrevious';
 
