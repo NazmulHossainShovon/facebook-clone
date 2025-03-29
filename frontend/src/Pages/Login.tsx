@@ -6,6 +6,9 @@ import { useSigninMutation } from '../Hooks/userHook';
 import { Store } from '../Store';
 import { useNavigate } from 'react-router-dom';
 import { Box, LinearProgress } from '@mui/material';
+import { Toaster } from '@/components/ui/toaster';
+import { useToast } from '@/hooks/use-toast';
+import { AxiosError } from 'axios';
 
 interface FormData {
   email: string;
@@ -17,15 +20,23 @@ export default function Login() {
   const { mutateAsync: signin, isPending } = useSigninMutation();
   const { dispatch } = useContext(Store);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const formDataHandle: SubmitHandler<FormData> = async (data: {
     email: string;
     password: string;
   }) => {
-    const res = await signin(data);
-    dispatch({ type: 'sign-in', payload: res.user });
-    localStorage.setItem('user-token', res.token);
-    navigate('/');
+    try {
+      const res = await signin(data);
+      dispatch({ type: 'sign-in', payload: res.user });
+      localStorage.setItem('user-token', res.token);
+      navigate('/');
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      toast({
+        title: err.response?.data.message,
+      });
+    }
   };
 
   const handleDummyAccount = () => {
@@ -58,6 +69,7 @@ export default function Login() {
           </Box>
         )}
       </form>
+      <Toaster />
     </div>
   );
 }
