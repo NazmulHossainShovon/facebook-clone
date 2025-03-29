@@ -13,7 +13,7 @@ interface FormData {
 }
 
 export default function Login() {
-  const { register, handleSubmit } = useForm<FormData>();
+  const { register, handleSubmit, setValue } = useForm<FormData>();
   const { mutateAsync: signin, isPending } = useSigninMutation();
   const { dispatch } = useContext(Store);
   const navigate = useNavigate();
@@ -28,8 +28,14 @@ export default function Login() {
     navigate('/');
   };
 
+  const handleDummyAccount = () => {
+    setValue('email', 'maria@gmail.com');
+    setValue('password', 'maria');
+  };
+
   return (
-    <div className="flex flex-col gap-5 pt-8 items-center">
+    <div className="flex flex-col gap-5 mt-16 items-center">
+      <Button onClick={handleDummyAccount}>Use dummy account</Button>
       <h2>Login</h2>
       <form
         onSubmit={handleSubmit(formDataHandle)}
