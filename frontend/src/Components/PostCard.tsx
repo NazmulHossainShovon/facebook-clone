@@ -90,6 +90,7 @@ export default function PostCard({
   const { mutateAsync: deleteComment } = useDeleteComment();
   const [comment, setComment] = useState('');
   const [allComments, setAllComments] = useState<CommentType[]>([]);
+  const [likersDialogOpen, setLikersDialogOpen] = useState(false);
 
   const handleDelete = async () => {
     await deletePost({ id });
@@ -190,7 +191,7 @@ export default function PostCard({
           {likers?.includes(userInfo.name) ? 'Unlike' : 'Like'}
         </Button>
 
-        <Dialog>
+        <Dialog open={likersDialogOpen} onOpenChange={setLikersDialogOpen}>
           <DialogTrigger>
             <button className=" hover:underline hover:cursor-pointer">
               {' '}
@@ -203,6 +204,7 @@ export default function PostCard({
                 <Link
                   style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
                   to={`/${liker}`}
+                  onClick={() => setLikersDialogOpen(false)}
                 >
                   <Avatar>
                     <AvatarImage
