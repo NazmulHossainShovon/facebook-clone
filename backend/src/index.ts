@@ -48,7 +48,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Hello from the server!");
 });
 
 app.use("/api/users", userRouter);
