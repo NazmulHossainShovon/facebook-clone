@@ -5,35 +5,38 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { useSignupMutation } from '../Hooks/userHook';
 import { Store } from '../Store';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Box, LinearProgress } from '@mui/material';
 import { z } from 'zod';
-import FormErrorMessage from '@/Components/FormErrorMessage';
+import FormErrorMessage from '../Components/FormErrorMessage';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
-const uploadToSirv = async (file: File, userName: string) => {
-  const clientId = import.meta.env.VITE_SIRV_ID;
-  const clientSecret = import.meta.env.VITE_SIRV_SECRET;
-
-  // Get Sirv access token
-  const tokenResponse = await axios.post('https://api.sirv.com/v2/token', {
-    clientId,
-    clientSecret,
+const uploadToS3 = async (file: File, userName: string) => {
+  // You must set these in your .env file (do not commit real secrets)
+  const accessKeyId = import.meta.env.VITE_AWS_ACCESS_KEY_ID;
+  const secretAccessKey = import.meta.env.VITE_AWS_SECRET_ACCESS_KEY;
+  const region = import.meta.env.VITE_AWS_REGION;
+  const bucket = import.meta.env.VITE_AWS_S3_BUCKET;
+  console.log(bucket);
+  const s3 = new S3Client({
+    region,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
   });
 
-  const { token } = tokenResponse.data;
-
-  const uploadResponse = await axios.post(
-    `https://api.sirv.com/v2/files/upload?filename=%2Ffacebook%2F${userName}.png`,
-    file,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'image/png',
-      },
-    }
-  );
-  return uploadResponse.data;
+  const fileName = `facebook/${userName}.png`;
+  const arrayBuffer = await file.arrayBuffer();
+  const params = {
+    Bucket: bucket,
+    Key: fileName,
+    Body: new Uint8Array(arrayBuffer),
+    ContentType: 'image/png',
+    // ACL removed due to bucket owner enforced
+  };
+  await s3.send(new PutObjectCommand(params));
+  return `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
 };
 
 const signupSchema = z.object({
@@ -63,24 +66,20 @@ export default function Signup() {
     data: SignupFields
   ) => {
     const imageFile = data.image[0];
-
+    let imageUrl = '';
     if (imageFile) {
-      await uploadToSirv(imageFile, data.name);
+      imageUrl = await uploadToS3(imageFile, data.name);
     }
-
     const res = await signup({
       name: data.name,
       email: data.email,
       password: data.password,
-      image: `https://nazmul.sirv.com/facebook/${data.name}.png`,
+      image: imageUrl,
     });
-
     dispatch({ type: 'sign-in', payload: res.user });
     localStorage.setItem('user-token', res.token);
     navigate('/');
   };
-
-  console.log(errors);
 
   return (
     <div className="flex flex-col gap-5 pt-8 items-center">
