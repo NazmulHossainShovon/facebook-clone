@@ -22,6 +22,7 @@ import {
   DialogTrigger,
 } from '@/Components/ui/dialog';
 import { Textarea } from '@/Components/ui/textarea';
+import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import Pagination from '@/Components/Pagination';
 
@@ -29,6 +30,7 @@ function UserProfile() {
   const navigate = useNavigate();
   const { userName } = useParams();
   const [post, setPost] = useState('');
+  const [images, setImages] = useState<File[]>([]);
   const {
     state: { userInfo },
     dispatch,
@@ -48,6 +50,16 @@ function UserProfile() {
   const handlePost = async () => {
     const res = await createPost({ post });
     await refetch();
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setImages(prevImages => [...prevImages, ...Array.from(e.target.files || [])]);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages(prevImages => prevImages.filter((_, i) => i !== index));
   };
 
   const sendFriendRequest = async () => {
@@ -154,6 +166,29 @@ function UserProfile() {
                 rows={10}
                 className=" resize-none text-black"
               />
+              <Input
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/gif"
+                onChange={handleImageChange}
+              />
+              <div className="flex flex-row gap-2">
+                {images.map((image, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={URL.createObjectURL(image)}
+                      alt={`preview ${index}`}
+                      className="w-16 h-16 object-cover"
+                    />
+                    <button
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                      onClick={() => handleRemoveImage(index)}
+                    >
+                      X
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </DialogDescription>
           <DialogFooter>
