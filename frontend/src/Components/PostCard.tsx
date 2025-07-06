@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   useCommentPost,
   useDeleteComment,
@@ -43,6 +43,7 @@ type PostCardProps = {
   likers: string[];
   comments: CommentType[];
   onPostUpdate: (updatedPost: Post) => void;
+  images?: string[];
 };
 
 function convertDateFormat(dateString: string) {
@@ -79,6 +80,7 @@ export default function PostCard({
   likers,
   onPostUpdate,
   comments,
+  images,
 }: PostCardProps) {
   const {
     state: { userInfo },
@@ -101,7 +103,7 @@ export default function PostCard({
     if (likers.includes(userInfo.name)) {
       await unlikePost({ userName: userInfo.name, postId: id });
     } else {
-      const data = await likePost({ userName: userInfo.name, postId: id });
+      await likePost({ userName: userInfo.name, postId: id });
     }
 
     await refetch();
@@ -180,6 +182,16 @@ export default function PostCard({
       </div>
 
       <p>{text}</p>
+      <div className="flex flex-row gap-2">
+        {images?.map((image, index) => (
+          <img
+            key={index}
+            src={image}
+            alt={`post content ${index}`}
+            className="w-16 h-16 object-cover"
+          />
+        ))}
+      </div>
       <div className="flex flex-row justify-center items-center gap-3 w-full">
         <Button
           className={twMerge(

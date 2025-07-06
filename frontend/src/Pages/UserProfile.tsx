@@ -88,16 +88,21 @@ function UserProfile() {
     if (failedUploads.length > 0) {
       throw new Error(`${failedUploads.length} images failed to upload.`);
     }
+    const imageUrls = images.map(
+      image => `https://nazmul.sirv.com/post-images/${image.name}`
+    );
+    return imageUrls;
   };
 
   const handlePost = async () => {
     try {
+      let imagesUrls: string[] = [];
       if (images.length > 0) {
         const token = await getSirvToken();
-        await uploadImagesToSirv(token);
+        imagesUrls = await uploadImagesToSirv(token);
       }
 
-      await createPost({ post });
+      await createPost({ post, images: imagesUrls });
       await refetch();
       setPost('');
       setImages([]);
@@ -272,6 +277,7 @@ function UserProfile() {
           isLoggedInUser={isLoggedInUser}
           onPostUpdate={handlePostUpdate}
           comments={post.comments}
+          images={post.images}
         />
       ))}
       <Pagination handlePageClick={handlePageClick} totalPages={totalPages} />

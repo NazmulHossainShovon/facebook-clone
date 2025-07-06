@@ -39,6 +39,7 @@ type Post = {
   updatedAt: string;
   userId: string;
   likers: string[];
+  images: string[];
   _id: string;
   comments: CommentType[];
 };

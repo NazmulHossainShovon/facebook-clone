@@ -18,9 +18,16 @@ type GetFriendsPostsHookType = {
 
 const useCreatePost = () => {
   return useMutation({
-    mutationFn: async ({ post }: { post: string }) => {
+    mutationFn: async ({
+      post,
+      images,
+    }: {
+      post: string;
+      images: string[];
+    }) => {
       const res = await apiClient.post('/api/posts/create', {
         post,
+        images,
       });
       return res.data;
     },
