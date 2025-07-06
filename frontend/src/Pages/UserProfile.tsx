@@ -48,13 +48,65 @@ function UserProfile() {
   const isLoggedInUser = userInfo.name === userName;
 
   const handlePost = async () => {
-    const res = await createPost({ post });
+    if (images.length > 0) {
+      try {
+        const tokenRes = await fetch('https://api.sirv.com/v2/token', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            clientId: import.meta.env.VITE_SIRV_ID,
+            clientSecret: import.meta.env.VITE_SIRV_SECRET,
+          }),
+        });
+
+        if (!tokenRes.ok) {
+          throw new Error('Failed to authenticate with Sirv');
+        }
+
+        const { token } = await tokenRes.json();
+
+        const uploadPromises = images.map(image => {
+          return fetch(
+            `https://api.sirv.com/v2/files/upload?filename=/post-images/${image.name}`,
+            {
+              method: 'POST',
+              headers: {
+                authorization: `Bearer ${token}`,
+                'content-type': image.type,
+              },
+              body: image,
+            }
+          );
+        });
+
+        const responses = await Promise.all(uploadPromises);
+        const failedUploads = responses.filter(res => !res.ok);
+        if (failedUploads.length > 0) {
+          console.error(`${failedUploads.length} images failed to upload.`);
+          // Optionally notify user and stop post creation
+          return;
+        }
+      } catch (error) {
+        console.error('Error uploading images:', error);
+        // Optionally notify user
+        return;
+      }
+    }
+
+    await createPost({ post });
     await refetch();
+    setPost('');
+    setImages([]);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setImages(prevImages => [...prevImages, ...Array.from(e.target.files || [])]);
+      setImages(prevImages => [
+        ...prevImages,
+        ...Array.from(e.target.files || []),
+      ]);
     }
   };
 
