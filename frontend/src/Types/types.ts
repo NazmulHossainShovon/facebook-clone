@@ -5,6 +5,7 @@ type User = {
   receivedFriendReqs: string[];
   sentFriendReqs: string[];
   token: string;
+  profileImage?: string;
 };
 
 type People = {

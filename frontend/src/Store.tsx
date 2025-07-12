@@ -10,6 +10,7 @@ const initialState: AppState = {
     receivedFriendReqs: [],
     sentFriendReqs: [],
     token: '',
+    profileImage: '',
   },
   searchQuery: '',
 };
@@ -31,12 +32,13 @@ const reducer = (state: AppState, action: Action): AppState => {
       return {
         ...state,
         userInfo: {
-          name: '',
-          email: '',
+          name: "",
+          email: "",
           friends: [],
           receivedFriendReqs: [],
           sentFriendReqs: [],
-          token: '',
+          token: "",
+          profileImage: "",
         },
       };
     case 'new-friend-req':
