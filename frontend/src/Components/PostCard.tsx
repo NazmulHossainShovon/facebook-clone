@@ -140,7 +140,7 @@ export default function PostCard({
           <Link to={`/${authorName}`}>
             <Avatar>
               <AvatarImage
-                src={`https://nazmul.sirv.com/facebook/${authorName}.png`}
+                src={userInfo.profileImage}
                 className=" object-cover"
               />
               <AvatarFallback>CN</AvatarFallback>
