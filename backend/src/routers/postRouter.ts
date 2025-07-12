@@ -47,6 +47,7 @@ postRouter.post(
     const user = await UserModel.findById(req.user._id);
     const post = await PostModel.create({
       post: req.body.post,
+      images: req.body.images,
       authorName: user?.name,
       userId: user?._id,
     });

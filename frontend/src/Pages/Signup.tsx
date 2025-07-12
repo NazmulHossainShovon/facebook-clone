@@ -1,40 +1,16 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import Input from '../Components/Input';
 import { Button } from '../Components/Button';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useSignupMutation } from '../Hooks/userHook';
 import { Store } from '../Store';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Box, LinearProgress } from '@mui/material';
 import { z } from 'zod';
-import FormErrorMessage from '@/Components/FormErrorMessage';
+import FormErrorMessage from '../Components/FormErrorMessage';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-const uploadToSirv = async (file: File, userName: string) => {
-  const clientId = import.meta.env.VITE_SIRV_ID;
-  const clientSecret = import.meta.env.VITE_SIRV_SECRET;
-
-  // Get Sirv access token
-  const tokenResponse = await axios.post('https://api.sirv.com/v2/token', {
-    clientId,
-    clientSecret,
-  });
-
-  const { token } = tokenResponse.data;
-
-  const uploadResponse = await axios.post(
-    `https://api.sirv.com/v2/files/upload?filename=%2Ffacebook%2F${userName}.png`,
-    file,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'image/png',
-      },
-    }
-  );
-  return uploadResponse.data;
-};
+import { uploadToS3 } from '../utils/uploadToS3';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
@@ -63,24 +39,20 @@ export default function Signup() {
     data: SignupFields
   ) => {
     const imageFile = data.image[0];
-
+    let imageUrl = '';
     if (imageFile) {
-      await uploadToSirv(imageFile, data.name);
+      imageUrl = await uploadToS3(imageFile, data.name);
     }
-
     const res = await signup({
       name: data.name,
       email: data.email,
       password: data.password,
-      image: `https://nazmul.sirv.com/facebook/${data.name}.png`,
+      image: imageUrl,
     });
-
     dispatch({ type: 'sign-in', payload: res.user });
     localStorage.setItem('user-token', res.token);
     navigate('/');
   };
-
-  console.log(errors);
 
   return (
     <div className="flex flex-col gap-5 pt-8 items-center">

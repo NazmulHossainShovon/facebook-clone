@@ -28,6 +28,9 @@ module.exports = {
     'no-undef': 'error',
   },
   settings: {
+    'import/resolver': {
+      typescript: {},
+    },
     react: {
       version: 'detect',
     },

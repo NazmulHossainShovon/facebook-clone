@@ -5,6 +5,9 @@ export class Post {
   @prop({ required: true })
   post!: string;
 
+  @prop({ type: () => [String] })
+  images?: string[];
+
   @prop({ required: true })
   authorName!: string;
 
