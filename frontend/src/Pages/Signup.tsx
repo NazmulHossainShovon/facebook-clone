@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import Input from '../Components/Input';
 import { Button } from '../Components/Button';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -9,35 +9,8 @@ import { Box, LinearProgress } from '@mui/material';
 import { z } from 'zod';
 import FormErrorMessage from '../Components/FormErrorMessage';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
-const uploadToS3 = async (file: File, userName: string) => {
-  // You must set these in your .env file (do not commit real secrets)
-  const accessKeyId = import.meta.env.VITE_AWS_ACCESS_KEY_ID;
-  const secretAccessKey = import.meta.env.VITE_AWS_SECRET_ACCESS_KEY;
-  const region = import.meta.env.VITE_AWS_REGION;
-  const bucket = import.meta.env.VITE_AWS_S3_BUCKET;
-  console.log(bucket);
-  const s3 = new S3Client({
-    region,
-    credentials: {
-      accessKeyId,
-      secretAccessKey,
-    },
-  });
-
-  const fileName = `facebook/${userName}.png`;
-  const arrayBuffer = await file.arrayBuffer();
-  const params = {
-    Bucket: bucket,
-    Key: fileName,
-    Body: new Uint8Array(arrayBuffer),
-    ContentType: 'image/png',
-    // ACL removed due to bucket owner enforced
-  };
-  await s3.send(new PutObjectCommand(params));
-  return `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
-};
+import { uploadToS3 } from '../utils/uploadToS3';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),

@@ -1,4 +1,3 @@
-import { isAuth } from "../utils";
 import express from "express";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
@@ -13,7 +12,7 @@ const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 
 if (!region || !bucketName || !accessKeyId || !secretAccessKey) {
-  throw new Error('Missing AWS environment variables');
+  throw new Error("Missing AWS environment variables");
 }
 
 const s3 = new S3Client({
@@ -26,9 +25,18 @@ const s3 = new S3Client({
 
 const s3Router = express.Router();
 
-s3Router.get("/signed-url", isAuth, async (req, res) => {
+s3Router.get("/signed-url", async (req, res) => {
+  const { contentType } = req.query;
+  const userName = req.query.userName as string;
+
+  if (!userName || !contentType) {
+    return res
+      .status(400)
+      .send({ message: "Missing userName or contentType query parameter" });
+  }
+
   const rawBytes = await randomBytes(16);
-  const imageName = rawBytes.toString("hex");
+  const imageName = userName + "/" + rawBytes.toString("hex");
 
   const params = {
     Bucket: bucketName,
@@ -39,7 +47,9 @@ s3Router.get("/signed-url", isAuth, async (req, res) => {
   const command = new PutObjectCommand(params);
   const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 60 });
 
-  res.send({ uploadUrl, imageName });
+  const imageUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${imageName}`;
+
+  res.send({ uploadUrl, imageUrl });
 });
 
 export default s3Router;
