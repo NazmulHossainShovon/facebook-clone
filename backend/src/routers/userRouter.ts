@@ -43,7 +43,7 @@ userRouter.post(
       name: req.body.name,
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password),
-      image: req.body.image,
+      profileImage: req.body.image,
     });
     const { password, ...userExceptPassword } = user.toObject();
     res.json({
