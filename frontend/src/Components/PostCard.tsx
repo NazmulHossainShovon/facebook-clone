@@ -44,6 +44,7 @@ type PostCardProps = {
   comments: CommentType[];
   onPostUpdate: (updatedPost: Post) => void;
   images?: string[];
+  profileImage?: string;
 };
 
 function convertDateFormat(dateString: string) {
@@ -81,6 +82,7 @@ export default function PostCard({
   onPostUpdate,
   comments,
   images,
+  profileImage,
 }: PostCardProps) {
   const {
     state: { userInfo },
@@ -139,10 +141,7 @@ export default function PostCard({
         <div className="flex flex-row gap-3">
           <Link to={`/${authorName}`}>
             <Avatar>
-              <AvatarImage
-                src={userInfo.profileImage}
-                className=" object-cover"
-              />
+              <AvatarImage src={profileImage} className=" object-cover" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
           </Link>

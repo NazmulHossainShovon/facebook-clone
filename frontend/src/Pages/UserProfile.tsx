@@ -275,6 +275,7 @@ function UserProfile() {
           onPostUpdate={handlePostUpdate}
           comments={post.comments}
           images={post.images}
+          profileImage={userData?.profileImage}
         />
       ))}
       <Pagination handlePageClick={handlePageClick} totalPages={totalPages} />
