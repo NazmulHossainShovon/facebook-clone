@@ -66,30 +66,32 @@ describe('UserProfile', () => {
     });
 
     (postHooks.useGetPosts as jest.Mock).mockReturnValue({
-      data: [
-        {
-          _id: 1,
-          post: 'test',
-          authorName: 'test',
-          createdAt: 'test',
-          userId: 'test',
-          likers: [],
-          comments: [],
-          authorImage: '',
-          updatedAt: '',
-        },
-        {
-          _id: 2,
-          post: 'test',
-          authorName: 'test',
-          createdAt: 'test',
-          userId: 'test',
-          likers: [],
-          comments: [],
-          authorImage: '',
-          updatedAt: '',
-        },
-      ],
+      data: {
+        posts: [
+          {
+            _id: 1,
+            post: 'test',
+            authorName: 'test',
+            createdAt: 'test',
+            userId: 'test',
+            likers: [],
+            comments: [],
+            authorImage: '',
+            updatedAt: '',
+          },
+          {
+            _id: 2,
+            post: 'test',
+            authorName: 'test',
+            createdAt: 'test',
+            userId: 'test',
+            likers: [],
+            comments: [],
+            authorImage: '',
+            updatedAt: '',
+          },
+        ],
+      },
       refetch: jest.fn(),
     });
 
@@ -152,8 +154,8 @@ describe('UserProfile', () => {
         </Store.Provider>
       </BrowserRouter>
     );
-    const optionsButton = screen.getByTestId('options');
-    await user.click(optionsButton);
+    const optionsButton = screen.getAllByTestId('options');
+    await user.click(optionsButton[0]);
     const button = screen.getByTestId('delete-post');
     expect(button).toBeInTheDocument();
   });
