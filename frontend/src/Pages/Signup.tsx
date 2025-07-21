@@ -18,7 +18,12 @@ const signupSchema = z.object({
   password: z
     .string()
     .min(4, { message: 'Password must be at least 4 characters' }),
-  image: z.any(),
+  image: z
+    .any()
+    .refine(
+      files => files?.[0] === undefined || files?.[0].size <= 512000,
+      'Max image size is 500KB.'
+    ),
 });
 
 type SignupFields = z.infer<typeof signupSchema>;
@@ -81,6 +86,9 @@ export default function Signup() {
         <div className=" flex flex-col gap-1">
           <label htmlFor="image">Profile Image</label>
           <input id="image" {...register('image')} type="file" />
+          {errors.image?.message && (
+            <FormErrorMessage message={errors.image.message as string} />
+          )}
         </div>
 
         <Button>Signup</Button>
