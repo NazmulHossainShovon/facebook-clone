@@ -10,10 +10,11 @@ export const useSignupMutation = () =>
       password: string;
       image: string;
     }) => {
-      const res = await apiClient.post<{ user: User; token: string }>(
-        'api/users/signup',
-        userInfo
-      );
+      const res = await apiClient.post<{
+        user: User;
+        token: string;
+        emailSent: boolean;
+      }>('api/users/signup', userInfo);
       return res.data;
     },
   });

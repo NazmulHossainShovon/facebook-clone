@@ -16,7 +16,7 @@ const sesClient = new SESClient({
   },
 });
 
-export const sendWelcomeEmail = async (email: string, name: string) => {
+export const sendWelcomeEmail = async (email: string, name: string): Promise<boolean> => {
   const emailParams = {
     Source: "shovon2228@gmail.com",
     Destination: {
@@ -30,6 +30,9 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
         Text: {
           Data: `Hi ${name}, welcome to Facebook Clone! We're excited to have you.`,
         },
+        Html: {
+          Data: `<html><body><h3>Hi ${name},</h3><p>Welcome to Facebook Clone! We're excited to have you.</p></body></html>`,
+        },
       },
     },
   };
@@ -37,7 +40,9 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
   try {
     await sesClient.send(new SendEmailCommand(emailParams));
     console.log(`Welcome email sent to ${email}`);
+    return true;
   } catch (error) {
     console.error(`Error sending welcome email: ${error}`);
+    return false;
   }
 };

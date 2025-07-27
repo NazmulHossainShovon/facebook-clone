@@ -48,11 +48,12 @@ userRouter.post(
     });
     const { password, ...userExceptPassword } = user.toObject();
 
-    await sendWelcomeEmail(user.email, user.name);
+    const emailSent = await sendWelcomeEmail(user.email, user.name);
 
     res.json({
       user: userExceptPassword,
       token: generateToken(user),
+      emailSent,
     });
   })
 );
