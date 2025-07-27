@@ -4,6 +4,23 @@ import bcrypt from "bcryptjs";
 import { User, UserModel } from "../models/userModel";
 import { generateToken, isAuth } from "../utils";
 import { io, userSocketMap } from "..";
+import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
+
+const region = process.env.AWS_REGION;
+const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
+if (!region || !accessKeyId || !secretAccessKey) {
+  throw new Error("Missing AWS environment variables for SES");
+}
+
+const sesClient = new SESClient({
+  region,
+  credentials: {
+    accessKeyId,
+    secretAccessKey,
+  },
+});
 
 export const userRouter = express.Router();
 // POST /api/users/signin
@@ -46,6 +63,31 @@ userRouter.post(
       profileImage: req.body.image,
     });
     const { password, ...userExceptPassword } = user.toObject();
+
+    const emailParams = {
+      Source: "shovon2228@gmail.com",
+      Destination: {
+        ToAddresses: [user.email],
+      },
+      Message: {
+        Subject: {
+          Data: "Welcome to Facebook Clone!",
+        },
+        Body: {
+          Text: {
+            Data: `Hi ${user.name}, welcome to Facebook Clone! We're excited to have you.`,
+          },
+        },
+      },
+    };
+
+    try {
+      await sesClient.send(new SendEmailCommand(emailParams));
+      console.log(`Welcome email sent to ${user.email}`);
+    } catch (error) {
+      console.error(`Error sending welcome email: ${error}`);
+    }
+
     res.json({
       user: userExceptPassword,
       token: generateToken(user),
