@@ -9,6 +9,7 @@ import { Box, LinearProgress } from '@mui/material';
 import { z } from 'zod';
 import FormErrorMessage from '../Components/FormErrorMessage';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from '@/hooks/use-toast';
 
 import { uploadToS3 } from '../utils/uploadToS3';
 
@@ -39,6 +40,7 @@ export default function Signup() {
   const { mutateAsync: signup, isPending } = useSignupMutation();
   const { dispatch } = useContext(Store);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const formDataHandle: SubmitHandler<SignupFields> = async (
     data: SignupFields
@@ -56,6 +58,15 @@ export default function Signup() {
     });
     dispatch({ type: 'sign-in', payload: res.user });
     localStorage.setItem('user-token', res.token);
+    if (res.emailSent) {
+      toast({
+        title: 'A welcome email has been sent to your email address.',
+      });
+    } else {
+      toast({
+        title: 'Could not send welcome email. Please check your email address.',
+      });
+    }
     navigate('/');
   };
 

@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { User, UserModel } from "../models/userModel";
 import { generateToken, isAuth } from "../utils";
 import { io, userSocketMap } from "..";
+import { sendWelcomeEmail } from "../utils/awsSes";
 
 export const userRouter = express.Router();
 // POST /api/users/signin
@@ -46,9 +47,13 @@ userRouter.post(
       profileImage: req.body.image,
     });
     const { password, ...userExceptPassword } = user.toObject();
+
+    const emailSent = await sendWelcomeEmail(user.email, user.name);
+
     res.json({
       user: userExceptPassword,
       token: generateToken(user),
+      emailSent,
     });
   })
 );

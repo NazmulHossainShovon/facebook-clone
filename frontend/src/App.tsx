@@ -8,6 +8,7 @@ import { Store } from './Store';
 import Home from './Pages/Home';
 import Search from './Pages/Search';
 import ProtectedRoute from './Components/ProtectedRoute';
+import { Toaster } from './components/ui/toaster';
 
 const App: React.FC = () => {
   const { dispatch } = useContext(Store);
@@ -35,6 +36,7 @@ const App: React.FC = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
       </Routes>
+      <Toaster />
     </BrowserRouter>
   );
 };
