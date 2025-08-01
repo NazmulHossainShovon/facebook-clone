@@ -25,6 +25,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import Pagination from '@/Components/Pagination';
+import PostCardSkeleton from '@/Components/PostCardSkeleton';
 
 function UserProfile() {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ function UserProfile() {
     dispatch,
   } = useContext(Store);
   const { mutateAsync: createPost } = useCreatePost();
+  const [isPosting, setIsPosting] = useState(false);
   const { data: userData, refetch: refetchUser } = useGetUserInfo(userName);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const { data, refetch } = useGetPosts({ userName, currentPage });
@@ -96,6 +98,7 @@ function UserProfile() {
 
   const handlePost = async () => {
     try {
+      setIsPosting(true);
       let imagesUrls: string[] = [];
       if (images.length > 0) {
         const token = await getSirvToken();
@@ -109,6 +112,8 @@ function UserProfile() {
     } catch (error) {
       console.error('Failed to create post:', error);
       // Optionally, show a notification to the user
+    } finally {
+      setIsPosting(false);
     }
   };
 
@@ -262,22 +267,26 @@ function UserProfile() {
         </DialogContent>
       </Dialog>
 
-      {allPosts.map((post, index) => (
-        <PostCard
-          key={index}
-          text={post.post}
-          authorName={post.authorName}
-          createdAt={post.createdAt}
-          id={post._id}
-          refetch={refetch}
-          likers={post.likers}
-          isLoggedInUser={isLoggedInUser}
-          onPostUpdate={handlePostUpdate}
-          comments={post.comments}
-          images={post.images}
-          profileImage={userData?.profileImage}
-        />
-      ))}
+      {isPosting ? (
+        <PostCardSkeleton />
+      ) : (
+        allPosts.map((post, index) => (
+          <PostCard
+            key={index}
+            text={post.post}
+            authorName={post.authorName}
+            createdAt={post.createdAt}
+            id={post._id}
+            refetch={refetch}
+            likers={post.likers}
+            isLoggedInUser={isLoggedInUser}
+            onPostUpdate={handlePostUpdate}
+            comments={post.comments}
+            images={post.images}
+            profileImage={userData?.profileImage}
+          />
+        ))
+      )}
       <Pagination handlePageClick={handlePageClick} totalPages={totalPages} />
     </div>
   );
