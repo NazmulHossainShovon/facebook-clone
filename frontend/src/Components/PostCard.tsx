@@ -32,6 +32,7 @@ import {
 } from './ui/dialog';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
+import ImageWithSkeleton from './ImageWithSkeleton';
 
 type PostCardProps = {
   id: string;
@@ -179,11 +180,10 @@ export default function PostCard({
           </DropdownMenu>
         </div>
       </div>
-
       <p>{text}</p>
       <div className="flex flex-row gap-2">
         {images?.map((image, index) => (
-          <img
+          <ImageWithSkeleton
             key={index}
             src={image}
             alt={`post content ${index}`}
