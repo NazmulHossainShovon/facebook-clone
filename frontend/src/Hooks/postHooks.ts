@@ -149,6 +149,24 @@ const useDeleteComment = () => {
   });
 };
 
+const useSharePost = () => {
+  return useMutation({
+    mutationFn: async ({
+      originalPostId,
+      shareMessage,
+    }: {
+      originalPostId: string;
+      shareMessage?: string;
+    }) => {
+      const res = await apiClient.post('/api/posts/share', {
+        originalPostId,
+        shareMessage,
+      });
+      return res.data;
+    },
+  });
+};
+
 const useUpdatePost = () => {
   return useMutation({
     mutationFn: async ({ id, post }: { id: string; post: string }) => {
@@ -174,4 +192,5 @@ export {
   useGetFriendPosts,
   useCommentPost,
   useDeleteComment,
+  useSharePost,
 };

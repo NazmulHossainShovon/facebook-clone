@@ -9,6 +9,7 @@ import {
 import { Store } from '../Store';
 import { Link } from 'react-router-dom';
 import EditPostModal from './EditPostModal';
+import ShareButton from './ShareButton';
 import CommentIcon from '@mui/icons-material/Comment';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { CommentType, Post } from '../Types/types';
@@ -159,8 +160,27 @@ export default function PostCard({
               <MenuDotsIcon />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
+              <ShareButton
+                post={{
+                  _id: id,
+                  post: text,
+                  authorName,
+                  authorImage:
+                    profileImage ||
+                    `https://nazmul.sirv.com/facebook/${authorName}.png`,
+                  createdAt,
+                  updatedAt: createdAt,
+                  userId: '',
+                  likers,
+                  images: images || [],
+                  comments,
+                  shareCount: 0,
+                }}
+                onShareSuccess={refetch}
+              />
               {isLoggedInUser && (
                 <>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     data-testid="delete-post"
                     onClick={handleDelete}
