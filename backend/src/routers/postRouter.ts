@@ -1,4 +1,5 @@
 import { PostModel } from "../models/postModel";
+import { SharedPostModel } from "../models/sharedPostModel";
 import { UserModel } from "../models/userModel";
 import { isAuth } from "../utils";
 import express, { Request, Response } from "express";
@@ -139,5 +140,55 @@ postRouter.put(
     );
 
     res.json({ message: "updated", doc: updatedPost });
+  })
+);
+
+postRouter.post(
+  "/share",
+  isAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { originalPostId, shareMessage } = req.body;
+    const user = await UserModel.findById(req.user._id);
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    // Check if the original post exists
+    const originalPost = await PostModel.findById(originalPostId);
+    if (!originalPost) {
+      res.status(404).json({ message: "Original post not found" });
+      return;
+    }
+
+    // Check if user has already shared this post
+    const existingShare = await SharedPostModel.findOne({
+      originalPostId,
+      sharedByUserId: user._id,
+    });
+
+    if (existingShare) {
+      res.status(400).json({ message: "Post already shared by this user" });
+      return;
+    }
+
+    // Create the shared post
+    const sharedPost = await SharedPostModel.create({
+      originalPostId,
+      sharedByUserId: user._id,
+      sharedByUserName: user.name,
+      shareMessage,
+    });
+
+    // Increment share count on original post
+    await PostModel.findByIdAndUpdate(originalPostId, {
+      $inc: { shareCount: 1 },
+    });
+
+    res.status(201).json({
+      message: "Post shared successfully",
+      sharedPost,
+    });
   })
 );

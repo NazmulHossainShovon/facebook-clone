@@ -43,6 +43,18 @@ type Post = {
   images: string[];
   _id: string;
   comments: CommentType[];
+  shareCount?: number;
+};
+
+type SharedPost = {
+  _id: string;
+  originalPostId: string;
+  sharedByUserId: string;
+  sharedByUserName: string;
+  shareMessage?: string;
+  createdAt: string;
+  updatedAt: string;
+  originalPost?: Post; // Populated original post data
 };
 
 type PageClickEvent = {
@@ -54,6 +66,7 @@ export type {
   AppState,
   SignupData,
   Post,
+  SharedPost,
   People,
   CommentType,
   PageClickEvent,

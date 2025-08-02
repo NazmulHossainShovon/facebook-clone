@@ -19,6 +19,9 @@ export class Post {
 
   @prop({ type: () => [Comment], default: [] })
   comments: Comment[] = [];
+
+  @prop({ default: 0 })
+  shareCount?: number;
 }
 
 class Comment {
