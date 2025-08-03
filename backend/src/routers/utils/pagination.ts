@@ -15,6 +15,7 @@ export const getPaginationParams = (req: Request): PaginationOptions => {
   return { page, limit, skip };
 };
 
+// Original function for MongoDB models
 export const applyPagination = async <T>(
   model: Model<T>,
   query: object,
@@ -29,4 +30,15 @@ export const applyPagination = async <T>(
   const totalItems = await model.countDocuments(query);
   const totalPages = Math.ceil(totalItems / limit);
   return { data, totalPages };
+};
+
+// Generic function for arrays of data
+export const applyPaginationToArray = <T>(
+  data: T[],
+  pagination: PaginationOptions
+): { data: T[]; totalPages: number } => {
+  const { skip, limit } = pagination;
+  const paginatedData = data.slice(skip, skip + limit);
+  const totalPages = Math.ceil(data.length / limit);
+  return { data: paginatedData, totalPages };
 };

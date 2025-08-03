@@ -4,7 +4,7 @@ import { UserModel } from "../models/userModel";
 import { isAuth } from "../utils";
 import express, { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
-import { applyPagination, getPaginationParams } from "./utils/pagination";
+import { applyPagination, applyPaginationToArray, getPaginationParams } from "./utils/pagination";
 
 // Types for posts with timestamps
 interface PostWithTimestamps {
@@ -84,10 +84,8 @@ postRouter.get(
       return dateB.getTime() - dateA.getTime();
     });
 
-    // Apply pagination manually
-    const { skip, limit } = pagination;
-    const paginatedPosts = allPosts.slice(skip, skip + limit);
-    const totalPages = Math.ceil(allPosts.length / limit);
+    // Apply pagination using the generic function
+    const { data: paginatedPosts, totalPages } = applyPaginationToArray(allPosts, pagination);
 
     res.json({ posts: paginatedPosts, totalPages });
   })
