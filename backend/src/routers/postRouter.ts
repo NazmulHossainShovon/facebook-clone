@@ -6,6 +6,35 @@ import express, { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import { applyPagination, getPaginationParams } from "./utils/pagination";
 
+// Types for posts with timestamps
+interface PostWithTimestamps {
+  _id: any;
+  post: string;
+  images?: string[];
+  authorName: string;
+  userId: string;
+  likers: string[];
+  comments: any[];
+  shareCount?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  isShared: false;
+}
+
+interface SharedPostWithTimestamps {
+  _id: any;
+  originalPostId: string;
+  sharedByUserId: string;
+  sharedByUserName: string;
+  shareMessage?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  originalPost?: PostWithTimestamps;
+  isShared: true;
+}
+
+type CombinedPost = PostWithTimestamps | SharedPostWithTimestamps;
+
 export const postRouter = express.Router();
 
 postRouter.get(
@@ -13,13 +42,54 @@ postRouter.get(
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
     const pagination = getPaginationParams(req);
-    const query = { authorName: req.query.userName };
-    const { data: posts, totalPages } = await applyPagination(
-      PostModel,
-      query,
-      pagination
+    const userName = req.query.userName as string;
+
+    // Fetch regular posts by the user
+    const regularPosts = await PostModel.find({ authorName: userName }).sort({
+      createdAt: -1,
+    });
+
+    // Fetch shared posts by the user and populate original post data
+    const sharedPosts = await SharedPostModel.find({
+      sharedByUserName: userName,
+    }).sort({ createdAt: -1 });
+
+    // Get original posts for shared posts
+    const sharedPostsWithOriginal = await Promise.all(
+      sharedPosts.map(async (sharedPost) => {
+        const originalPost = await PostModel.findById(
+          sharedPost.originalPostId
+        );
+        return {
+          ...sharedPost.toObject(),
+          originalPost: originalPost?.toObject() as PostWithTimestamps,
+          isShared: true as const,
+        } as SharedPostWithTimestamps;
+      })
     );
-    res.json({ posts, totalPages });
+
+    // Combine all posts and sort by latest first
+    const allPosts: CombinedPost[] = [
+      ...regularPosts.map(
+        (post) =>
+          ({
+            ...post.toObject(),
+            isShared: false as const,
+          } as PostWithTimestamps)
+      ),
+      ...sharedPostsWithOriginal.filter((item) => item.originalPost), // Only include if original post exists
+    ].sort((a, b) => {
+      const dateA = new Date(a.createdAt || a.updatedAt);
+      const dateB = new Date(b.createdAt || b.updatedAt);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    // Apply pagination manually
+    const { skip, limit } = pagination;
+    const paginatedPosts = allPosts.slice(skip, skip + limit);
+    const totalPages = Math.ceil(allPosts.length / limit);
+
+    res.json({ posts: paginatedPosts, totalPages });
   })
 );
 
