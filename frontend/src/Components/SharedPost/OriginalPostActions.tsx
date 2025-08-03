@@ -42,7 +42,6 @@ function OriginalPostActions({
         <CommentIcon className="mr-1 h-4 w-4" />
         Comment
       </Button>
-      <ShareButton post={post} />
     </div>
   );
 }

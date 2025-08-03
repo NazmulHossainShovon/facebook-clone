@@ -124,12 +124,6 @@ function SharedPostCard({
           images={originalPost.images}
         />
 
-        <OriginalPostStats
-          likersCount={originalPost.likers.length}
-          commentsCount={originalPost.comments.length}
-          shareCount={originalPost.shareCount}
-        />
-
         <OriginalPostActions
           isLiked={isLiked}
           onLike={handleLike}

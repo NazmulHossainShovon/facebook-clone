@@ -20,11 +20,13 @@ import ImageWithSkeleton from './ImageWithSkeleton';
 type ShareButtonProps = {
   post: Post;
   onShareSuccess?: () => void;
+  as?: 'button' | 'menuitem';
 };
 
 export default function ShareButton({
   post,
   onShareSuccess,
+  as = 'menuitem',
 }: ShareButtonProps) {
   const {
     state: { userInfo },
@@ -48,12 +50,16 @@ export default function ShareButton({
     }
   };
 
+  const TriggerComponent = as === 'button' ? Button : DropdownMenuItem;
+
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={e => e.preventDefault()}>
+        <TriggerComponent
+          onSelect={as === 'menuitem' ? e => e.preventDefault() : undefined}
+        >
           Share Post
-        </DropdownMenuItem>
+        </TriggerComponent>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
