@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCreatePost, useGetPosts } from '../Hooks/postHooks';
 import PostCard from '../Components/PostCard';
+import SharedPostCard from '../Components/SharedPostCard';
 import {
   useAcceptFriendRequest,
   useCancelFriendRequest,
@@ -10,7 +11,7 @@ import {
 } from '../Hooks/userHook';
 import { Store } from '../Store';
 import FriendOptionsMenu from '../Components/FriendOptionsMenu';
-import { PageClickEvent, Post } from '../Types/types';
+import { PageClickEvent, Post, SharedPost } from '../Types/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import {
@@ -44,7 +45,12 @@ function UserProfile() {
   const { mutateAsync: sendRequest } = useSendFriendRequest();
   const { mutateAsync: cancelRequest } = useCancelFriendRequest();
   const { mutateAsync: acceptRequest } = useAcceptFriendRequest();
-  const [allPosts, setAllPosts] = useState<Post[]>([]);
+  // Combined post type that matches the backend response
+  type PostWithSharedFlag = Post & { isShared: false };
+  type SharedPostWithFlag = SharedPost & { isShared: true };
+  type CombinedPost = PostWithSharedFlag | SharedPostWithFlag;
+
+  const [allPosts, setAllPosts] = useState<CombinedPost[]>([]);
   const [totalPages, setTotalPages] = useState<number>(2);
 
   const isLoggedInUser = userInfo.name === userName;
@@ -168,7 +174,11 @@ function UserProfile() {
 
   const handlePostUpdate = (updatedPost: Post) => {
     setAllPosts(prevPosts =>
-      prevPosts.map(post => (post._id === updatedPost._id ? updatedPost : post))
+      prevPosts.map(post =>
+        post._id === updatedPost._id && !post.isShared
+          ? { ...updatedPost, isShared: false as const }
+          : post
+      )
     );
   };
 
@@ -270,22 +280,32 @@ function UserProfile() {
       {isPosting ? (
         <PostCardSkeleton />
       ) : (
-        allPosts.map((post, index) => (
-          <PostCard
-            key={index}
-            text={post.post}
-            authorName={post.authorName}
-            createdAt={post.createdAt}
-            id={post._id}
-            refetch={refetch}
-            likers={post.likers}
-            isLoggedInUser={isLoggedInUser}
-            onPostUpdate={handlePostUpdate}
-            comments={post.comments}
-            images={post.images}
-            profileImage={userData?.profileImage}
-          />
-        ))
+        allPosts.map((post, index) =>
+          post.isShared ? (
+            <SharedPostCard
+              key={index}
+              sharedPost={post}
+              refetch={refetch}
+              isLoggedInUser={isLoggedInUser}
+              profileImage={userData?.profileImage}
+            />
+          ) : (
+            <PostCard
+              key={index}
+              text={post.post}
+              authorName={post.authorName}
+              createdAt={post.createdAt}
+              id={post._id}
+              refetch={refetch}
+              likers={post.likers}
+              isLoggedInUser={isLoggedInUser}
+              onPostUpdate={handlePostUpdate}
+              comments={post.comments}
+              images={post.images}
+              profileImage={userData?.profileImage}
+            />
+          )
+        )
       )}
       <Pagination handlePageClick={handlePageClick} totalPages={totalPages} />
     </div>

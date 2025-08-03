@@ -1,14 +1,19 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import apiClient from '../ApiClient';
-import { Post } from '../Types/types';
+import { Post, SharedPost } from '../Types/types';
 
 type GetPostsHookType = {
   userName: string | undefined;
   currentPage: number;
 };
 
+// Combined post type that matches backend CombinedPost
+type PostWithSharedFlag = Post & { isShared: false };
+type SharedPostWithFlag = SharedPost & { isShared: true };
+type CombinedPost = PostWithSharedFlag | SharedPostWithFlag;
+
 type GetPostHookResponseType = {
-  posts: Post[];
+  posts: CombinedPost[];
   totalPages: number;
 };
 
