@@ -3,12 +3,14 @@ import { twMerge } from 'tailwind-merge';
 import CommentIcon from '@mui/icons-material/Comment';
 import ShareButton from '../ShareButton';
 
+import { Post } from '../../Types/types';
+
 type OriginalPostActionsProps = {
   isLiked: boolean;
   onLike: () => void;
   onUnlike: () => void;
   onToggleComments: () => void;
-  postId: string;
+  post: Post;
 };
 
 function OriginalPostActions({
@@ -16,7 +18,7 @@ function OriginalPostActions({
   onLike,
   onUnlike,
   onToggleComments,
-  postId,
+  post,
 }: OriginalPostActionsProps) {
   return (
     <div className="flex items-center justify-between border-t pt-2">
@@ -40,7 +42,7 @@ function OriginalPostActions({
         <CommentIcon className="mr-1 h-4 w-4" />
         Comment
       </Button>
-      <ShareButton postId={postId} />
+      <ShareButton post={post} />
     </div>
   );
 }

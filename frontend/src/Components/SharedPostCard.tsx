@@ -130,13 +130,13 @@ function SharedPostCard({
           shareCount={originalPost.shareCount}
         />
 
-        {/* <OriginalPostActions
+        <OriginalPostActions
           isLiked={isLiked}
           onLike={handleLike}
           onUnlike={handleUnlike}
           onToggleComments={handleToggleComments}
-          postId={originalPost._id}
-        /> */}
+          post={originalPost}
+        />
 
         <CommentsSection
           showComments={showComments}
