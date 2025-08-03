@@ -38,7 +38,7 @@ function SharedPostHeader({
         </Avatar>
         <div>
           <Link
-            to={`/user/${sharedByUserName}`}
+            to={`/${sharedByUserName}`}
             className="font-semibold text-sm hover:underline"
           >
             {sharedByUserName}

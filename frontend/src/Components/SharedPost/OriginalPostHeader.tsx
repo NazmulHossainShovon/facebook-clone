@@ -22,7 +22,7 @@ function OriginalPostHeader({
       </Avatar>
       <div>
         <Link
-          to={`/user/${authorName}`}
+          to={`/${authorName}`}
           className="font-semibold text-sm hover:underline"
         >
           {authorName}
