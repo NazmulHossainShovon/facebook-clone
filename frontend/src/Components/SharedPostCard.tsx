@@ -2,7 +2,6 @@ import { useContext, useState } from 'react';
 import {
   useCommentPost,
   useDeleteComment,
-  useDeletePost,
   useLikePost,
   useUnlikePost,
 } from '../Hooks/postHooks';
@@ -13,9 +12,9 @@ import ShareMessage from './SharedPost/ShareMessage';
 import OriginalPostContainer from './SharedPost/OriginalPostContainer';
 import OriginalPostHeader from './SharedPost/OriginalPostHeader';
 import OriginalPostContent from './SharedPost/OriginalPostContent';
-import OriginalPostStats from './SharedPost/OriginalPostStats';
 import OriginalPostActions from './SharedPost/OriginalPostActions';
 import CommentsSection from './SharedPost/CommentsSection';
+import { useDeleteSharedPost } from '@/Hooks/deletePostHooks';
 
 type SharedPostCardProps = {
   sharedPost: SharedPost;
@@ -39,7 +38,7 @@ function SharedPostCard({
   const { mutateAsync: unlikePost } = useUnlikePost();
   const { mutateAsync: commentPost } = useCommentPost();
   const { mutateAsync: deleteComment } = useDeleteComment();
-  const { mutateAsync: deletePost } = useDeletePost();
+  const { mutateAsync: deletePost } = useDeleteSharedPost();
 
   const originalPost = sharedPost.originalPost;
 
