@@ -1,14 +1,19 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import apiClient from '../ApiClient';
-import { Post } from '../Types/types';
+import { Post, SharedPost } from '../Types/types';
 
 type GetPostsHookType = {
   userName: string | undefined;
   currentPage: number;
 };
 
+// Combined post type that matches backend CombinedPost
+type PostWithSharedFlag = Post & { isShared: false };
+type SharedPostWithFlag = SharedPost & { isShared: true };
+type CombinedPost = PostWithSharedFlag | SharedPostWithFlag;
+
 type GetPostHookResponseType = {
-  posts: Post[];
+  posts: CombinedPost[];
   totalPages: number;
 };
 
@@ -149,6 +154,24 @@ const useDeleteComment = () => {
   });
 };
 
+const useSharePost = () => {
+  return useMutation({
+    mutationFn: async ({
+      originalPostId,
+      shareMessage,
+    }: {
+      originalPostId: string;
+      shareMessage?: string;
+    }) => {
+      const res = await apiClient.post('/api/posts/share', {
+        originalPostId,
+        shareMessage,
+      });
+      return res.data;
+    },
+  });
+};
+
 const useUpdatePost = () => {
   return useMutation({
     mutationFn: async ({ id, post }: { id: string; post: string }) => {
@@ -174,4 +197,5 @@ export {
   useGetFriendPosts,
   useCommentPost,
   useDeleteComment,
+  useSharePost,
 };

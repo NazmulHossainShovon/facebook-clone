@@ -9,6 +9,7 @@ import {
 import { Store } from '../Store';
 import { Link } from 'react-router-dom';
 import EditPostModal from './EditPostModal';
+import ShareButton from './ShareButton';
 import CommentIcon from '@mui/icons-material/Comment';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { CommentType, Post } from '../Types/types';
@@ -32,6 +33,7 @@ import {
 } from './ui/dialog';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
+import ImageWithSkeleton from './ImageWithSkeleton';
 
 type PostCardProps = {
   id: string;
@@ -158,8 +160,27 @@ export default function PostCard({
               <MenuDotsIcon />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
+              <ShareButton
+                post={{
+                  _id: id,
+                  post: text,
+                  authorName,
+                  authorImage:
+                    profileImage ||
+                    `https://nazmul.sirv.com/facebook/${authorName}.png`,
+                  createdAt,
+                  updatedAt: createdAt,
+                  userId: '',
+                  likers,
+                  images: images || [],
+                  comments,
+                  shareCount: 0,
+                }}
+                onShareSuccess={refetch}
+              />
               {isLoggedInUser && (
                 <>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     data-testid="delete-post"
                     onClick={handleDelete}
@@ -179,11 +200,10 @@ export default function PostCard({
           </DropdownMenu>
         </div>
       </div>
-
       <p>{text}</p>
       <div className="flex flex-row gap-2">
         {images?.map((image, index) => (
-          <img
+          <ImageWithSkeleton
             key={index}
             src={image}
             alt={`post content ${index}`}

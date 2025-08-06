@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCreatePost, useGetPosts } from '../Hooks/postHooks';
 import PostCard from '../Components/PostCard';
+import SharedPostCard from '../Components/SharedPostCard';
 import {
   useAcceptFriendRequest,
   useCancelFriendRequest,
@@ -10,7 +11,7 @@ import {
 } from '../Hooks/userHook';
 import { Store } from '../Store';
 import FriendOptionsMenu from '../Components/FriendOptionsMenu';
-import { PageClickEvent, Post } from '../Types/types';
+import { PageClickEvent, Post, SharedPost } from '../Types/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import {
@@ -25,6 +26,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import Pagination from '@/Components/Pagination';
+import PostCardSkeleton from '@/Components/PostCardSkeleton';
 
 function UserProfile() {
   const navigate = useNavigate();
@@ -36,13 +38,19 @@ function UserProfile() {
     dispatch,
   } = useContext(Store);
   const { mutateAsync: createPost } = useCreatePost();
+  const [isPosting, setIsPosting] = useState(false);
   const { data: userData, refetch: refetchUser } = useGetUserInfo(userName);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const { data, refetch } = useGetPosts({ userName, currentPage });
   const { mutateAsync: sendRequest } = useSendFriendRequest();
   const { mutateAsync: cancelRequest } = useCancelFriendRequest();
   const { mutateAsync: acceptRequest } = useAcceptFriendRequest();
-  const [allPosts, setAllPosts] = useState<Post[]>([]);
+  // Combined post type that matches the backend response
+  type PostWithSharedFlag = Post & { isShared: false };
+  type SharedPostWithFlag = SharedPost & { isShared: true };
+  type CombinedPost = PostWithSharedFlag | SharedPostWithFlag;
+
+  const [allPosts, setAllPosts] = useState<CombinedPost[]>([]);
   const [totalPages, setTotalPages] = useState<number>(2);
 
   const isLoggedInUser = userInfo.name === userName;
@@ -96,6 +104,7 @@ function UserProfile() {
 
   const handlePost = async () => {
     try {
+      setIsPosting(true);
       let imagesUrls: string[] = [];
       if (images.length > 0) {
         const token = await getSirvToken();
@@ -109,6 +118,8 @@ function UserProfile() {
     } catch (error) {
       console.error('Failed to create post:', error);
       // Optionally, show a notification to the user
+    } finally {
+      setIsPosting(false);
     }
   };
 
@@ -163,7 +174,11 @@ function UserProfile() {
 
   const handlePostUpdate = (updatedPost: Post) => {
     setAllPosts(prevPosts =>
-      prevPosts.map(post => (post._id === updatedPost._id ? updatedPost : post))
+      prevPosts.map(post =>
+        post._id === updatedPost._id && !post.isShared
+          ? { ...updatedPost, isShared: false as const }
+          : post
+      )
     );
   };
 
@@ -262,22 +277,36 @@ function UserProfile() {
         </DialogContent>
       </Dialog>
 
-      {allPosts.map((post, index) => (
-        <PostCard
-          key={index}
-          text={post.post}
-          authorName={post.authorName}
-          createdAt={post.createdAt}
-          id={post._id}
-          refetch={refetch}
-          likers={post.likers}
-          isLoggedInUser={isLoggedInUser}
-          onPostUpdate={handlePostUpdate}
-          comments={post.comments}
-          images={post.images}
-          profileImage={userData?.profileImage}
-        />
-      ))}
+      {isPosting ? (
+        <PostCardSkeleton />
+      ) : (
+        allPosts.map((post, index) =>
+          post.isShared ? (
+            <SharedPostCard
+              key={index}
+              sharedPost={post}
+              refetch={refetch}
+              isLoggedInUser={isLoggedInUser}
+              profileImage={userData?.profileImage}
+            />
+          ) : (
+            <PostCard
+              key={index}
+              text={post.post}
+              authorName={post.authorName}
+              createdAt={post.createdAt}
+              id={post._id}
+              refetch={refetch}
+              likers={post.likers}
+              isLoggedInUser={isLoggedInUser}
+              onPostUpdate={handlePostUpdate}
+              comments={post.comments}
+              images={post.images}
+              profileImage={userData?.profileImage}
+            />
+          )
+        )
+      )}
       <Pagination handlePageClick={handlePageClick} totalPages={totalPages} />
     </div>
   );
