@@ -11,3 +11,11 @@ export const createComment = asyncHandler(async (req: Request, res: Response) =>
   });
   res.status(201).json(comment);
 });
+
+export const getCommentsByPost = asyncHandler(async (req: Request, res: Response) => {
+  const { postId } = req.params;
+  const comments = await CommentModel.find({ postId })
+    .populate('userId', 'name')
+    .sort({ createdAt: -1 });
+  res.json(comments);
+});
