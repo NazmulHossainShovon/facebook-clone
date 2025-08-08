@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import { userRouter } from "./routers/userRouter";
 import { postRouter } from "./routers/postRouter";
 import { searchRouter } from "./routers/searchRouter";
+import { commentRouter } from './routers/commentRouter';
 import s3Router from "./routers/s3Router";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -54,6 +55,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRouter);
 app.use("/api/posts", postRouter);
 app.use("/api/search", searchRouter);
+app.use('/api/comments', commentRouter);
 app.use("/api/s3", s3Router);
 
 const PORT: number = parseInt((process.env.PORT || "4000") as string, 10);
