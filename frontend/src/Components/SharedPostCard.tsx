@@ -1,19 +1,10 @@
-import { useContext, useState } from 'react';
-import {
-  useCommentPost,
-  useDeleteComment,
-  useLikePost,
-  useUnlikePost,
-} from '../Hooks/postHooks';
-import { Store } from '../Store';
 import { SharedPost } from '../Types/types';
 import SharedPostHeader from './SharedPost/SharedPostHeader';
 import ShareMessage from './SharedPost/ShareMessage';
 import OriginalPostContainer from './SharedPost/OriginalPostContainer';
 import OriginalPostHeader from './SharedPost/OriginalPostHeader';
 import OriginalPostContent from './SharedPost/OriginalPostContent';
-import OriginalPostActions from './SharedPost/OriginalPostActions';
-import CommentsSection from './SharedPost/CommentsSection';
+
 import { useDeleteSharedPost } from '@/Hooks/deletePostHooks';
 
 type SharedPostCardProps = {
@@ -29,15 +20,6 @@ function SharedPostCard({
   isLoggedInUser,
   profileImage,
 }: SharedPostCardProps) {
-  const {
-    state: { userInfo },
-  } = useContext(Store);
-
-  const [showComments, setShowComments] = useState(false);
-  const { mutateAsync: likePost } = useLikePost();
-  const { mutateAsync: unlikePost } = useUnlikePost();
-  const { mutateAsync: commentPost } = useCommentPost();
-  const { mutateAsync: deleteComment } = useDeleteComment();
   const { mutateAsync: deletePost } = useDeleteSharedPost();
 
   const originalPost = sharedPost.originalPost;
@@ -46,37 +28,9 @@ function SharedPostCard({
     return null; // Don't render if original post is missing
   }
 
-  const handleLike = async () => {
-    await likePost({ userName: userInfo.name, postId: originalPost._id });
-    refetch();
-  };
-
-  const handleUnlike = async () => {
-    await unlikePost({ userName: userInfo.name, postId: originalPost._id });
-    refetch();
-  };
-
-  const handleAddComment = async (comment: string) => {
-    await commentPost({
-      userName: userInfo.name,
-      postId: originalPost._id,
-      comment,
-    });
-    refetch();
-  };
-
-  const handleDeleteComment = async (commentId: string) => {
-    await deleteComment({ postId: originalPost._id, commentId });
-    refetch();
-  };
-
   const handleDeletePost = async () => {
     await deletePost({ id: sharedPost._id });
     refetch();
-  };
-
-  const handleToggleComments = () => {
-    setShowComments(!showComments);
   };
 
   const formatDate = (dateString: string) => {
@@ -94,8 +48,6 @@ function SharedPostCard({
       return `${Math.floor(diffInSeconds / 86400)}d`;
     }
   };
-
-  const isLiked = originalPost.likers.includes(userInfo.name);
 
   return (
     <div className="bg-white rounded-lg w-[90%] md:w-[30%] p-4 border border-gray-200 shadow">
@@ -121,23 +73,6 @@ function SharedPostCard({
         <OriginalPostContent
           postText={originalPost.post}
           images={originalPost.images}
-        />
-
-        <OriginalPostActions
-          isLiked={isLiked}
-          onLike={handleLike}
-          onUnlike={handleUnlike}
-          onToggleComments={handleToggleComments}
-          post={originalPost}
-        />
-
-        <CommentsSection
-          showComments={showComments}
-          comments={originalPost.comments}
-          currentUserName={userInfo.name}
-          onAddComment={handleAddComment}
-          onDeleteComment={handleDeleteComment}
-          formatDate={formatDate}
         />
       </OriginalPostContainer>
     </div>
