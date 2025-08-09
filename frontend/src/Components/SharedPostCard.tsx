@@ -1,4 +1,8 @@
 import { SharedPost } from '../Types/types';
+import CommentsDialog from './CommentsDialog';
+import { useCreateComment } from '@/Hooks/commentHooks';
+import { useContext } from 'react';
+import { Store } from '@/Store';
 import SharedPostHeader from './SharedPost/SharedPostHeader';
 import ShareMessage from './SharedPost/ShareMessage';
 import OriginalPostContainer from './SharedPost/OriginalPostContainer';
@@ -21,6 +25,10 @@ function SharedPostCard({
   profileImage,
 }: SharedPostCardProps) {
   const { mutateAsync: deletePost } = useDeleteSharedPost();
+  const { mutateAsync: createComment } = useCreateComment();
+  const {
+    state: { userInfo },
+  } = useContext(Store);
 
   const originalPost = sharedPost.originalPost;
 
@@ -75,6 +83,15 @@ function SharedPostCard({
           images={originalPost.images}
         />
       </OriginalPostContainer>
+
+      <CommentsDialog
+        comments={[]}
+        onComment={async (comment: string) => {
+          await createComment({ postId: originalPost._id, content: comment });
+        }}
+        onDeleteComment={async (_commentId: string) => {}}
+        currentUserName={userInfo.name}
+      />
     </div>
   );
 }
