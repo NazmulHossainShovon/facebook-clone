@@ -67,6 +67,29 @@ function SharedPostCard({
     }
   };
 
+  // Comments dialog handlers and data for readability
+  const commentsData = comments ?? [];
+
+  const handleAddComment = async (comment: string) => {
+    try {
+      await createComment({ postId: originalPost._id, content: comment });
+      await refetchComments();
+      toast({ title: 'Comment added' });
+    } catch (e) {
+      toast({ title: 'Failed to add comment', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      await deleteComment({ commentId });
+      await refetchComments();
+      toast({ title: 'Comment deleted' });
+    } catch (e) {
+      toast({ title: 'Failed to delete comment', variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg w-[90%] md:w-[30%] p-4 border border-gray-200 shadow">
       <SharedPostHeader
@@ -95,28 +118,9 @@ function SharedPostCard({
       </OriginalPostContainer>
 
       <CommentsDialog
-        comments={comments ?? []}
-        onComment={async (comment: string) => {
-          try {
-            await createComment({ postId: originalPost._id, content: comment });
-            await refetchComments();
-            toast({ title: 'Comment added' });
-          } catch (e) {
-            toast({ title: 'Failed to add comment', variant: 'destructive' });
-          }
-        }}
-        onDeleteComment={async (commentId: string) => {
-          try {
-            await deleteComment({ commentId });
-            await refetchComments();
-            toast({ title: 'Comment deleted' });
-          } catch (e) {
-            toast({
-              title: 'Failed to delete comment',
-              variant: 'destructive',
-            });
-          }
-        }}
+        comments={commentsData}
+        onComment={handleAddComment}
+        onDeleteComment={handleDeleteComment}
         currentUserName={userInfo.name}
       />
     </div>
