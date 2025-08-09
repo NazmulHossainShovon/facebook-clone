@@ -1,7 +1,12 @@
 import { SharedPost } from '../Types/types';
 import CommentsDialog from './CommentsDialog';
-import { useCreateComment, useGetComments } from '@/Hooks/commentHooks';
+import {
+  useCreateComment,
+  useGetComments,
+  useDeleteComment,
+} from '@/Hooks/commentHooks';
 import { useContext } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { Store } from '@/Store';
 import SharedPostHeader from './SharedPost/SharedPostHeader';
 import ShareMessage from './SharedPost/ShareMessage';
@@ -26,13 +31,15 @@ function SharedPostCard({
 }: SharedPostCardProps) {
   const { mutateAsync: deletePost } = useDeleteSharedPost();
   const { mutateAsync: createComment } = useCreateComment();
+  const { mutateAsync: deleteComment } = useDeleteComment();
+  const { toast } = useToast();
   const {
     state: { userInfo },
   } = useContext(Store);
 
   const originalPost = sharedPost.originalPost;
   const { data: comments, refetch: refetchComments } = useGetComments({
-    postId: sharedPost?._id,
+    postId: originalPost?._id,
   });
 
   if (!originalPost) {
@@ -90,10 +97,26 @@ function SharedPostCard({
       <CommentsDialog
         comments={comments ?? []}
         onComment={async (comment: string) => {
-          await createComment({ postId: sharedPost._id, content: comment });
-          await refetchComments();
+          try {
+            await createComment({ postId: originalPost._id, content: comment });
+            await refetchComments();
+            toast({ title: 'Comment added' });
+          } catch (e) {
+            toast({ title: 'Failed to add comment', variant: 'destructive' });
+          }
         }}
-        onDeleteComment={async (_commentId: string) => {}}
+        onDeleteComment={async (commentId: string) => {
+          try {
+            await deleteComment({ commentId });
+            await refetchComments();
+            toast({ title: 'Comment deleted' });
+          } catch (e) {
+            toast({
+              title: 'Failed to delete comment',
+              variant: 'destructive',
+            });
+          }
+        }}
         currentUserName={userInfo.name}
       />
     </div>

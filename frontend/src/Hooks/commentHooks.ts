@@ -41,9 +41,11 @@ const useGetComments = ({ postId }: GetCommentsHookType) => {
     queryKey: ['comments', postId],
     enabled: !!postId,
     queryFn: async () => {
-      const res = await apiClient.get<BackendComment[]>(`/api/comments/post/${postId}`);
+      const res = await apiClient.get<BackendComment[]>(
+        `/api/comments/post/${postId}`
+      );
       // Map backend shape to frontend CommentType shape
-      const mapped: CommentType[] = res.data.map((c) => ({
+      const mapped: CommentType[] = res.data.map(c => ({
         _id: c._id,
         comment: c.content,
         userName: typeof c.userId === 'string' ? c.userId : c.userId.name,
@@ -54,4 +56,15 @@ const useGetComments = ({ postId }: GetCommentsHookType) => {
   });
 };
 
-export { useCreateComment, useGetComments };
+const useDeleteComment = () => {
+  return useMutation({
+    mutationFn: async ({ commentId }: { commentId: string }) => {
+      const res = await apiClient.delete<{ message: string }>(
+        `/api/comments/${commentId}`
+      );
+      return res.data;
+    },
+  });
+};
+
+export { useCreateComment, useGetComments, useDeleteComment };
