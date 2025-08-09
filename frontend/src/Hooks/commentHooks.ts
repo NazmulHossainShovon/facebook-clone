@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import apiClient from '../ApiClient';
 
 // Creates a new comment for a post using the backend /api/comments endpoint
@@ -21,4 +21,37 @@ const useCreateComment = () => {
   });
 };
 
-export { useCreateComment };
+import type { CommentType } from '../Types/types';
+
+type BackendComment = {
+  _id: string;
+  postId: string;
+  userId: { _id: string; name: string } | string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type GetCommentsHookType = {
+  postId?: string;
+};
+
+const useGetComments = ({ postId }: GetCommentsHookType) => {
+  return useQuery<CommentType[]>({
+    queryKey: ['comments', postId],
+    enabled: !!postId,
+    queryFn: async () => {
+      const res = await apiClient.get<BackendComment[]>(`/api/comments/post/${postId}`);
+      // Map backend shape to frontend CommentType shape
+      const mapped: CommentType[] = res.data.map((c) => ({
+        _id: c._id,
+        comment: c.content,
+        userName: typeof c.userId === 'string' ? c.userId : c.userId.name,
+        createdAt: c.createdAt,
+      }));
+      return mapped;
+    },
+  });
+};
+
+export { useCreateComment, useGetComments };

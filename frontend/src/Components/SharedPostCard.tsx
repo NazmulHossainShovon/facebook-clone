@@ -1,6 +1,6 @@
 import { SharedPost } from '../Types/types';
 import CommentsDialog from './CommentsDialog';
-import { useCreateComment } from '@/Hooks/commentHooks';
+import { useCreateComment, useGetComments } from '@/Hooks/commentHooks';
 import { useContext } from 'react';
 import { Store } from '@/Store';
 import SharedPostHeader from './SharedPost/SharedPostHeader';
@@ -31,6 +31,9 @@ function SharedPostCard({
   } = useContext(Store);
 
   const originalPost = sharedPost.originalPost;
+  const { data: comments, refetch: refetchComments } = useGetComments({
+    postId: originalPost?._id,
+  });
 
   if (!originalPost) {
     return null; // Don't render if original post is missing
@@ -85,9 +88,10 @@ function SharedPostCard({
       </OriginalPostContainer>
 
       <CommentsDialog
-        comments={[]}
+        comments={comments ?? []}
         onComment={async (comment: string) => {
           await createComment({ postId: originalPost._id, content: comment });
+          await refetchComments();
         }}
         onDeleteComment={async (_commentId: string) => {}}
         currentUserName={userInfo.name}
