@@ -16,6 +16,8 @@ import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { useSharePost } from '../Hooks/postHooks';
 import ImageWithSkeleton from './ImageWithSkeleton';
+import { useToast } from '@/hooks/use-toast';
+import { AxiosError } from 'axios';
 
 type ShareButtonProps = {
   post: Post;
@@ -34,6 +36,7 @@ export default function ShareButton({
   const [shareMessage, setShareMessage] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { mutateAsync: sharePost, isPending } = useSharePost();
+  const { toast } = useToast();
 
   const handleShare = async () => {
     try {
@@ -41,12 +44,17 @@ export default function ShareButton({
         originalPostId: post._id,
         shareMessage,
       });
-
+      toast({
+        title: 'Post shared successfully',
+      });
       setShareMessage('');
       setIsDialogOpen(false);
       onShareSuccess?.();
     } catch (error) {
-      console.error('Error sharing post:', error);
+      const err = error as AxiosError<{ message: string }>;
+      toast({
+        title: err.response?.data.message,
+      });
     }
   };
 

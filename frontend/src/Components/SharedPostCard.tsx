@@ -1,19 +1,19 @@
-import { useContext, useState } from 'react';
-import {
-  useCommentPost,
-  useDeleteComment,
-  useLikePost,
-  useUnlikePost,
-} from '../Hooks/postHooks';
-import { Store } from '../Store';
 import { SharedPost } from '../Types/types';
+import CommentsDialog from './CommentsDialog';
+import {
+  useCreateComment,
+  useGetComments,
+  useDeleteComment,
+} from '@/Hooks/commentHooks';
+import { useContext } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { Store } from '@/Store';
 import SharedPostHeader from './SharedPost/SharedPostHeader';
 import ShareMessage from './SharedPost/ShareMessage';
 import OriginalPostContainer from './SharedPost/OriginalPostContainer';
 import OriginalPostHeader from './SharedPost/OriginalPostHeader';
 import OriginalPostContent from './SharedPost/OriginalPostContent';
-import OriginalPostActions from './SharedPost/OriginalPostActions';
-import CommentsSection from './SharedPost/CommentsSection';
+
 import { useDeleteSharedPost } from '@/Hooks/deletePostHooks';
 
 type SharedPostCardProps = {
@@ -29,54 +29,26 @@ function SharedPostCard({
   isLoggedInUser,
   profileImage,
 }: SharedPostCardProps) {
+  const { mutateAsync: deletePost } = useDeleteSharedPost();
+  const { mutateAsync: createComment } = useCreateComment();
+  const { mutateAsync: deleteComment } = useDeleteComment();
+  const { toast } = useToast();
   const {
     state: { userInfo },
   } = useContext(Store);
 
-  const [showComments, setShowComments] = useState(false);
-  const { mutateAsync: likePost } = useLikePost();
-  const { mutateAsync: unlikePost } = useUnlikePost();
-  const { mutateAsync: commentPost } = useCommentPost();
-  const { mutateAsync: deleteComment } = useDeleteComment();
-  const { mutateAsync: deletePost } = useDeleteSharedPost();
-
   const originalPost = sharedPost.originalPost;
+  const { data: comments, refetch: refetchComments } = useGetComments({
+    postId: originalPost?._id,
+  });
 
   if (!originalPost) {
     return null; // Don't render if original post is missing
   }
 
-  const handleLike = async () => {
-    await likePost({ userName: userInfo.name, postId: originalPost._id });
-    refetch();
-  };
-
-  const handleUnlike = async () => {
-    await unlikePost({ userName: userInfo.name, postId: originalPost._id });
-    refetch();
-  };
-
-  const handleAddComment = async (comment: string) => {
-    await commentPost({
-      userName: userInfo.name,
-      postId: originalPost._id,
-      comment,
-    });
-    refetch();
-  };
-
-  const handleDeleteComment = async (commentId: string) => {
-    await deleteComment({ postId: originalPost._id, commentId });
-    refetch();
-  };
-
   const handleDeletePost = async () => {
     await deletePost({ id: sharedPost._id });
     refetch();
-  };
-
-  const handleToggleComments = () => {
-    setShowComments(!showComments);
   };
 
   const formatDate = (dateString: string) => {
@@ -95,7 +67,28 @@ function SharedPostCard({
     }
   };
 
-  const isLiked = originalPost.likers.includes(userInfo.name);
+  // Comments dialog handlers and data for readability
+  const commentsData = comments ?? [];
+
+  const handleAddComment = async (comment: string) => {
+    try {
+      await createComment({ postId: originalPost._id, content: comment });
+      await refetchComments();
+      toast({ title: 'Comment added' });
+    } catch (e) {
+      toast({ title: 'Failed to add comment', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      await deleteComment({ commentId });
+      await refetchComments();
+      toast({ title: 'Comment deleted' });
+    } catch (e) {
+      toast({ title: 'Failed to delete comment', variant: 'destructive' });
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg w-[90%] md:w-[30%] p-4 border border-gray-200 shadow">
@@ -122,24 +115,14 @@ function SharedPostCard({
           postText={originalPost.post}
           images={originalPost.images}
         />
-
-        <OriginalPostActions
-          isLiked={isLiked}
-          onLike={handleLike}
-          onUnlike={handleUnlike}
-          onToggleComments={handleToggleComments}
-          post={originalPost}
-        />
-
-        <CommentsSection
-          showComments={showComments}
-          comments={originalPost.comments}
-          currentUserName={userInfo.name}
-          onAddComment={handleAddComment}
-          onDeleteComment={handleDeleteComment}
-          formatDate={formatDate}
-        />
       </OriginalPostContainer>
+
+      <CommentsDialog
+        comments={commentsData}
+        onComment={handleAddComment}
+        onDeleteComment={handleDeleteComment}
+        currentUserName={userInfo.name}
+      />
     </div>
   );
 }
