@@ -32,7 +32,7 @@ function SharedPostCard({
 
   const originalPost = sharedPost.originalPost;
   const { data: comments, refetch: refetchComments } = useGetComments({
-    postId: originalPost?._id,
+    postId: sharedPost?._id,
   });
 
   if (!originalPost) {
@@ -90,7 +90,7 @@ function SharedPostCard({
       <CommentsDialog
         comments={comments ?? []}
         onComment={async (comment: string) => {
-          await createComment({ postId: originalPost._id, content: comment });
+          await createComment({ postId: sharedPost._id, content: comment });
           await refetchComments();
         }}
         onDeleteComment={async (_commentId: string) => {}}
