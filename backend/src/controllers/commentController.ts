@@ -19,3 +19,22 @@ export const getCommentsByPost = asyncHandler(async (req: Request, res: Response
     .sort({ createdAt: -1 });
   res.json(comments);
 });
+
+export const deleteComment = asyncHandler(async (req: Request, res: Response) => {
+  const { commentId } = req.params;
+  const comment = await CommentModel.findById(commentId);
+
+  if (!comment) {
+    res.status(404).json({ message: 'Comment not found' });
+    return;
+  }
+
+  const isOwner = comment.userId?.toString?.() === req.user._id;
+  if (!isOwner && !req.user.isAdmin) {
+    res.status(403).json({ message: 'Not authorized to delete this comment' });
+    return;
+  }
+
+  await CommentModel.findByIdAndDelete(commentId);
+  res.json({ message: 'Comment deleted' });
+});
