@@ -67,4 +67,22 @@ const useDeleteComment = () => {
   });
 };
 
-export { useCreateComment, useGetComments, useDeleteComment };
+const useUpdateComment = () => {
+  return useMutation({
+    mutationFn: async ({
+      commentId,
+      content,
+    }: {
+      commentId: string;
+      content: string;
+    }) => {
+      const res = await apiClient.put<BackendComment>(
+        `/api/comments/${commentId}`,
+        { content }
+      );
+      return res.data;
+    },
+  });
+};
+
+export { useCreateComment, useGetComments, useDeleteComment, useUpdateComment };

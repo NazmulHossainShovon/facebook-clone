@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import CommentIcon from '@mui/icons-material/Comment';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
 import { CommentType } from '../Types/types';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
@@ -19,6 +22,7 @@ type CommentsDialogProps = {
   comments: CommentType[];
   onComment: (comment: string) => Promise<void>;
   onDeleteComment: (commentId: string) => Promise<void>;
+  onUpdateComment: (commentId: string, content: string) => Promise<void>;
   currentUserName: string;
 };
 
@@ -26,9 +30,12 @@ export default function CommentsDialog({
   comments,
   onComment,
   onDeleteComment,
+  onUpdateComment,
   currentUserName,
 }: CommentsDialogProps) {
   const [comment, setComment] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState<string>('');
 
   const handleComment = async () => {
     if (comment.trim()) {
@@ -39,6 +46,25 @@ export default function CommentsDialog({
 
   const handleDeleteComment = async (commentId: string) => {
     await onDeleteComment(commentId);
+  };
+
+  const startEditing = (comment: CommentType) => {
+    setEditingCommentId(comment._id);
+    setEditingContent(comment.comment);
+  };
+
+  const cancelEditing = () => {
+    setEditingCommentId(null);
+    setEditingContent('');
+  };
+
+  const saveEditing = async () => {
+    if (!editingCommentId) return;
+    const trimmed = editingContent.trim();
+    if (!trimmed) return;
+    await onUpdateComment(editingCommentId, trimmed);
+    setEditingCommentId(null);
+    setEditingContent('');
   };
 
   return (
@@ -84,14 +110,46 @@ export default function CommentsDialog({
 
                 <div className="w-[75%] flex flex-col gap-1">
                   <p className=" font-bold text-black">{comment.userName}</p>
-                  <p className=" text-black">{comment.comment}</p>
+                  {editingCommentId === comment._id ? (
+                    <div className="flex flex-col gap-2">
+                      <Textarea
+                        value={editingContent}
+                        onChange={e => setEditingContent(e.target.value)}
+                        rows={3}
+                        className="resize-none"
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={saveEditing}>
+                          <SaveIcon fontSize="small" className="mr-1" /> Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={cancelEditing}
+                        >
+                          <CloseIcon fontSize="small" className="mr-1" /> Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className=" text-black">{comment.comment}</p>
+                  )}
                 </div>
                 {comment.userName === currentUserName && (
-                  <DeleteIcon
-                    onClick={() => handleDeleteComment(comment._id)}
-                    className=" cursor-pointer"
-                    fontSize="small"
-                  />
+                  <div className="flex items-start gap-2">
+                    {editingCommentId !== comment._id && (
+                      <EditIcon
+                        onClick={() => startEditing(comment)}
+                        className=" cursor-pointer"
+                        fontSize="small"
+                      />
+                    )}
+                    <DeleteIcon
+                      onClick={() => handleDeleteComment(comment._id)}
+                      className=" cursor-pointer"
+                      fontSize="small"
+                    />
+                  </div>
                 )}
               </div>
             ))}

@@ -4,6 +4,7 @@ import {
   useCreateComment,
   useGetComments,
   useDeleteComment,
+  useUpdateComment,
 } from '@/Hooks/commentHooks';
 import { useContext } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -32,6 +33,7 @@ function SharedPostCard({
   const { mutateAsync: deletePost } = useDeleteSharedPost();
   const { mutateAsync: createComment } = useCreateComment();
   const { mutateAsync: deleteComment } = useDeleteComment();
+  const { mutateAsync: updateComment } = useUpdateComment();
   const { toast } = useToast();
   const {
     state: { userInfo },
@@ -90,6 +92,16 @@ function SharedPostCard({
     }
   };
 
+  const handleUpdateComment = async (commentId: string, content: string) => {
+    try {
+      await updateComment({ commentId, content });
+      await refetchComments();
+      toast({ title: 'Comment updated' });
+    } catch (e) {
+      toast({ title: 'Failed to update comment', variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg w-[90%] md:w-[30%] p-4 border border-gray-200 shadow">
       <SharedPostHeader
@@ -121,6 +133,7 @@ function SharedPostCard({
         comments={commentsData}
         onComment={handleAddComment}
         onDeleteComment={handleDeleteComment}
+        onUpdateComment={handleUpdateComment}
         currentUserName={userInfo.name}
       />
     </div>

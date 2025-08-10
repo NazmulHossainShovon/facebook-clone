@@ -25,6 +25,7 @@ import MenuDotsIcon from '@/icons/MenuDotsIcon';
 import { Dialog, DialogContent, DialogTrigger } from './ui/dialog';
 import ImageWithSkeleton from './ImageWithSkeleton';
 import CommentsDialog from './CommentsDialog';
+import { useUpdateComment as useUpdateCommentApi } from '@/Hooks/commentHooks';
 
 type PostCardProps = {
   id: string;
@@ -85,6 +86,7 @@ export default function PostCard({
   const { mutateAsync: unlikePost } = useUnlikePost();
   const { mutateAsync: commentPost } = useCommentPost();
   const { mutateAsync: deleteComment } = useDeleteComment();
+  const { mutateAsync: updateComment } = useUpdateCommentApi();
   const [allComments, setAllComments] = useState<CommentType[]>([]);
   const [likersDialogOpen, setLikersDialogOpen] = useState(false);
 
@@ -116,6 +118,14 @@ export default function PostCard({
   const handleDeleteComment = async (commentId: string) => {
     const res = await deleteComment({ postId: id, commentId });
     setAllComments(res.post.comments);
+  };
+
+  const handleUpdateComment = async (commentId: string, content: string) => {
+    await updateComment({ commentId, content });
+    // optimistic update: update local state content
+    setAllComments(prev =>
+      prev.map(c => (c._id === commentId ? { ...c, comment: content } : c))
+    );
   };
 
   useEffect(() => {
@@ -242,6 +252,7 @@ export default function PostCard({
           comments={allComments}
           onComment={handleComment}
           onDeleteComment={handleDeleteComment}
+          onUpdateComment={handleUpdateComment}
           currentUserName={userInfo.name}
         />
       </div>
