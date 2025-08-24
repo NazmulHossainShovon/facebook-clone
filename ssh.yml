@@ -1,0 +1,83 @@
+---
+- name: Manage EC2 instance safely
+  hosts: localhost
+  connection: local
+  vars:
+    project: test
+    unit: server
+    aws_region: us-east-1
+    availability_zone: us-east-1a
+    instance_type: t2.micro
+    image_id: ami-007855ac798b5175e # Ubuntu 22.04
+    host_name: "{{ project }}_{{ unit }}"
+    ssh_key_name: "{{ project }}_{{ unit }}"
+    ssh_key_path_local: "~/.ssh/{{ ssh_key_name }}.pem"
+
+  tasks:
+    - name: Create an EC2 key pair
+      amazon.aws.ec2_key:
+        name: "{{ ssh_key_name }}"
+        region: "{{ aws_region }}"
+        force: true
+      register: ec2key
+
+    - name: Save private key locally
+      ansible.builtin.copy:
+        content: "{{ ec2key.key.private_key }}"
+        dest: "{{ ssh_key_path_local }}"
+        mode: 0600
+      when: ec2key.changed
+
+    - name: Create security group for SSH
+      amazon.aws.ec2_security_group:
+        name: "{{ host_name }}-ssh"
+        description: Allow SSH
+        region: "{{ aws_region }}"
+        rules:
+          - proto: tcp
+            ports: 22
+            cidr_ip: 0.0.0.0/0
+      register: sg
+
+    - name: Launch EC2 instance
+      amazon.aws.ec2_instance:
+        name: "{{ host_name }}"
+        region: "{{ aws_region }}"
+        availability_zone: "{{ availability_zone }}"
+        key_name: "{{ ssh_key_name }}"
+        instance_type: "{{ instance_type }}"
+        image_id: "{{ image_id }}"
+        security_groups: ["{{ sg.group_id }}"]
+        network:
+          assign_public_ip: true
+      register: ec2
+
+    - name: Wait for SSH to come up
+      ansible.builtin.wait_for:
+        host: "{{ item.public_ip_address }}"
+        port: 22
+        delay: 10
+        timeout: 120
+      loop: "{{ ec2.instances }}"
+
+    - name: Add new instance to dynamic inventory
+      add_host:
+        name: "{{ item.public_ip_address }}"
+        groups: new_ec2
+        ansible_user: ubuntu
+        ansible_ssh_private_key_file: "{{ ssh_key_path_local }}"
+      loop: "{{ ec2.instances }}"
+
+- name: Configure EC2 instance
+  hosts: new_ec2
+  become: true
+  tasks:
+    - name: Install git
+      ansible.builtin.apt:
+        name: git
+        state: present
+        update_cache: yes
+
+    - name: Print success message
+      ansible.builtin.debug:
+        msg: "🎉 Git has been installed successfully on {{ inventory_hostname }}"
