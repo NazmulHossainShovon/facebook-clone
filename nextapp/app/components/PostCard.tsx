@@ -223,11 +223,9 @@ export default function PostCard({
         </Button>
 
         <Dialog open={likersDialogOpen} onOpenChange={setLikersDialogOpen}>
-          <DialogTrigger>
-            <button className=" hover:underline hover:cursor-pointer">
-              {' '}
-              {likers?.length} people{' '}
-            </button>
+          <DialogTrigger className=" hover:underline hover:cursor-pointer">
+            {' '}
+            {likers?.length} people{' '}
           </DialogTrigger>
           <DialogContent>
             {likers?.map(liker => (

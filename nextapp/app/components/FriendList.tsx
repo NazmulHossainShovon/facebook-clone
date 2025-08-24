@@ -28,10 +28,8 @@ export default function FriendList() {
   return (
     <div>
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Button onClick={handleClick} className=" text-right">
-            Friends
-          </Button>
+        <DropdownMenuTrigger onClick={handleClick} className=" text-right">
+          Friends
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {userInfo.friends?.map(user => (

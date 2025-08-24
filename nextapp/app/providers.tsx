@@ -13,7 +13,7 @@ export function Providers({ children }: PropsWithChildren) {
     <StoreProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>{children}</ThemeProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
+        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </QueryClientProvider>
     </StoreProvider>
   );

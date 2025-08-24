@@ -13,7 +13,11 @@ import {
 } from '@/hooks/user-hooks';
 import { Store } from '@/lib/store';
 import FriendOptionsMenu from '@/components/FriendOptionsMenu';
-import { PageClickEvent, Post, SharedPost as SharedPostType } from '@/lib/types';
+import {
+  PageClickEvent,
+  Post,
+  SharedPost as SharedPostType,
+} from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +26,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
+  DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -233,43 +238,42 @@ function UserProfilePage() {
 
       <Dialog>
         <DialogTrigger>
-          {isLoggedInUser && <Button>Whats on your mind?</Button>}
+          {isLoggedInUser && <span>Whats on your mind?</span>}
         </DialogTrigger>
         <DialogContent>
-          <DialogDescription className="flex flex-col gap-3 p-3">
-            <div className="grid w-full gap-1.5">
-              <Label htmlFor="message">Create Post</Label>
-              <Textarea
-                onChange={e => setPost(e.target.value)}
-                id="message"
-                rows={10}
-                className=" resize-none text-black"
-              />
-              <Input
-                type="file"
-                multiple
-                accept="image/jpeg,image/png,image/gif"
-                onChange={handleImageChange}
-              />
-              <div className="flex flex-row gap-2">
-                {images.map((image, index) => (
-                  <div key={index} className="relative">
-                    <img
-                      src={URL.createObjectURL(image)}
-                      alt={`preview ${index}`}
-                      className="w-16 h-16 object-cover"
-                    />
-                    <button
-                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                      onClick={() => handleRemoveImage(index)}
-                    >
-                      X
-                    </button>
-                  </div>
-                ))}
-              </div>
+          <DialogTitle>Create Post</DialogTitle>
+          <div className="grid w-full gap-1.5">
+            <Textarea
+              onChange={e => setPost(e.target.value)}
+              id="message"
+              rows={10}
+              className=" resize-none text-black"
+            />
+            <Input
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/gif"
+              onChange={handleImageChange}
+            />
+            <div className="flex flex-row gap-2">
+              {images.map((image, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={URL.createObjectURL(image)}
+                    alt={`preview ${index}`}
+                    className="w-16 h-16 object-cover"
+                  />
+                  <button
+                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    onClick={() => handleRemoveImage(index)}
+                  >
+                    X
+                  </button>
+                </div>
+              ))}
             </div>
-          </DialogDescription>
+          </div>
+
           <DialogFooter>
             <DialogClose
               className=" bg-black text-white p-2 rounded"
