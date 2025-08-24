@@ -1,7 +1,7 @@
-import type { Config } from "tailwindcss"
+import type { Config } from 'tailwindcss';
 
 const config: Config = {
-  darkMode: ["class"],
+  darkMode: 'class',
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -12,16 +12,16 @@ const config: Config = {
       colors: {
         TK: {
           background: '#131921',
-          default: '#131921'
-        }
+          default: '#131921',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)'
-      }
-    }
+        sm: 'calc(var(--radius) - 4px)',
+      },
+    },
   },
-  plugins: [require("tailwindcss-animate")],
-}
-export default config
+  plugins: [require('tailwindcss-animate')],
+};
+export default config;
