@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import MenuDotsIcon from '@/icons/MenuDotsIcon';
-import { Dialog, DialogContent, DialogTrigger } from './ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from './ui/dialog';
 import ImageWithSkeleton from './ImageWithSkeleton';
 import CommentsDialog from './CommentsDialog';
 import { useUpdateComment as useUpdateCommentApi } from '@/hooks/comment-hooks';
@@ -228,6 +228,7 @@ export default function PostCard({
             {likers?.length} people{' '}
           </DialogTrigger>
           <DialogContent>
+            <DialogTitle>Likers</DialogTitle>
             {likers?.map(liker => (
               <div key={liker}>
                 <Link
