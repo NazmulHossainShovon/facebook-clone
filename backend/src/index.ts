@@ -31,6 +31,7 @@ export const io = new Server(httpServer, {
     origin: [
       "http://localhost:3000",
       "https://facebook-clone-vooq.onrender.com",
+      "https://facebook-clone-rho-gray.vercel.app",
     ],
     methods: ["GET", "POST"],
   },
@@ -41,6 +42,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "https://facebook-clone-vooq.onrender.com",
+      "https://facebook-clone-rho-gray.vercel.app",
     ],
   })
 );
