@@ -230,16 +230,17 @@ function UserProfilePage() {
         )}
       </div>
 
-      <CreatePostDialog
-        isLoggedInUser={isLoggedInUser}
-        post={post}
-        setPost={setPost}
-        images={images}
-        setImages={setImages}
-        handlePost={handlePost}
-        handleImageChange={handleImageChange}
-        handleRemoveImage={handleRemoveImage}
-      />
+      {isLoggedInUser && (
+        <CreatePostDialog
+          post={post}
+          setPost={setPost}
+          images={images}
+          setImages={setImages}
+          handlePost={handlePost}
+          handleImageChange={handleImageChange}
+          handleRemoveImage={handleRemoveImage}
+        />
+      )}
 
       {isPosting ? (
         <PostCardSkeleton />

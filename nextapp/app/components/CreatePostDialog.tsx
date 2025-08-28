@@ -14,7 +14,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 
 interface CreatePostDialogProps {
-  isLoggedInUser: boolean;
   post: string;
   setPost: (post: string) => void;
   images: File[];
@@ -25,7 +24,6 @@ interface CreatePostDialogProps {
 }
 
 export default function CreatePostDialog({
-  isLoggedInUser,
   post,
   setPost,
   images,
@@ -37,7 +35,7 @@ export default function CreatePostDialog({
   return (
     <Dialog>
       <DialogTrigger className="bg-gray-800 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 p-2 rounded text-white cursor-pointer transition-colors">
-        {isLoggedInUser && <span>Whats on your mind?</span>}
+        <span>Whats on your mind?</span>
       </DialogTrigger>
       <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
         <DialogTitle className="text-gray-900 dark:text-white">Create Post</DialogTitle>
