@@ -105,7 +105,28 @@ postRouter.get(
       query,
       pagination
     );
-    res.json({ posts, totalPages });
+
+    // Fetch user profile images for each post
+    const postsWithProfileImages = await Promise.all(
+      posts.map(async (post: any) => {
+        const user = await UserModel.findById(post.userId);
+        return {
+          _id: post._id || post.id,
+          post: post.post,
+          images: post.images,
+          authorName: post.authorName,
+          userId: post.userId,
+          likers: post.likers,
+          comments: post.comments,
+          shareCount: post.shareCount,
+          createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
+          profileImage: user?.profileImage || null,
+        };
+      })
+    );
+
+    res.json({ posts: postsWithProfileImages, totalPages });
   })
 );
 
