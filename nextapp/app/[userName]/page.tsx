@@ -237,7 +237,7 @@ function UserProfilePage() {
       </div>
 
       <Dialog>
-        <DialogTrigger>
+        <DialogTrigger className="bg-black p-2 rounded text-white cursor-pointer">
           {isLoggedInUser && <span>Whats on your mind?</span>}
         </DialogTrigger>
         <DialogContent>
