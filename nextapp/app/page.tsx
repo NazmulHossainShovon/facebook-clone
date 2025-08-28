@@ -48,6 +48,7 @@ function HomePage() {
             onPostUpdate={() => {
               return null;
             }}
+            profileImage={post.profileImage}
           />
         )
       )}
