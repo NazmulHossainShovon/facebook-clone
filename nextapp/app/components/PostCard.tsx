@@ -223,29 +223,32 @@ export default function PostCard({
         </Button>
 
         <Dialog open={likersDialogOpen} onOpenChange={setLikersDialogOpen}>
-          <DialogTrigger className=" hover:underline hover:cursor-pointer">
+          <DialogTrigger className="hover:underline hover:cursor-pointer text-blue-600 dark:text-blue-400 transition-colors">
             {' '}
             {likers?.length} people{' '}
           </DialogTrigger>
-          <DialogContent>
-            <DialogTitle>Likers</DialogTitle>
-            {likers?.map(liker => (
-              <div key={liker}>
-                <Link
-                  style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
-                  href={`/${liker}`}
-                  onClick={() => setLikersDialogOpen(false)}
-                >
-                  <Avatar>
-                    <AvatarImage
-                      src={`https://nazmul.sirv.com/facebook/${liker}.png`}
-                    />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  <p>{liker}</p>
-                </Link>
-              </div>
-            ))}
+          <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+            <DialogTitle className="text-gray-900 dark:text-white">Likers</DialogTitle>
+            <div className="max-h-96 overflow-y-auto space-y-3">
+              {likers?.map(liker => (
+                <div key={liker} className="hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors">
+                  <Link
+                    style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+                    href={`/${liker}`}
+                    onClick={() => setLikersDialogOpen(false)}
+                    className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    <Avatar>
+                      <AvatarImage
+                        src={`https://nazmul.sirv.com/facebook/${liker}.png`}
+                      />
+                      <AvatarFallback className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white">CN</AvatarFallback>
+                    </Avatar>
+                    <p className="font-medium">{liker}</p>
+                  </Link>
+                </div>
+              ))}
+            </div>
           </DialogContent>
         </Dialog>
 
