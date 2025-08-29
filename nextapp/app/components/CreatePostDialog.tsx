@@ -38,7 +38,9 @@ export default function CreatePostDialog({
         <span>Whats on your mind?</span>
       </DialogTrigger>
       <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-        <DialogTitle className="text-gray-900 dark:text-white">Create Post</DialogTitle>
+        <DialogTitle className="text-gray-900 dark:text-white">
+          Create Post
+        </DialogTitle>
         <div className="grid w-full gap-1.5">
           <Textarea
             onChange={e => setPost(e.target.value)}

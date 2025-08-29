@@ -21,7 +21,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import CreatePostDialog from '@/components/CreatePostDialog';
-import { Label } from '@/components/ui/label';
 import Pagination from '@/components/Pagination';
 import PostCardSkeleton from '@/components/PostCardSkeleton';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -55,7 +54,9 @@ function UserProfilePage() {
   const isLoggedInUser = userInfo.name === userName;
 
   // Consolidate friend request functions
-  const handleFriendRequest = async (action: 'send' | 'cancel' | 'accept' | 'reject') => {
+  const handleFriendRequest = async (
+    action: 'send' | 'cancel' | 'accept' | 'reject'
+  ) => {
     try {
       switch (action) {
         case 'send':
@@ -215,16 +216,24 @@ function UserProfilePage() {
         {!isLoggedInUser && (
           <>
             {userData?.receivedFriendReqs.includes(userInfo.name) ? (
-              <Button onClick={() => handleFriendRequest('cancel')}>Cancel Request</Button>
+              <Button onClick={() => handleFriendRequest('cancel')}>
+                Cancel Request
+              </Button>
             ) : userData?.sentFriendReqs.includes(userInfo.name) ? (
               <div className="flex flex-row gap-3">
-                <Button onClick={() => handleFriendRequest('accept')}>Accept Request</Button>
-                <Button onClick={() => handleFriendRequest('reject')}>Reject</Button>
+                <Button onClick={() => handleFriendRequest('accept')}>
+                  Accept Request
+                </Button>
+                <Button onClick={() => handleFriendRequest('reject')}>
+                  Reject
+                </Button>
               </div>
             ) : userData?.friends.includes(userInfo.name) ? (
               <FriendOptionsMenu tempUser={userName} refetch={refetchUser} />
             ) : (
-              <Button onClick={() => handleFriendRequest('send')}>Send Request </Button>
+              <Button onClick={() => handleFriendRequest('send')}>
+                Send Request{' '}
+              </Button>
             )}
           </>
         )}
