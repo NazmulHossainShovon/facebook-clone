@@ -37,6 +37,25 @@ userRouter.get(
   })
 );
 
+userRouter.get(
+  "/friends",
+  isAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const user = await UserModel.findOne({ name: req.query.userName }).select("friends");
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+    
+    // Get full user objects for all friends
+    const friends = await UserModel.find({ 
+      name: { $in: user.friends } 
+    }).select("name profileImage");
+    
+    res.json(friends);
+  })
+);
+
 userRouter.post(
   "/signup",
   asyncHandler(async (req: Request, res: Response) => {
