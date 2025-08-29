@@ -28,7 +28,7 @@ const Pagination = ({ handlePageClick, totalPages }: Props) => {
       renderOnZeroPageCount={null}
       containerClassName="flex text-sm md:text-[14px] gap-2 cursor-pointer"
       activeClassName=" bg-[#324057] text-white"
-      pageClassName="px-3 py-1 md:py-2 h-fit rounded-lg text-[#2B2D2F]"
+      pageClassName="px-3 py-1 md:py-2 h-fit rounded-lg text-[#2B2D2F] hover:bg-[#324057] hover:text-white transition-colors"
       previousClassName="pr-3 py-0 md:py-2 h-fit rounded-lg "
       nextClassName="pl-3 py-0 md:py-2 h-fit rounded-lg "
       disabledClassName="opacity-40 cursor-not-allowed"
