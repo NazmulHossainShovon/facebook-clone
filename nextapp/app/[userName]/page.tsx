@@ -20,21 +20,15 @@ import {
 } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import CreatePostDialog from '@/components/CreatePostDialog';
 import Pagination from '@/components/Pagination';
 import PostCardSkeleton from '@/components/PostCardSkeleton';
 import ProtectedRoute from '@/components/ProtectedRoute';
+
+// Combined post type that matches the backend response
+type PostWithSharedFlag = Post & { isShared: false };
+type SharedPostWithFlag = SharedPostType & { isShared: true };
+type CombinedPost = PostWithSharedFlag | SharedPostWithFlag;
 
 function UserProfilePage() {
   const router = useRouter();
@@ -54,15 +48,53 @@ function UserProfilePage() {
   const { mutateAsync: sendRequest } = useSendFriendRequest();
   const { mutateAsync: cancelRequest } = useCancelFriendRequest();
   const { mutateAsync: acceptRequest } = useAcceptFriendRequest();
-  // Combined post type that matches the backend response
-  type PostWithSharedFlag = Post & { isShared: false };
-  type SharedPostWithFlag = SharedPostType & { isShared: true };
-  type CombinedPost = PostWithSharedFlag | SharedPostWithFlag;
-
   const [allPosts, setAllPosts] = useState<CombinedPost[]>([]);
   const [totalPages, setTotalPages] = useState<number>(2);
 
   const isLoggedInUser = userInfo.name === userName;
+
+  // Consolidate friend request functions
+  const handleFriendRequest = async (
+    action: 'send' | 'cancel' | 'accept' | 'reject'
+  ) => {
+    try {
+      switch (action) {
+        case 'send':
+          const updatedUser = await sendRequest({
+            sender: userInfo.name,
+            receiver: userName,
+          });
+          dispatch({ type: 'sign-in', payload: updatedUser });
+          break;
+        case 'cancel':
+          await cancelRequest({
+            sender: userInfo.name,
+            receiver: userName,
+          });
+          // After canceling, we need to refetch the user info to get updated state
+          await refetchUser();
+          break;
+        case 'reject':
+          await cancelRequest({
+            sender: userName,
+            receiver: userInfo.name,
+          });
+          // After rejecting, we need to refetch the user info to get updated state
+          await refetchUser();
+          break;
+        case 'accept':
+          const acceptedUser = await acceptRequest({
+            sender: userName,
+            receiver: userInfo.name,
+          });
+          dispatch({ type: 'sign-in', payload: acceptedUser });
+          break;
+      }
+      await refetchUser();
+    } catch (error) {
+      console.error('Friend request action failed:', error);
+    }
+  };
 
   const getSirvToken = async () => {
     const response = await fetch('https://api.sirv.com/v2/token', {
@@ -126,7 +158,6 @@ function UserProfilePage() {
       setImages([]);
     } catch (error) {
       console.error('Failed to create post:', error);
-      // Optionally, show a notification to the user
     } finally {
       setIsPosting(false);
     }
@@ -143,42 +174,6 @@ function UserProfilePage() {
 
   const handleRemoveImage = (index: number) => {
     setImages(prevImages => prevImages.filter((_, i) => i !== index));
-  };
-
-  const sendFriendRequest = async () => {
-    const updatedUser = await sendRequest({
-      sender: userInfo.name,
-      receiver: userName,
-    });
-    dispatch({ type: 'sign-in', payload: updatedUser });
-    await refetchUser();
-  };
-
-  const handleCancelRequest = async () => {
-    const res = await cancelRequest({
-      sender: userInfo.name,
-      receiver: userName,
-    });
-    dispatch({ type: 'sign-in', payload: res.sender });
-    await refetchUser();
-  };
-
-  const handleReject = async () => {
-    const res = await cancelRequest({
-      sender: userName,
-      receiver: userInfo.name,
-    });
-    dispatch({ type: 'sign-in', payload: res.receiver });
-    await refetchUser();
-  };
-
-  const handleAcceptRequest = async () => {
-    const updatedUser = await acceptRequest({
-      sender: userName,
-      receiver: userInfo.name,
-    });
-    dispatch({ type: 'sign-in', payload: updatedUser });
-    await refetchUser();
   };
 
   const handlePostUpdate = (updatedPost: Post) => {
@@ -221,69 +216,40 @@ function UserProfilePage() {
         {!isLoggedInUser && (
           <>
             {userData?.receivedFriendReqs.includes(userInfo.name) ? (
-              <Button onClick={handleCancelRequest}>Cancel Request</Button>
+              <Button onClick={() => handleFriendRequest('cancel')}>
+                Cancel Request
+              </Button>
             ) : userData?.sentFriendReqs.includes(userInfo.name) ? (
               <div className="flex flex-row gap-3">
-                <Button onClick={handleAcceptRequest}>Accept Request</Button>
-                <Button onClick={handleReject}>Reject</Button>
+                <Button onClick={() => handleFriendRequest('accept')}>
+                  Accept Request
+                </Button>
+                <Button onClick={() => handleFriendRequest('reject')}>
+                  Reject
+                </Button>
               </div>
             ) : userData?.friends.includes(userInfo.name) ? (
               <FriendOptionsMenu tempUser={userName} refetch={refetchUser} />
             ) : (
-              <Button onClick={sendFriendRequest}>Send Request </Button>
+              <Button onClick={() => handleFriendRequest('send')}>
+                Send Request{' '}
+              </Button>
             )}
           </>
         )}
       </div>
 
-      <Dialog>
-        <DialogTrigger>
-          {isLoggedInUser && <span>Whats on your mind?</span>}
-        </DialogTrigger>
-        <DialogContent>
-          <DialogTitle>Create Post</DialogTitle>
-          <div className="grid w-full gap-1.5">
-            <Textarea
-              onChange={e => setPost(e.target.value)}
-              id="message"
-              rows={10}
-              className=" resize-none text-black"
-            />
-            <Input
-              type="file"
-              multiple
-              accept="image/jpeg,image/png,image/gif"
-              onChange={handleImageChange}
-            />
-            <div className="flex flex-row gap-2">
-              {images.map((image, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={URL.createObjectURL(image)}
-                    alt={`preview ${index}`}
-                    className="w-16 h-16 object-cover"
-                  />
-                  <button
-                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                    onClick={() => handleRemoveImage(index)}
-                  >
-                    X
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <DialogFooter>
-            <DialogClose
-              className=" bg-black text-white p-2 rounded"
-              onClick={handlePost}
-            >
-              Post
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {isLoggedInUser && (
+        <CreatePostDialog
+          post={post}
+          setPost={setPost}
+          images={images}
+          setImages={setImages}
+          handlePost={handlePost}
+          handleImageChange={handleImageChange}
+          handleRemoveImage={handleRemoveImage}
+        />
+      )}
 
       {isPosting ? (
         <PostCardSkeleton />

@@ -44,6 +44,7 @@ type Post = {
   _id: string;
   comments: CommentType[];
   shareCount?: number;
+  profileImage?: string;
 };
 
 type SharedPost = {
