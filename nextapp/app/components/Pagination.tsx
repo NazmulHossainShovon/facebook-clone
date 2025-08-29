@@ -26,7 +26,7 @@ const Pagination = ({ handlePageClick, totalPages }: Props) => {
       onPageChange={handlePageClick}
       previousLabel={<PaginationPrevious />}
       renderOnZeroPageCount={null}
-      containerClassName="flex text-sm md:text-[14px] gap-2"
+      containerClassName="flex text-sm md:text-[14px] gap-2 cursor-pointer"
       activeClassName=" bg-[#324057] text-white"
       pageClassName="px-3 py-1 md:py-2 h-fit rounded-lg text-[#2B2D2F]"
       previousClassName="pr-3 py-0 md:py-2 h-fit rounded-lg "
