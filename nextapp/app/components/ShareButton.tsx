@@ -122,7 +122,7 @@ export default function ShareButton({
             value={shareMessage}
             onChange={e => setShareMessage(e.target.value)}
             rows={3}
-            className="resize-none"
+            className="resize-none dark:text-white"
           />
         </div>
 
