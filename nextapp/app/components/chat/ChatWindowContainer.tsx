@@ -26,8 +26,6 @@ const ChatWindowContainer: React.FC<ChatWindowContainerProps> = ({
   } = useContext(Store);
 
   const fetchChatHistory = async () => {
-    console.log(chatRoomId);
-
     const res = await apiClient.get(`/api/chat/messages/${chatRoomId}`);
     setMessages(res.data);
   };
@@ -39,13 +37,16 @@ const ChatWindowContainer: React.FC<ChatWindowContainerProps> = ({
     // Optionally, add polling or websocket updates here
   }, [chatRoomId]);
 
-  // If onSendMessage is provided, use it; otherwise, fallback to local handler
-  const handleSendMessage =
-    onSendMessage ||
-    (async (message: string) => {
+  // Always call fetchChatHistory after sending a message
+  const handleSendMessage = async (message: string) => {
+    if (onSendMessage) {
+      await onSendMessage(message);
+      await fetchChatHistory();
+    } else {
       //   await apiClient.post('/api/chat/send', { chatRoomId, message });
-      fetchChatHistory();
-    });
+      await fetchChatHistory();
+    }
+  };
 
   return (
     <ChatWindow
