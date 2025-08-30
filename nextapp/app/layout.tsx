@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
+
 import { Providers } from './providers';
 import Navbar from './components/navbar';
+import { ChatProvider } from './lib/chat-store';
+import ChatIntegration from './components/chat/ChatIntegration';
 
 export const metadata: Metadata = {
   title: 'Social Media',
@@ -17,8 +20,11 @@ export default function RootLayout({
     <html lang="en">
       <body className="font-sans">
         <Providers>
-          <Navbar />
-          {children}
+          <ChatProvider>
+            <Navbar />
+            {children}
+            <ChatIntegration />
+          </ChatProvider>
         </Providers>
       </body>
     </html>
