@@ -13,10 +13,12 @@ interface Message {
 
 interface ChatWindowContainerProps {
   chatRoomId: string;
+  onSendMessage?: (message: string) => void;
 }
 
 const ChatWindowContainer: React.FC<ChatWindowContainerProps> = ({
   chatRoomId,
+  onSendMessage,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const {
@@ -37,10 +39,13 @@ const ChatWindowContainer: React.FC<ChatWindowContainerProps> = ({
     // Optionally, add polling or websocket updates here
   }, [chatRoomId]);
 
-  const handleSendMessage = async (message: string) => {
-    await apiClient.post('/api/chat/send', { chatRoomId, message });
-    fetchChatHistory();
-  };
+  // If onSendMessage is provided, use it; otherwise, fallback to local handler
+  const handleSendMessage =
+    onSendMessage ||
+    (async (message: string) => {
+      //   await apiClient.post('/api/chat/send', { chatRoomId, message });
+      fetchChatHistory();
+    });
 
   return (
     <ChatWindow

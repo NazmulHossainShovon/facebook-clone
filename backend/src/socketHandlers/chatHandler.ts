@@ -12,6 +12,7 @@ export function registerChatHandlers(io: Server, socket: Socket) {
   socket.on(
     "chatMessage",
     async (data: { roomId: string; message: string; sender: string }) => {
+      console.log(data.message);
       try {
         const msg = await Message.create({
           chatRoomId: new mongoose.Types.ObjectId(data.roomId),
@@ -28,7 +29,6 @@ export function registerChatHandlers(io: Server, socket: Socket) {
         });
       } catch (err) {
         // Optionally emit an error event
-        console.log(err);
 
         socket.emit("chatError", { error: "Failed to save message" });
       }
