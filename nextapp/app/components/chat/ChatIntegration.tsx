@@ -60,11 +60,13 @@ export default function ChatIntegration() {
             selectedChatId={selectedChatId}
           />
           <div className="flex-1 flex flex-col">
-            <ChatWindow
-              messages={messages}
-              onSendMessage={handleSendMessage}
-              currentUserId={currentUserId}
-            />
+            {selectedChatId && (
+              <ChatWindow
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                currentUserId={currentUserId}
+              />
+            )}
           </div>
         </div>
       )}
