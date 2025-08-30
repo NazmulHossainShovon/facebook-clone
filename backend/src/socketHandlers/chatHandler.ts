@@ -1,4 +1,6 @@
 import { Server, Socket } from "socket.io";
+import { Message } from "../models/messageModel";
+import mongoose from "mongoose";
 
 export function registerChatHandlers(io: Server, socket: Socket) {
   // Listen for join room
@@ -9,12 +11,27 @@ export function registerChatHandlers(io: Server, socket: Socket) {
   // Listen for sending a message
   socket.on(
     "chatMessage",
-    (data: { roomId: string; message: string; sender: string }) => {
-      io.to(data.roomId).emit("chatMessage", {
-        message: data.message,
-        sender: data.sender,
-        timestamp: new Date().toISOString(),
-      });
+    async (data: { roomId: string; message: string; sender: string }) => {
+      try {
+        const msg = await Message.create({
+          chatRoomId: new mongoose.Types.ObjectId(data.roomId),
+          senderId: new mongoose.Types.ObjectId(data.sender),
+          content: data.message,
+          messageType: "text",
+        });
+        io.to(data.roomId).emit("chatMessage", {
+          id: msg._id,
+          content: msg.content,
+          senderId: msg.senderId,
+          timestamp: msg.timestamp,
+          messageType: msg.messageType,
+        });
+      } catch (err) {
+        // Optionally emit an error event
+        console.log(err);
+
+        socket.emit("chatError", { error: "Failed to save message" });
+      }
     }
   );
 

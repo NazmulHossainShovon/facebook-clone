@@ -1,26 +1,82 @@
 'use client';
 
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
+import { useChatSocket } from '../../hooks/use-chat';
 import ChatSidebar from './ChatSidebar';
 import ChatWindow from './ChatWindow';
 import { Store } from '../../lib/store';
 import { useGetUserFriends } from '../../hooks/user-hooks';
+import apiClient from '../../lib/api-client';
 
 export default function ChatIntegration() {
   const [open, setOpen] = useState(false);
   const [selectedChatId, setSelectedChatId] = useState<string | undefined>(
     undefined
   );
+  const [chatRooms, setChatRooms] = useState<any[]>([]);
+  const [loadingRooms, setLoadingRooms] = useState(false);
   const {
     state: { userInfo },
   } = useContext(Store);
   const { data: friends = [], isLoading } = useGetUserFriends(userInfo.name);
-  const messages: any[] = [];
-  const currentUserId = userInfo.name;
-  const handleSelectChat = (chatId: string) => {
-    setSelectedChatId(prev => (prev === chatId ? undefined : chatId));
+  const currentUserId = userInfo._id;
+  const {
+    state: chatState,
+    sendMessage,
+    joinRoom,
+  } = useChatSocket(currentUserId);
+
+  // Fetch chat rooms for the current user
+  useEffect(() => {
+    if (!currentUserId) return;
+    setLoadingRooms(true);
+    apiClient
+      .get(`/api/chat/rooms/${currentUserId}`)
+      .then((res: { data: any[] }) => setChatRooms(res.data))
+      .finally(() => setLoadingRooms(false));
+  }, [currentUserId]);
+
+  // Find or create a chat room with a friend
+
+  const getOrCreateChatRoom = async (friendId: string) => {
+    // Try to find an existing room with these two participants (by user IDs)
+    let room = chatRooms.find(
+      r =>
+        Array.isArray(r.participants) &&
+        r.participants.length === 2 &&
+        r.participants.includes(currentUserId) &&
+        r.participants.includes(friendId)
+    );
+
+    if (room) return room;
+    // Create new room
+    const res = await apiClient.post('/api/chat/rooms', {
+      participantIds: [currentUserId, friendId],
+    });
+    setChatRooms(prev => [...prev, res.data]);
+    return res.data;
   };
-  const handleSendMessage = () => {};
+
+  // Join the room when a chat is selected
+  const handleSelectChat = async (friendName: string) => {
+    // Find friend by name to get their _id
+    const friend = friends.find(f => f.name === friendName);
+    if (!friend || !friend._id) return;
+    const room = await getOrCreateChatRoom(friend._id);
+    if (room && room._id) {
+      setSelectedChatId(prev => {
+        const newId = prev === room._id ? undefined : room._id;
+        if (newId) joinRoom(newId);
+        return newId;
+      });
+    }
+  };
+
+  const handleSendMessage = (message: string) => {
+    if (selectedChatId && message.trim()) {
+      sendMessage(selectedChatId, message);
+    }
+  };
 
   return (
     <>
@@ -52,11 +108,22 @@ export default function ChatIntegration() {
             chats={
               isLoading
                 ? []
-                : friends.map(friend => ({
-                    id: friend.name,
-                    name: friend.name,
-                    profileImage: friend.profileImage,
-                  }))
+                : friends.map(friend => {
+                    // Find chat room for this friend by user ID
+                    const room = chatRooms.find(
+                      r =>
+                        Array.isArray(r.participants) &&
+                        r.participants.length === 2 &&
+                        r.participants.includes(currentUserId) &&
+                        r.participants.includes(friend._id)
+                    );
+                    return {
+                      id: friend.name, // keep id as friend name for selection
+                      name: friend.name,
+                      profileImage: friend.profileImage,
+                      chatRoomId: room?._id,
+                    };
+                  })
             }
             onSelectChat={handleSelectChat}
             selectedChatId={selectedChatId}
@@ -64,7 +131,7 @@ export default function ChatIntegration() {
           <div className="flex-1 flex flex-col">
             {selectedChatId && (
               <ChatWindow
-                messages={messages}
+                messages={chatState.messages}
                 onSendMessage={handleSendMessage}
                 currentUserId={currentUserId}
               />

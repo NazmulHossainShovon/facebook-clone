@@ -1,9 +1,11 @@
 type Friend = {
+  _id: string;
   name: string;
   profileImage?: string;
 };
 
 type User = {
+  _id: string;
   name: string;
   email: string;
   friends: string[];
