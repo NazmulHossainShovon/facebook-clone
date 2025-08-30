@@ -1,17 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import ChatSidebar from './ChatSidebar';
 import ChatWindow from './ChatWindow';
+import { Store } from '../../lib/store';
+import { useGetUserFriends } from '../../hooks/user-hooks';
 
 export default function ChatIntegration() {
   const [open, setOpen] = useState(false);
-  // Dummy data for sidebar and window, replace with real state/hooks
-  const chats: any[] = [];
+  const [selectedChatId, setSelectedChatId] = useState<string | undefined>(
+    undefined
+  );
+  const {
+    state: { userInfo },
+  } = useContext(Store);
+  const { data: friends = [], isLoading } = useGetUserFriends(userInfo.name);
   const messages: any[] = [];
-  const currentUserId = '';
-  const selectedChatId = '';
-  const handleSelectChat = () => {};
+  const currentUserId = userInfo.name;
+  const handleSelectChat = (chatId: string) => setSelectedChatId(chatId);
   const handleSendMessage = () => {};
 
   return (
@@ -41,7 +47,15 @@ export default function ChatIntegration() {
       {open && (
         <div className="fixed bottom-24 right-6 z-50 bg-white rounded-lg shadow-2xl flex w-[400px] h-[500px] overflow-hidden border border-gray-200">
           <ChatSidebar
-            chats={chats}
+            chats={
+              isLoading
+                ? []
+                : friends.map(friend => ({
+                    id: friend.name,
+                    name: friend.name,
+                    profileImage: friend.profileImage,
+                  }))
+            }
             onSelectChat={handleSelectChat}
             selectedChatId={selectedChatId}
           />
