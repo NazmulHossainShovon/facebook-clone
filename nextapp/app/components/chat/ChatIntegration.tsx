@@ -17,7 +17,9 @@ export default function ChatIntegration() {
   const { data: friends = [], isLoading } = useGetUserFriends(userInfo.name);
   const messages: any[] = [];
   const currentUserId = userInfo.name;
-  const handleSelectChat = (chatId: string) => setSelectedChatId(chatId);
+  const handleSelectChat = (chatId: string) => {
+    setSelectedChatId(prev => (prev === chatId ? undefined : chatId));
+  };
   const handleSendMessage = () => {};
 
   return (
