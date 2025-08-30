@@ -2,7 +2,15 @@
 
 import React, { useState } from 'react';
 import { useUpdatePost } from '@/hooks/post-hooks';
-import { Dialog, DialogClose, DialogContent, DialogTrigger } from './ui/dialog';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTrigger,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from './ui/dialog';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Post } from '@/lib/types';
@@ -25,14 +33,21 @@ const EditPostModal = (props: EditPostModalProps) => {
 
   return (
     <Dialog>
-      <DialogTrigger className="w-full text-left pl-2 hover:bg-slate-100">
+      <DialogTrigger className="w-full text-left pl-2 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-white">
         Edit
       </DialogTrigger>
-      <DialogContent>
-        <div className="w-[50%] flex flex-col gap-7">
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="dark:text-white">Edit Post</DialogTitle>
+          <DialogDescription className="dark:text-gray-400">
+            Make changes to your post here. Click update when you're done.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
           <Textarea
             onChange={e => setUpdatedPost(e.target.value)}
             defaultValue={post}
+            className="min-h-[120px] dark:text-white"
           />
           <DialogClose asChild>
             <Button onClick={handleUpdatePost}>Update</Button>
