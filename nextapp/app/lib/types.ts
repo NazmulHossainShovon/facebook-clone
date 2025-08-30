@@ -1,3 +1,8 @@
+type Friend = {
+  name: string;
+  profileImage?: string;
+};
+
 type User = {
   name: string;
   email: string;
@@ -64,6 +69,7 @@ type PageClickEvent = {
 
 export type {
   User,
+  Friend,
   AppState,
   SignupData,
   Post,

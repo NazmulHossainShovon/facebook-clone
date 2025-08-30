@@ -11,12 +11,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import { useGetUserFriends } from '../hooks/user-hooks';
 
 export default function FriendList() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const {
     state: { userInfo },
   } = useContext(Store);
+  
+  // Fetch friends data with profile images
+  const { data: friends, isLoading } = useGetUserFriends(userInfo.name);
+  
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -32,14 +37,18 @@ export default function FriendList() {
           Friends
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          {userInfo.friends?.map(user => (
-            <DropdownMenuItem onClick={handleClose} key={user}>
-              <Link className="flex  flex-row gap-2" href={`/${user}`}>
-                <Avatar src={`https://nazmul.sirv.com/facebook/${user}.png`} />
-                <div>{user}</div>
-              </Link>
-            </DropdownMenuItem>
-          ))}
+          {isLoading ? (
+            <DropdownMenuItem>Loading...</DropdownMenuItem>
+          ) : (
+            friends?.map(friend => (
+              <DropdownMenuItem onClick={handleClose} key={friend.name}>
+                <Link className="flex  flex-row gap-2" href={`/${friend.name}`}>
+                  <Avatar src={friend.profileImage || undefined} />
+                  <div>{friend.name}</div>
+                </Link>
+              </DropdownMenuItem>
+            ))
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

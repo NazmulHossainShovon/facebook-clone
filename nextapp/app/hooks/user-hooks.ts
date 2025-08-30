@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { People, User } from '../lib/types';
+import { People, User, Friend } from '../lib/types';
 import apiClient from '../lib/api-client';
 
 export const useSignupMutation = () =>
@@ -44,6 +44,18 @@ export const useGetUserInfo = (userName: string | undefined) =>
       });
       return res.data;
     },
+  });
+
+export const useGetUserFriends = (userName: string | undefined) =>
+  useQuery({
+    queryKey: ['friends', userName],
+    queryFn: async () => {
+      const res = await apiClient.get<Friend[]>('api/users/friends', {
+        params: { userName },
+      });
+      return res.data;
+    },
+    enabled: !!userName,
   });
 
 export const useSearchUsers = (query: string) =>

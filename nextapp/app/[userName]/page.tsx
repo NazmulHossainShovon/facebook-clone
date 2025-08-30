@@ -24,6 +24,7 @@ import CreatePostDialog from '@/components/CreatePostDialog';
 import Pagination from '@/components/Pagination';
 import PostCardSkeleton from '@/components/PostCardSkeleton';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { CircularProgress } from '@mui/material';
 
 // Combined post type that matches the backend response
 type PostWithSharedFlag = Post & { isShared: false };
@@ -45,7 +46,7 @@ function UserProfilePage() {
   const { data: userData, refetch: refetchUser } = useGetUserInfo(userName);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const { data, refetch } = useGetPosts({ userName, currentPage });
-  const { mutateAsync: sendRequest } = useSendFriendRequest();
+  const { mutateAsync: sendRequest, isPending: isSendingRequest } = useSendFriendRequest();
   const { mutateAsync: cancelRequest } = useCancelFriendRequest();
   const { mutateAsync: acceptRequest } = useAcceptFriendRequest();
   const [allPosts, setAllPosts] = useState<CombinedPost[]>([]);
@@ -231,8 +232,15 @@ function UserProfilePage() {
             ) : userData?.friends.includes(userInfo.name) ? (
               <FriendOptionsMenu tempUser={userName} refetch={refetchUser} />
             ) : (
-              <Button onClick={() => handleFriendRequest('send')}>
-                Send Request{' '}
+              <Button onClick={() => handleFriendRequest('send')} disabled={isSendingRequest}>
+                {isSendingRequest ? (
+                  <>
+                    <CircularProgress size={16} color="inherit" className="mr-2" />
+                    Sending Request...
+                  </>
+                ) : (
+                  'Send Request'
+                )}
               </Button>
             )}
           </>
