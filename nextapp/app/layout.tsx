@@ -23,7 +23,6 @@ export default function RootLayout({
           <ChatProvider>
             <Navbar />
             {children}
-            <ChatIntegration />
           </ChatProvider>
         </Providers>
       </body>
