@@ -71,23 +71,33 @@ export default function ChatIntegration() {
         if (newId) joinRoom(newId);
         return newId;
       });
+    }
+  };
+  // Fetch messages when selectedChatId changes and is defined
+  useEffect(() => {
+    if (!selectedChatId) return;
+    let isMounted = true;
+    (async () => {
       try {
         const res = await apiClient.get(`/api/chat/messages/${selectedChatId}`);
-
         if (Array.isArray(res.data)) {
           // Each message should have chatRoomId
           const messages = res.data.map((msg: any) => ({
             ...msg,
             chatRoomId: selectedChatId,
           }));
-
-          dispatch({ type: 'SET_MESSAGES', payload: messages });
+          if (isMounted) {
+            dispatch({ type: 'SET_MESSAGES', payload: messages });
+          }
         }
       } catch (err) {
         // Optionally handle error
       }
-    }
-  };
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedChatId, dispatch]);
 
   const handleSendMessage = (message: string) => {
     if (selectedChatId && message.trim()) {
