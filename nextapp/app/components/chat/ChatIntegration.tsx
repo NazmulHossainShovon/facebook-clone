@@ -1,13 +1,15 @@
 'use client';
 
+import FriendChatHeader from './FriendChatHeader';
 import { useState, useContext, useEffect } from 'react';
 import { useChatSocket } from '../../hooks/use-chat';
 import { useChat } from '../../lib/chat-store';
 import ChatSidebar from './ChatSidebar';
-import ChatWindow from './ChatWindow';
 import { Store } from '../../lib/store';
 import { useGetUserFriends } from '../../hooks/user-hooks';
 import apiClient from '../../lib/api-client';
+import ChatWindowContainer from './ChatWindowContainer';
+import { ArrowLeft, MessageSquareMore } from 'lucide-react';
 
 export default function ChatIntegration() {
   const [open, setOpen] = useState(false);
@@ -149,14 +151,24 @@ export default function ChatIntegration() {
           />
           {selectedChatId && (
             <div className="flex-1 flex flex-col">
-              <button
-                type="button"
-                className="p-2 w-fit rounded hover:bg-gray-700 bg-gray-800 text-gray-100 mb-2 fixed"
-                onClick={() => setSelectedChatId(undefined)}
-                aria-label="Back to chat list"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </button>
+              <div className="flex fixed items-center gap-2">
+                <button
+                  type="button"
+                  className="p-2 w-fit rounded hover:bg-gray-700 bg-gray-800 text-gray-100 mb-2 "
+                  onClick={() => setSelectedChatId(undefined)}
+                  aria-label="Back to chat list"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+                {/* Show user image for the selected chat */}
+                <FriendChatHeader
+                  friends={friends}
+                  chatRooms={chatRooms}
+                  currentUserId={currentUserId}
+                  selectedChatId={selectedChatId}
+                />
+              </div>
+
               <ChatWindowContainer
                 chatRoomId={selectedChatId}
                 onSendMessage={handleSendMessage}
@@ -168,5 +180,3 @@ export default function ChatIntegration() {
     </>
   );
 }
-import ChatWindowContainer from './ChatWindowContainer';
-import { ArrowLeft, MessageSquareMore } from 'lucide-react';
