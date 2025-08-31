@@ -152,6 +152,14 @@ export default function ChatIntegration() {
           />
           {selectedChatId && (
             <div className="flex-1 flex flex-col">
+              <button
+                type="button"
+                className="p-2 w-fit rounded hover:bg-gray-100 mb-2 fixed"
+                onClick={() => setSelectedChatId(undefined)}
+                aria-label="Back to chat list"
+              >
+                <ArrowLeft className="w-6 h-6" />
+              </button>
               <ChatWindowContainer
                 chatRoomId={selectedChatId}
                 onSendMessage={handleSendMessage}
@@ -164,3 +172,4 @@ export default function ChatIntegration() {
   );
 }
 import ChatWindowContainer from './ChatWindowContainer';
+import { ArrowLeft } from 'lucide-react';
