@@ -121,7 +121,11 @@ export default function ChatIntegration() {
       </button>
       {/* Chat Panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 bg-white rounded-lg shadow-2xl flex w-[400px] h-[500px] overflow-hidden border border-gray-200">
+        <div
+          className="fixed bottom-24 right-6 z-50 bg-white rounded-lg shadow-2xl flex w-[300px] h-[400px] overflow-hidden border border-gray-200
+          sm:w-[350px] sm:h-[500px] sm:right-2 sm:bottom-20
+          xs:w-full xs:h-[90vh] xs:right-0 xs:bottom-0 xs:rounded-none xs:border-0 xs:shadow-none xs:max-w-full xs:max-h-[100vh]"
+        >
           <ChatSidebar
             chats={
               isLoading
@@ -146,14 +150,14 @@ export default function ChatIntegration() {
             onSelectChat={handleSelectChat}
             selectedChatId={selectedChatId}
           />
-          <div className="flex-1 flex flex-col">
-            {selectedChatId && (
+          {selectedChatId && (
+            <div className="flex-1 flex flex-col">
               <ChatWindowContainer
                 chatRoomId={selectedChatId}
                 onSendMessage={handleSendMessage}
               />
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </>
