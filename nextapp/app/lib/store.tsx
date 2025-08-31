@@ -6,6 +6,7 @@ import { io, Socket } from 'socket.io-client';
 
 const initialState: AppState = {
   userInfo: {
+    _id: '',
     name: '',
     email: '',
     friends: [],
@@ -21,7 +22,6 @@ let socket: Socket;
 if (typeof window !== 'undefined') {
   socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000');
 }
-
 
 type Action =
   | { type: 'sign-in'; payload: User }
@@ -46,13 +46,14 @@ const reducer = (state: AppState, action: Action): AppState => {
       return {
         ...state,
         userInfo: {
-          name: "",
-          email: "",
+          _id: '',
+          name: '',
+          email: '',
           friends: [],
           receivedFriendReqs: [],
           sentFriendReqs: [],
-          token: "",
-          profileImage: "",
+          token: '',
+          profileImage: '',
         },
       };
     case 'new-friend-req':

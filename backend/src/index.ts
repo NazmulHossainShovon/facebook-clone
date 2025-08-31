@@ -8,8 +8,10 @@ import { postRouter } from "./routers/postRouter";
 import { searchRouter } from "./routers/searchRouter";
 import { commentRouter } from "./routers/commentRouter";
 import s3Router from "./routers/s3Router";
+import chatRouter from "./routers/chatRouter";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { registerChatHandlers } from "./socketHandlers/chatHandler";
 
 export const userSocketMap = new Map<string, string>();
 
@@ -59,6 +61,7 @@ app.use("/api/posts", postRouter);
 app.use("/api/search", searchRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/s3", s3Router);
+app.use("/api/chat", chatRouter);
 
 const PORT: number = parseInt((process.env.PORT || "4000") as string, 10);
 
@@ -66,6 +69,9 @@ io.on("connection", (socket) => {
   socket.on("storeUser", (userName: string) => {
     userSocketMap.set(userName, socket.id);
   });
+
+  // Register chat handlers
+  registerChatHandlers(io, socket);
 
   socket.on("disconnect", () => {});
 });
