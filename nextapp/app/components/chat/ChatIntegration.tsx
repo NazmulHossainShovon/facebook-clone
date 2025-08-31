@@ -2,6 +2,7 @@
 
 import { useState, useContext, useEffect } from 'react';
 import { useChatSocket } from '../../hooks/use-chat';
+import { useChat } from '../../lib/chat-store';
 import ChatSidebar from './ChatSidebar';
 import ChatWindow from './ChatWindow';
 import { Store } from '../../lib/store';
@@ -25,6 +26,7 @@ export default function ChatIntegration() {
     sendMessage,
     joinRoom,
   } = useChatSocket(currentUserId);
+  const { dispatch } = useChat();
 
   // Fetch chat rooms for the current user
   useEffect(() => {
@@ -69,12 +71,28 @@ export default function ChatIntegration() {
         if (newId) joinRoom(newId);
         return newId;
       });
+      try {
+        const res = await apiClient.get(`/api/chat/messages/${selectedChatId}`);
+
+        if (Array.isArray(res.data)) {
+          // Each message should have chatRoomId
+          const messages = res.data.map((msg: any) => ({
+            ...msg,
+            chatRoomId: selectedChatId,
+          }));
+
+          dispatch({ type: 'SET_MESSAGES', payload: messages });
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
     }
   };
 
   const handleSendMessage = (message: string) => {
     if (selectedChatId && message.trim()) {
       sendMessage(selectedChatId, message);
+      // Fetch all messages for this chat room from the database
     }
   };
 

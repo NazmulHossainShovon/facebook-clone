@@ -15,6 +15,7 @@ interface Message {
   content: string;
   timestamp: string;
   messageType?: string;
+  chatRoomId: string;
 }
 
 interface ChatState {

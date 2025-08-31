@@ -8,6 +8,7 @@ type Message = {
   content: string;
   timestamp: string;
   messageType?: string;
+  chatRoomId: string;
 };
 
 export function useChatSocket(currentUserId: string) {
@@ -50,6 +51,10 @@ export function useChatSocket(currentUserId: string) {
     if (!socket) return;
 
     const handleMessage = (msg: Message) => {
+      // Defensive: If chatRoomId is missing, try to infer from msg.id or skip
+      if (!msg.chatRoomId && (msg as any).roomId) {
+        msg.chatRoomId = (msg as any).roomId;
+      }
       dispatch({ type: 'ADD_MESSAGE', payload: msg });
     };
     const handleUserJoined = (userId: string) => {
