@@ -9,6 +9,7 @@ import { searchRouter } from "./routers/searchRouter";
 import { commentRouter } from "./routers/commentRouter";
 import s3Router from "./routers/s3Router";
 import chatRouter from "./routers/chatRouter";
+import { dubRouter } from "./routers/dubRouter";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { registerChatHandlers } from "./socketHandlers/chatHandler";
@@ -62,6 +63,7 @@ app.use("/api/search", searchRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/s3", s3Router);
 app.use("/api/chat", chatRouter);
+app.use("/api/dub", dubRouter);
 
 const PORT: number = parseInt((process.env.PORT || "4000") as string, 10);
 
