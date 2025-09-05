@@ -34,10 +34,7 @@ export const validateYoutubeUrl = (youtubeUrl: string): boolean => {
  * @returns Video info object
  */
 export const fetchVideoInfo = async (youtubeUrl: string): Promise<VideoInfo> => {
-  console.log("Fetching video info for:", youtubeUrl);
   const info = await ytdl.getInfo(youtubeUrl);
-  console.log("Video title:", info.videoDetails.title);
-  console.log("Available formats:", info.formats.length);
   
   return {
     title: info.videoDetails.title,
@@ -57,26 +54,21 @@ export const selectVideoFormat = (formats: ytdl.videoFormat[]): ytdl.videoFormat
   try {
     // Try 720p webm first
     format = ytdl.chooseFormat(formats, { quality: "247" });
-    console.log("Selected format: 720p webm");
   } catch {
     try {
       // Fallback to 720p mp4
       format = ytdl.chooseFormat(formats, { quality: "136" });
-      console.log("Selected format: 720p mp4");
     } catch {
       try {
         // Fallback to highest quality available
         format = ytdl.chooseFormat(formats, { quality: "highest" });
-        console.log("Selected format: highest quality");
       } catch {
         // Last resort - any video format
         format = ytdl.chooseFormat(formats, { filter: "videoonly" });
-        console.log("Selected format: any video format");
       }
     }
   }
   
-  console.log("Final format selected:", format.itag, format.qualityLabel, format.container);
   return format;
 };
 
@@ -125,18 +117,15 @@ export const downloadVideo = (
     
     // Handle download completion
     outputStream.on("finish", () => {
-      console.log(`Finished downloading: ${outputPath}`);
       resolve();
     });
     
     // Handle download errors
     outputStream.on("error", (error) => {
-      console.error("Error writing file:", error);
       reject(new Error("Error saving video file"));
     });
     
     downloadStream.on("error", (error) => {
-      console.error("Error downloading video:", error);
       reject(new Error("Error downloading video"));
     });
   });
