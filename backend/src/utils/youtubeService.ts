@@ -7,6 +7,7 @@ interface VideoInfo {
   title: string;
   lengthSeconds: string;
   formats: ytdl.videoFormat[];
+  languageCode?: string; // Add language code property
 }
 
 /**
@@ -36,10 +37,15 @@ export const validateYoutubeUrl = (youtubeUrl: string): boolean => {
 export const fetchVideoInfo = async (youtubeUrl: string): Promise<VideoInfo> => {
   const info = await ytdl.getInfo(youtubeUrl);
   
+  // Try to detect language from caption tracks
+  const languageCode: string | undefined = 
+    info.player_response.captions?.playerCaptionsTracklistRenderer?.captionTracks?.[0]?.languageCode;
+  
   return {
     title: info.videoDetails.title,
     lengthSeconds: info.videoDetails.lengthSeconds,
-    formats: info.formats
+    formats: info.formats,
+    languageCode
   };
 };
 
@@ -52,19 +58,34 @@ export const selectVideoFormat = (formats: ytdl.videoFormat[]): ytdl.videoFormat
   let format: ytdl.videoFormat;
   
   try {
-    // Try 720p webm first
-    format = ytdl.chooseFormat(formats, { quality: "247" });
+    // Try highest quality with audio first (for transcription we need audio)
+    format = ytdl.chooseFormat(formats, { filter: "audioandvideo", quality: "highest" });
   } catch {
     try {
-      // Fallback to 720p mp4
-      format = ytdl.chooseFormat(formats, { quality: "136" });
+      // Fallback to 720p mp4 with audio
+      format = ytdl.chooseFormat(formats, { filter: "audioandvideo", quality: "136" });
     } catch {
       try {
-        // Fallback to highest quality available
-        format = ytdl.chooseFormat(formats, { quality: "highest" });
+        // Fallback to any format with audio
+        format = ytdl.chooseFormat(formats, { filter: "audioandvideo" });
       } catch {
-        // Last resort - any video format
-        format = ytdl.chooseFormat(formats, { filter: "videoonly" });
+        try {
+          // Try 720p webm with audio
+          format = ytdl.chooseFormat(formats, { quality: "247" });
+        } catch {
+          try {
+            // Fallback to 720p mp4
+            format = ytdl.chooseFormat(formats, { quality: "136" });
+          } catch {
+            try {
+              // Fallback to highest quality available
+              format = ytdl.chooseFormat(formats, { quality: "highest" });
+            } catch {
+              // Last resort - any video format
+              format = ytdl.chooseFormat(formats, { filter: "videoonly" });
+            }
+          }
+        }
       }
     }
   }
