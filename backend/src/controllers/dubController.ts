@@ -7,9 +7,13 @@ import {
   fetchVideoInfo,
   selectVideoFormat,
   createFilePath,
-  downloadVideo
-} from "../utils/youtubeService";
-import { transcribeVideo, getTranscriptionResult, saveTranscriptionToFile } from "../utils/transcriptionService";
+  downloadVideo,
+} from "../services/dub/youtubeService";
+import {
+  transcribeVideo,
+  getTranscriptionResult,
+  saveTranscriptionToFile,
+} from "../services/dub/transcriptionService";
 
 // Interface for the request body
 interface DubRequestBody {
@@ -50,37 +54,48 @@ export const processYoutubeUrl = asyncHandler(
 
       // Get video info from YouTube
       const videoInfo = await fetchVideoInfo(youtubeUrl);
-      
+
       // Convert back to ytdl.videoInfo for compatibility with downloadFromInfo
       const info = await ytdl.getInfo(youtubeUrl);
 
       // Select the video format and quality with fallback options (prioritizing formats with audio)
       const format = selectVideoFormat(videoInfo.formats);
-      
+
       // Create output file path
       const outputFilePath = createFilePath(videoInfo.title, format.container);
-      
+
       // Download the video file
       await downloadVideo(info, format, outputFilePath);
-      
+
       // Transcribe the video
       console.log("Starting video transcription...");
       const { transcriptionText, transcriptionFilePath } = await (async () => {
         try {
-          const transcriptionId = await transcribeVideo(outputFilePath, videoInfo.languageCode);
-          const transcriptionText = await getTranscriptionResult(transcriptionId);
-          const transcriptionFilePath = saveTranscriptionToFile(transcriptionText, outputFilePath);
+          const transcriptionId = await transcribeVideo(
+            outputFilePath,
+            videoInfo.languageCode
+          );
+          const transcriptionText = await getTranscriptionResult(
+            transcriptionId
+          );
+          const transcriptionFilePath = saveTranscriptionToFile(
+            transcriptionText,
+            outputFilePath
+          );
           return { transcriptionText, transcriptionFilePath };
         } catch (transcriptionError) {
           console.error("Error during transcription:", transcriptionError);
-          return { transcriptionText: undefined, transcriptionFilePath: undefined };
+          return {
+            transcriptionText: undefined,
+            transcriptionFilePath: undefined,
+          };
         }
       })();
-      
+
       // Send success response
       res.status(200).json({
-        message: transcriptionText 
-          ? "Video downloaded and transcribed successfully" 
+        message: transcriptionText
+          ? "Video downloaded and transcribed successfully"
           : "Video downloaded successfully (transcription failed)",
         success: true,
         videoTitle: videoInfo.title,
