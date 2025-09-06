@@ -8,7 +8,7 @@ const client = new AssemblyAI({
 });
 
 /**
- * Transcribes a video or audio file using AssemblyAI
+ * Transcribes a video or audio file using AssemblyAI with speaker diarization for pause detection
  * @param filePath Path to the video/audio file
  * @param languageCode Language code for the audio (e.g., 'hi' for Hindi, 'en' for English)
  * @returns Promise that resolves with the transcribed text
@@ -24,10 +24,13 @@ export const transcribeVideo = async (filePath: string, languageCode?: string): 
     console.log("Uploading file to AssemblyAI...");
     const uploadResult = await client.files.upload(fs.createReadStream(filePath));
     
-    // Create a transcription request with language support
-    console.log("Creating transcription request...");
+    // Create a transcription request with language support and speaker diarization
+    console.log("Creating transcription request with speaker diarization...");
     const transcriptionParams: any = {
       audio_url: uploadResult,
+      speaker_labels: true, // Enable speaker diarization
+      punctuate: true,      // Enable punctuation for better pause detection
+      format_text: true,    // Format text with proper spacing
     };
     
     // Add language code if provided
@@ -49,14 +52,25 @@ export const transcribeVideo = async (filePath: string, languageCode?: string): 
 };
 
 /**
- * Gets the transcription result from AssemblyAI
+ * Gets the transcription result from AssemblyAI including word timing for pause detection
  * @param transcriptionId The ID of the transcription
- * @returns Promise that resolves with the transcribed text
+ * @returns Promise that resolves with the transcribed text and word timing data
  */
-export const getTranscriptionResult = async (transcriptionId: string): Promise<string> => {
+export const getTranscriptionResult = async (transcriptionId: string): Promise<{
+  text: string;
+  words?: Array<{
+    text: string;
+    start: number;
+    end: number;
+    confidence: number;
+    speaker?: string | null;
+  }> | undefined;
+  utterances?: any[] | undefined;
+}> => {
   try {
-    console.log("Polling for transcription result...");
+    console.log("Polling for transcription result with word timing...");
     
+    // Request full transcription with word timing and speaker diarization
     let transcription = await client.transcripts.get(transcriptionId);
     
     while (transcription.status !== 'completed') {
@@ -69,8 +83,14 @@ export const getTranscriptionResult = async (transcriptionId: string): Promise<s
       transcription = await client.transcripts.get(transcriptionId);
     }
 
-    console.log("Transcription completed!");
-    return transcription.text || "";
+    console.log("Transcription completed with word timing and speaker data!");
+    
+    // Return text, words timing data, and utterances for pause detection
+    return {
+      text: transcription.text || "",
+      words: transcription.words || undefined,
+      utterances: transcription.utterances || undefined
+    };
   } catch (error) {
     console.error("Error getting transcription result:", error);
     throw error;
@@ -102,6 +122,35 @@ export const saveTranscriptionToFile = (text: string, originalFileName: string):
     return transcriptionFilePath;
   } catch (error) {
     console.error("Error saving transcription to file:", error);
+    throw error;
+  }
+};
+
+/**
+ * Saves pause data to a JSON file
+ * @param pauses Array of pause data
+ * @param originalFileName The original video filename
+ * @returns Path to the saved pause data file
+ */
+export const savePauseDataToFile = (pauses: any[], originalFileName: string): string => {
+  try {
+    // Create downloads directory if it doesn't exist
+    const downloadsDir = path.join(__dirname, "downloads");
+    if (!fs.existsSync(downloadsDir)) {
+      fs.mkdirSync(downloadsDir, { recursive: true });
+    }
+    
+    // Create pause data filename
+    const fileNameWithoutExt = path.parse(originalFileName).name;
+    const pauseDataFilePath = path.join(downloadsDir, `${fileNameWithoutExt}_pauses.json`);
+    
+    // Write pause data to JSON file
+    fs.writeFileSync(pauseDataFilePath, JSON.stringify(pauses, null, 2), "utf8");
+    
+    console.log(`Pause data saved to: ${pauseDataFilePath}`);
+    return pauseDataFilePath;
+  } catch (error) {
+    console.error("Error saving pause data to file:", error);
     throw error;
   }
 };
