@@ -18,8 +18,8 @@ export const processYoutubeUrl = asyncHandler(
       // Process the video download
       const { videoInfo, outputFilePath } = await processVideoDownload(youtubeUrl);
 
-      // Transcribe the video with pause detection
-      const { transcriptionText, transcriptionFilePath, pauses, pauseDataFilePath } = await processVideoTranscription(
+      // Transcribe the video and get word timing data
+      const { transcriptionText, transcriptionFilePath, wordTimingDataFilePath } = await processVideoTranscription(
         outputFilePath,
         videoInfo.languageCode
       );
@@ -33,10 +33,9 @@ export const processYoutubeUrl = asyncHandler(
         videoTitle: videoInfo.title,
         filePath: outputFilePath,
         transcriptionPath: transcriptionFilePath,
-        pauseDataPath: pauseDataFilePath, // Include path to pause data file
+        wordTimingDataPath: wordTimingDataFilePath, // Include path to word timing data file
         duration: videoInfo.lengthSeconds,
         transcriptionText: transcriptionText,
-        pauses: pauses // Include pause data in the response
       });
     } catch (error: any) {
       console.error("Error processing YouTube URL:", error);

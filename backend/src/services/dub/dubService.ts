@@ -11,21 +11,9 @@ import {
   transcribeVideo,
   getTranscriptionResult,
   saveTranscriptionToFile,
-  savePauseDataToFile,
 } from "./transcriptionService";
-
-// Interface for pause detection data
-interface PauseData {
-  duration: number;
-  position: {
-    afterWord: string;
-    beforeWord: string;
-  };
-  timing: {
-    start: number;
-    end: number;
-  };
-}
+import fs from "fs";
+import path from "path";
 
 // Interface for word timing data from AssemblyAI
 interface WordTiming {
@@ -35,6 +23,39 @@ interface WordTiming {
   confidence: number;
   speaker?: string | null;
 }
+
+/**
+ * Saves word timing data to a JSON file
+ * @param words Array of words with timing information
+ * @param originalFileName The original video filename
+ * @returns Path to the saved word timing data file
+ */
+const saveWordTimingDataToFile = (words: WordTiming[] | undefined, originalFileName: string): string | undefined => {
+  try {
+    if (!words || words.length === 0) {
+      return undefined;
+    }
+
+    // Create downloads directory if it doesn't exist
+    const downloadsDir = path.join(__dirname, "downloads");
+    if (!fs.existsSync(downloadsDir)) {
+      fs.mkdirSync(downloadsDir, { recursive: true });
+    }
+    
+    // Create word timing data filename
+    const fileNameWithoutExt = path.parse(originalFileName).name;
+    const wordTimingDataFilePath = path.join(downloadsDir, `${fileNameWithoutExt}_word_timing.json`);
+    
+    // Write word timing data to JSON file
+    fs.writeFileSync(wordTimingDataFilePath, JSON.stringify(words, null, 2), "utf8");
+    
+    console.log(`Word timing data saved to: ${wordTimingDataFilePath}`);
+    return wordTimingDataFilePath;
+  } catch (error) {
+    console.error("Error saving word timing data to file:", error);
+    return undefined;
+  }
+};
 
 /**
  * Validates the YouTube URL from the request
@@ -83,65 +104,10 @@ export const processVideoDownload = async (youtubeUrl: string) => {
 };
 
 /**
- * Detects pauses in the transcription data
- * @param words Array of words with timing information
- * @returns Array of detected pauses with timing information
- */
-const detectPauses = (words: WordTiming[] | undefined): PauseData[] => {
-  if (!words || words.length < 2) {
-    return [];
-  }
-
-  const pauses: PauseData[] = [];
-  const PAUSE_THRESHOLD = 500; // 500ms threshold for detecting pauses
-
-  for (let i = 0; i < words.length - 1; i++) {
-    const currentWord = words[i];
-    const nextWord = words[i + 1];
-    
-    // Calculate pause duration between words
-    const pauseDuration = nextWord.start - currentWord.end;
-    
-    // If pause is longer than threshold, record it
-    if (pauseDuration > PAUSE_THRESHOLD) {
-      pauses.push({
-        duration: pauseDuration,
-        position: {
-          afterWord: currentWord.text,
-          beforeWord: nextWord.text
-        },
-        timing: {
-          start: currentWord.end,
-          end: nextWord.start
-        }
-      });
-    }
-  }
-
-  return pauses;
-};
-
-/**
- * Formats transcription text with pause indicators
- * @param text Original transcription text
- * @param pauses Array of detected pauses
- * @returns Formatted transcription text with pause indicators
- */
-const formatTranscriptionWithPauses = (text: string, pauses: PauseData[]): string => {
-  if (!text || pauses.length === 0) {
-    return text;
-  }
-
-  // For now, we'll just return the original text
-  // In a more advanced implementation, we could insert visual indicators for pauses
-  return text;
-};
-
-/**
- * Transcribes the downloaded video with pause detection
+ * Transcribes the downloaded video and saves word timing data
  * @param filePath Path to the downloaded video file
  * @param languageCode Language code for transcription
- * @returns Object containing transcription text, file path, and pause data
+ * @returns Object containing transcription text, file path, and word timing data file path
  */
 export const processVideoTranscription = async (
   filePath: string,
@@ -149,42 +115,33 @@ export const processVideoTranscription = async (
 ): Promise<{
   transcriptionText: string | undefined;
   transcriptionFilePath: string | undefined;
-  pauses: any[] | undefined;
-  pauseDataFilePath: string | undefined;
+  wordTimingDataFilePath: string | undefined;
 }> => {
-  console.log("Starting video transcription with pause detection...");
+  console.log("Starting video transcription with word timing data...");
   try {
     const transcriptionId = await transcribeVideo(filePath, languageCode);
     const transcriptionData = await getTranscriptionResult(transcriptionId);
     
-    // Detect pauses in the transcription
-    const pauses = detectPauses(transcriptionData.words);
-    
-    // Format transcription text with pause information
-    const formattedText = formatTranscriptionWithPauses(transcriptionData.text, pauses);
-    
-    // Save the formatted transcription to a file
+    // Save the transcription text to a file
     const transcriptionFilePath = saveTranscriptionToFile(
-      formattedText,
+      transcriptionData.text || "",
       filePath
     );
     
-    // Save pause data to a JSON file if pauses were detected
-    const pauseDataFilePath = pauses.length > 0 ? savePauseDataToFile(pauses, filePath) : undefined;
+    // Save word timing data to a JSON file
+    const wordTimingDataFilePath = saveWordTimingDataToFile(transcriptionData.words, filePath);
     
     return { 
-      transcriptionText: formattedText, 
+      transcriptionText: transcriptionData.text, 
       transcriptionFilePath,
-      pauses, // Include pause data in the response
-      pauseDataFilePath // Include path to pause data file
+      wordTimingDataFilePath // Include path to word timing data file
     };
   } catch (transcriptionError) {
     console.error("Error during transcription:", transcriptionError);
     return {
       transcriptionText: undefined,
       transcriptionFilePath: undefined,
-      pauses: undefined,
-      pauseDataFilePath: undefined
+      wordTimingDataFilePath: undefined
     };
   }
 };
