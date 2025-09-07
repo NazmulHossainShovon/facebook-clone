@@ -7,6 +7,48 @@ const client = new AssemblyAI({
   apiKey: process.env.ASSEMBLYAI_API_KEY || "",
 });
 
+// Interface for pause detection data
+interface PauseData {
+  duration: number;
+  position: {
+    afterWord: string;
+    beforeWord: string;
+  };
+  timing: {
+    start: number;
+    end: number;
+  };
+}
+
+/** 
+ * Saves pause data to a JSON file
+ * @param pauses Array of pause data
+ * @param originalFileName The original video filename
+ * @returns Path to the saved pause data file
+ */
+export const savePauseDataToFile = (pauses: PauseData[], originalFileName: string): string => {
+  try {
+    // Create downloads directory if it doesn't exist
+    const downloadsDir = path.join(__dirname, "downloads");
+    if (!fs.existsSync(downloadsDir)) {
+      fs.mkdirSync(downloadsDir, { recursive: true });
+    }
+    
+    // Create pause data filename
+    const fileNameWithoutExt = path.parse(originalFileName).name;
+    const pauseDataFilePath = path.join(downloadsDir, `${fileNameWithoutExt}_pauses.json`);
+    
+    // Write pause data to JSON file
+    fs.writeFileSync(pauseDataFilePath, JSON.stringify(pauses, null, 2), "utf8");
+    
+    console.log(`Pause data saved to: ${pauseDataFilePath}`);
+    return pauseDataFilePath;
+  } catch (error) {
+    console.error("Error saving pause data to file:", error);
+    throw error;
+  }
+};
+
 /**
  * Transcribes a video or audio file using AssemblyAI with speaker diarization for pause detection
  * @param filePath Path to the video/audio file

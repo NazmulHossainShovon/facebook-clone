@@ -11,6 +11,7 @@ import {
   transcribeVideo,
   getTranscriptionResult,
   saveTranscriptionToFile,
+  savePauseDataToFile,
 } from "./transcriptionService";
 import {
   TranslateClient,
@@ -22,6 +23,19 @@ import path from "path";
 
 // Load environment variables
 dotenv.config();
+
+// Interface for pause detection data
+interface PauseData {
+  duration: number;
+  position: {
+    afterWord: string;
+    beforeWord: string;
+  };
+  timing: {
+    start: number;
+    end: number;
+  };
+}
 
 // Interface for word timing data from AssemblyAI
 interface WordTiming {
@@ -161,6 +175,45 @@ const translateWordTimingDataToFile = async (
 };
 
 /**
+ * Detects pauses in the transcription data
+ * @param words Array of words with timing information
+ * @returns Array of detected pauses with timing information
+ */
+const detectPauses = (words: WordTiming[] | undefined): PauseData[] => {
+  if (!words || words.length < 2) {
+    return [];
+  }
+
+  const pauses: PauseData[] = [];
+  const PAUSE_THRESHOLD = 500; // 500ms threshold for detecting pauses
+
+  for (let i = 0; i < words.length - 1; i++) {
+    const currentWord = words[i];
+    const nextWord = words[i + 1];
+    
+    // Calculate pause duration between words
+    const pauseDuration = nextWord.start - currentWord.end;
+    
+    // If pause is longer than threshold, record it
+    if (pauseDuration > PAUSE_THRESHOLD) {
+      pauses.push({
+        duration: pauseDuration,
+        position: {
+          afterWord: currentWord.text,
+          beforeWord: nextWord.text
+        },
+        timing: {
+          start: currentWord.end,
+          end: nextWord.start
+        }
+      });
+    }
+  }
+
+  return pauses;
+};
+
+/**
  * Validates the YouTube URL from the request
  * @param youtubeUrl The YouTube URL to validate
  * @throws Error if validation fails
@@ -220,33 +273,43 @@ export const processVideoTranscription = async (
   transcriptionFilePath: string | undefined;
   wordTimingDataFilePath: string | undefined;
   translatedWordTimingDataFilePath: string | undefined;
+  pauses: PauseData[] | undefined;
+  pauseDataFilePath: string | undefined;
 }> => {
   console.log("Starting video transcription with word timing data...");
   try {
     const transcriptionId = await transcribeVideo(filePath, languageCode);
     const transcriptionData = await getTranscriptionResult(transcriptionId);
-
+    
     // Save the transcription text to a file
     const transcriptionFilePath = saveTranscriptionToFile(
       transcriptionData.text || "",
       filePath
     );
-
+    
     // Save word timing data to a JSON file
     const wordTimingDataFilePath = saveWordTimingDataToFile(
       transcriptionData.words,
       filePath
     );
-
+    
     // Translate word timing data and save to a new JSON file
     const translatedWordTimingDataFilePath =
       await translateWordTimingDataToFile(transcriptionData.words, filePath);
-
-    return {
-      transcriptionText: transcriptionData.text,
+    
+    // Detect pauses in the transcription
+    const pauses = detectPauses(transcriptionData.words);
+    
+    // Save pause data to a JSON file if pauses were detected
+    const pauseDataFilePath = pauses.length > 0 ? savePauseDataToFile(pauses, filePath) : undefined;
+    
+    return { 
+      transcriptionText: transcriptionData.text, 
       transcriptionFilePath,
       wordTimingDataFilePath, // Include path to word timing data file
       translatedWordTimingDataFilePath, // Include path to translated word timing data file
+      pauses, // Include pause data in the response
+      pauseDataFilePath // Include path to pause data file
     };
   } catch (transcriptionError) {
     console.error("Error during transcription:", transcriptionError);
@@ -255,6 +318,8 @@ export const processVideoTranscription = async (
       transcriptionFilePath: undefined,
       wordTimingDataFilePath: undefined,
       translatedWordTimingDataFilePath: undefined,
+      pauses: undefined,
+      pauseDataFilePath: undefined
     };
   }
 };
