@@ -90,19 +90,19 @@ const saveWordTimingDataToFile = (
 };
 
 /**
- * Translates text fields in word timing data and saves to a new JSON file
- * @param words Array of words with timing information
+ * Translates the full transcription text and saves to a text file
+ * @param text The full transcription text to translate
  * @param originalFileName The original video filename
  * @param targetLanguage Target language code for translation (default: 'bn' for Bengali)
- * @returns Path to the saved translated word timing data file
+ * @returns Path to the saved translated text file
  */
-const translateWordTimingDataToFile = async (
-  words: WordTiming[] | undefined,
+const translateTranscriptionTextToFile = async (
+  text: string | undefined,
   originalFileName: string,
   targetLanguage = "bn"
 ): Promise<string | undefined> => {
   try {
-    if (!words || words.length === 0) {
+    if (!text) {
       return undefined;
     }
 
@@ -115,13 +115,9 @@ const translateWordTimingDataToFile = async (
       },
     });
 
-    // Combine all text with a separator that's unlikely to appear in normal text
-    const separator = " ||| ";
-    const allText = words.map((word) => word.text).join(separator);
-
-    // Translate all text in a single API call
+    // Translate the full text in a single API call
     const params = {
-      Text: allText,
+      Text: text,
       SourceLanguageCode: "auto",
       TargetLanguageCode: targetLanguage,
     };
@@ -135,41 +131,28 @@ const translateWordTimingDataToFile = async (
       return undefined;
     }
 
-    // Split translated text back into individual words
-    const translatedTexts = response.TranslatedText.split(separator);
-
-    // Create new word timing data with translated text
-    const translatedWords = words.map((word, index) => ({
-      ...word,
-      text: translatedTexts[index] || word.text, // Fallback to original if translation failed
-    }));
-
     // Create downloads directory if it doesn't exist
     const downloadsDir = path.join(__dirname, "downloads");
     if (!fs.existsSync(downloadsDir)) {
       fs.mkdirSync(downloadsDir, { recursive: true });
     }
 
-    // Create translated word timing data filename
+    // Create translated text filename
     const fileNameWithoutExt = path.parse(originalFileName).name;
-    const translatedWordTimingDataFilePath = path.join(
+    const translatedTextFilePath = path.join(
       downloadsDir,
-      `${fileNameWithoutExt}_word_timing_${targetLanguage}.json`
+      `${fileNameWithoutExt}_${targetLanguage}.txt`
     );
 
-    // Write translated word timing data to JSON file
-    fs.writeFileSync(
-      translatedWordTimingDataFilePath,
-      JSON.stringify(translatedWords, null, 2),
-      "utf8"
-    );
+    // Write translated text to file (similar to saveTranscriptionToFile)
+    fs.writeFileSync(translatedTextFilePath, response.TranslatedText, "utf8");
 
     console.log(
-      `Translated word timing data saved to: ${translatedWordTimingDataFilePath}`
+      `Translated transcription text saved to: ${translatedTextFilePath}`
     );
-    return translatedWordTimingDataFilePath;
+    return translatedTextFilePath;
   } catch (error) {
-    console.error("Error translating word timing data:", error);
+    console.error("Error translating transcription text:", error);
     return undefined;
   }
 };
@@ -190,22 +173,22 @@ const detectPauses = (words: WordTiming[] | undefined): PauseData[] => {
   for (let i = 0; i < words.length - 1; i++) {
     const currentWord = words[i];
     const nextWord = words[i + 1];
-    
+
     // Calculate pause duration between words
     const pauseDuration = nextWord.start - currentWord.end;
-    
+
     // If pause is longer than threshold, record it
     if (pauseDuration > PAUSE_THRESHOLD) {
       pauses.push({
         duration: pauseDuration,
         position: {
           afterWord: currentWord.text,
-          beforeWord: nextWord.text
+          beforeWord: nextWord.text,
         },
         timing: {
           start: currentWord.end,
-          end: nextWord.start
-        }
+          end: nextWord.start,
+        },
       });
     }
   }
@@ -272,7 +255,7 @@ export const processVideoTranscription = async (
   transcriptionText: string | undefined;
   transcriptionFilePath: string | undefined;
   wordTimingDataFilePath: string | undefined;
-  translatedWordTimingDataFilePath: string | undefined;
+  translatedTranscriptionFilePath: string | undefined;
   pauses: PauseData[] | undefined;
   pauseDataFilePath: string | undefined;
 }> => {
@@ -280,36 +263,37 @@ export const processVideoTranscription = async (
   try {
     const transcriptionId = await transcribeVideo(filePath, languageCode);
     const transcriptionData = await getTranscriptionResult(transcriptionId);
-    
+
     // Save the transcription text to a file
     const transcriptionFilePath = saveTranscriptionToFile(
       transcriptionData.text || "",
       filePath
     );
-    
+
     // Save word timing data to a JSON file
     const wordTimingDataFilePath = saveWordTimingDataToFile(
       transcriptionData.words,
       filePath
     );
-    
-    // Translate word timing data and save to a new JSON file
-    const translatedWordTimingDataFilePath =
-      await translateWordTimingDataToFile(transcriptionData.words, filePath);
-    
+
+    // Translate the full transcription text and save to a text file
+    const translatedTranscriptionFilePath =
+      await translateTranscriptionTextToFile(transcriptionData.text, filePath);
+
     // Detect pauses in the transcription
     const pauses = detectPauses(transcriptionData.words);
-    
+
     // Save pause data to a JSON file if pauses were detected
-    const pauseDataFilePath = pauses.length > 0 ? savePauseDataToFile(pauses, filePath) : undefined;
-    
-    return { 
-      transcriptionText: transcriptionData.text, 
+    const pauseDataFilePath =
+      pauses.length > 0 ? savePauseDataToFile(pauses, filePath) : undefined;
+
+    return {
+      transcriptionText: transcriptionData.text,
       transcriptionFilePath,
       wordTimingDataFilePath, // Include path to word timing data file
-      translatedWordTimingDataFilePath, // Include path to translated word timing data file
+      translatedTranscriptionFilePath, // Include path to translated transcription text file
       pauses, // Include pause data in the response
-      pauseDataFilePath // Include path to pause data file
+      pauseDataFilePath, // Include path to pause data file
     };
   } catch (transcriptionError) {
     console.error("Error during transcription:", transcriptionError);
@@ -317,9 +301,9 @@ export const processVideoTranscription = async (
       transcriptionText: undefined,
       transcriptionFilePath: undefined,
       wordTimingDataFilePath: undefined,
-      translatedWordTimingDataFilePath: undefined,
+      translatedTranscriptionFilePath: undefined,
       pauses: undefined,
-      pauseDataFilePath: undefined
+      pauseDataFilePath: undefined,
     };
   }
 };
