@@ -4,6 +4,7 @@ import {
   validateYoutubeUrl,
   fetchVideoInfo,
   selectVideoFormat,
+  downloadAndUploadVideo,
   createFilePath,
   downloadVideo,
 } from "./youtubeService";
@@ -19,7 +20,9 @@ import {
   detectPauses,
 } from "./dubHelpers";
 import { createAudioFromTranslatedText } from "./audioHelpers";
+import { generateS3Key } from "../s3Service";
 import dotenv from "dotenv";
+import fs from "fs";
 
 // Load environment variables
 dotenv.config();
@@ -47,9 +50,9 @@ export const validateRequest = (youtubeUrl: string): void => {
 };
 
 /**
- * Processes the YouTube video download
+ * Processes the YouTube video download by first downloading locally then uploading to S3
  * @param youtubeUrl The YouTube URL to process
- * @returns Object containing video info and file path
+ * @returns Object containing video info, S3 URL, and local file path
  */
 export const processVideoDownload = async (youtubeUrl: string) => {
   // Get video info from YouTube
@@ -61,13 +64,21 @@ export const processVideoDownload = async (youtubeUrl: string) => {
   // Select the video format and quality with fallback options (prioritizing formats with audio)
   const format = selectVideoFormat(videoInfo.formats);
 
-  // Create output file path
-  const outputFilePath = createFilePath(videoInfo.title, format.container);
+  // Generate S3 key for the video
+  const s3Key = await generateS3Key("videos");
+  
+  // Create temporary local file path
+  const localFilePath = `/tmp/${Date.now()}_${videoInfo.title.replace(/[^\w\s-]/g, "").substring(0, 50)}.${format.container}`;
+  
+  // Download the video locally and then upload to S3
+  const { s3Url, localFilePath: finalLocalPath } = await downloadAndUploadVideo(
+    info,
+    format,
+    s3Key,
+    localFilePath
+  );
 
-  // Download the video file
-  await downloadVideo(info, format, outputFilePath);
-
-  return { videoInfo, outputFilePath };
+  return { videoInfo, s3Url, localFilePath: finalLocalPath };
 };
 
 /**

@@ -1,6 +1,8 @@
 import ytdl from "@distube/ytdl-core";
 import fs from "fs";
 import path from "path";
+import { Readable, PassThrough } from "stream";
+import { uploadStreamToS3, generateS3Key } from "../s3Service";
 
 // Interface for the request body
 interface VideoInfo {
@@ -114,6 +116,58 @@ export const createFilePath = (title: string, container: string): string => {
   
   // Create output file path
   return path.join(downloadsDir, `${cleanTitle}.${container}`);
+};
+
+/**
+ * Downloads the video from YouTube to local storage first, then uploads it to S3
+ * This approach avoids stream splitting issues and ensures both operations complete successfully
+ * @param info Video info object
+ * @param format Selected format
+ * @param s3Key S3 key for the uploaded file
+ * @param localFilePath Local file path for temporary storage
+ * @returns Promise that resolves with the S3 URL when upload is complete
+ */
+export const downloadAndUploadVideo = async (
+  info: ytdl.videoInfo,
+  format: ytdl.videoFormat,
+  s3Key: string,
+  localFilePath: string
+): Promise<{ s3Url: string; localFilePath: string }> => {
+  return new Promise((resolve, reject) => {
+    try {
+      // First, download the video to local storage
+      const localWriteStream = fs.createWriteStream(localFilePath);
+      
+      // Create download stream from YouTube
+      const downloadStream = ytdl.downloadFromInfo(info, { format });
+      downloadStream.pipe(localWriteStream);
+      
+      // Handle download completion
+      localWriteStream.on("finish", async () => {
+        try {
+          // After download completes, upload to S3
+          const readStream = fs.createReadStream(localFilePath);
+          const contentType = format.container === 'mp4' ? 'video/mp4' : 'video/webm';
+          
+          const s3Url = await uploadStreamToS3(readStream, s3Key, contentType);
+          resolve({ s3Url, localFilePath });
+        } catch (uploadError: any) {
+          reject(new Error(`Error uploading video to S3: ${uploadError.message}`));
+        }
+      });
+      
+      // Handle download errors
+      localWriteStream.on("error", (error: NodeJS.ErrnoException) => {
+        reject(new Error(`Error saving video file locally: ${error.message}`));
+      });
+      
+      downloadStream.on("error", (error: Error) => {
+        reject(new Error(`Error downloading video: ${error.message}`));
+      });
+    } catch (error: any) {
+      reject(new Error(`Error processing video: ${error.message}`));
+    }
+  });
 };
 
 /**

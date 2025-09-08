@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import { validateRequest, processVideoDownload, processVideoTranscription } from "../services/dub/dubService";
+import fs from "fs";
 
 // Interface for the request body
 interface DubRequestBody {
@@ -15,25 +16,32 @@ export const processYoutubeUrl = asyncHandler(
       // Validate the request
       validateRequest(youtubeUrl);
 
-      // Process the video download
-      const { videoInfo, outputFilePath } = await processVideoDownload(youtubeUrl);
+      // Process the video download (streams to both S3 and local storage)
+      const { videoInfo, s3Url, localFilePath } = await processVideoDownload(youtubeUrl);
 
-      // Transcribe the video and get word timing data
+      // Transcribe the video and get word timing data using the local file
       const { transcriptionText, transcriptionFilePath, wordTimingDataFilePath } = await processVideoTranscription(
-        outputFilePath,
+        localFilePath,
         videoInfo.languageCode
       );
+      
+      // Clean up the local file after transcription
+      try {
+        fs.unlinkSync(localFilePath);
+      } catch (error) {
+        console.warn(`Failed to delete temporary file ${localFilePath}:`, error);
+      }
 
       // Send success response
       res.status(200).json({
         message: transcriptionText
-          ? "Video downloaded and transcribed successfully"
-          : "Video downloaded successfully (transcription failed)",
+          ? "Video downloaded, streamed to S3, and transcribed successfully"
+          : "Video downloaded and streamed to S3 successfully (transcription failed)",
         success: true,
         videoTitle: videoInfo.title,
-        filePath: outputFilePath,
+        s3Url: s3Url,
         transcriptionPath: transcriptionFilePath,
-        wordTimingDataPath: wordTimingDataFilePath, // Include path to word timing data file
+        wordTimingDataPath: wordTimingDataFilePath,
         duration: videoInfo.lengthSeconds,
         transcriptionText: transcriptionText,
       });
