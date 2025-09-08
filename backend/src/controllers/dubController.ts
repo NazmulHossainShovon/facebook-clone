@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import { validateRequest, processVideoDownload, processVideoTranscription } from "../services/dub/dubService";
-import fs from "fs";
 
 // Interface for the request body
 interface DubRequestBody {
@@ -16,15 +15,8 @@ export const processYoutubeUrl = asyncHandler(
       // Validate the request
       validateRequest(youtubeUrl);
 
-      // Process the video download (streams to both S3 and local storage)
-      const { videoInfo, s3Url, localFilePath } = await processVideoDownload(youtubeUrl);
-
-      // Clean up the local file after download (since we'll download from S3 for transcription)
-      try {
-        fs.unlinkSync(localFilePath);
-      } catch (error) {
-        console.warn(`Failed to delete temporary file ${localFilePath}:`, error);
-      }
+      // Process the video download (streams directly to S3)
+      const { videoInfo, s3Url } = await processVideoDownload(youtubeUrl);
 
       // Transcribe the video and get word timing data using the S3 URL
       const { transcriptionText, transcriptionFilePath, wordTimingDataFilePath } = await processVideoTranscription(

@@ -4,7 +4,7 @@ import {
   validateYoutubeUrl,
   fetchVideoInfo,
   selectVideoFormat,
-  downloadAndUploadVideo,
+  downloadAndStreamToS3,
 } from "./youtubeService";
 import {
   transcribeVideo,
@@ -49,9 +49,9 @@ export const validateRequest = (youtubeUrl: string): void => {
 };
 
 /**
- * Processes the YouTube video download by first downloading locally then uploading to S3
+ * Processes the YouTube video download by streaming directly to S3
  * @param youtubeUrl The YouTube URL to process
- * @returns Object containing video info, S3 URL, and local file path
+ * @returns Object containing video info and S3 URL
  */
 export const processVideoDownload = async (youtubeUrl: string) => {
   // Get video info from YouTube
@@ -66,20 +66,10 @@ export const processVideoDownload = async (youtubeUrl: string) => {
   // Generate S3 key for the video
   const s3Key = await generateS3Key("videos");
 
-  // Create temporary local file path
-  const localFilePath = `/tmp/${Date.now()}_${videoInfo.title
-    .replace(/[^\w\s-]/g, "")
-    .substring(0, 50)}.${format.container}`;
+  // Stream directly to S3 without storing locally
+  const s3Url = await downloadAndStreamToS3(info, format, s3Key);
 
-  // Download the video locally and then upload to S3
-  const { s3Url, localFilePath: finalLocalPath } = await downloadAndUploadVideo(
-    info,
-    format,
-    s3Key,
-    localFilePath
-  );
-
-  return { videoInfo, s3Url, localFilePath: finalLocalPath };
+  return { videoInfo, s3Url };
 };
 
 /**
@@ -117,9 +107,15 @@ export const processVideoTranscription = async (
     // Extract the S3 key from the URL
     const s3Key = extractS3Key(s3Url);
     
-    // Create a temporary local file path for the downloaded video
+    // Create downloads directory if it doesn't exist
+    const downloadsDir = path.join(__dirname, "downloads");
+    if (!fs.existsSync(downloadsDir)) {
+      fs.mkdirSync(downloadsDir, { recursive: true });
+    }
+    
+    // Create a local file path for the downloaded video in the downloads directory
     const fileName = path.basename(s3Key);
-    const localFilePath = `/tmp/${Date.now()}_${fileName}`;
+    const localFilePath = path.join(downloadsDir, `${Date.now()}_${fileName}`);
     
     // Download the file from S3 to local storage
     console.log(`Downloading file from S3: ${s3Key}`);

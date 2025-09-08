@@ -2,6 +2,7 @@ import ytdl from "@distube/ytdl-core";
 import fs from "fs";
 import path from "path";
 import { uploadStreamToS3 } from "../s3Service";
+import { PassThrough } from "stream";
 
 // Interface for the request body
 interface VideoInfo {
@@ -126,6 +127,37 @@ export const createFilePath = (title: string, container: string): string => {
 
   // Create output file path
   return path.join(downloadsDir, `${cleanTitle}.${container}`);
+};
+
+/**
+ * Downloads the video from YouTube and streams it directly to S3 without saving the entire file locally
+ * This approach saves disk space by not storing the complete file
+ * @param info Video info object
+ * @param format Selected format
+ * @param s3Key S3 key for the uploaded file
+ * @returns Promise that resolves with the S3 URL when upload is complete
+ */
+export const downloadAndStreamToS3 = async (
+  info: ytdl.videoInfo,
+  format: ytdl.videoFormat,
+  s3Key: string
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    try {
+      // Create download stream from YouTube
+      const downloadStream = ytdl.downloadFromInfo(info, { format });
+
+      // Set content type based on format
+      const contentType = format.container === "mp4" ? "video/mp4" : "video/webm";
+
+      // Stream directly to S3
+      uploadStreamToS3(downloadStream, s3Key, contentType)
+        .then(resolve)
+        .catch(reject);
+    } catch (error: any) {
+      reject(new Error(`Error processing video: ${error.message}`));
+    }
+  });
 };
 
 /**
