@@ -1,8 +1,7 @@
 import ytdl from "@distube/ytdl-core";
 import fs from "fs";
 import path from "path";
-import { Readable, PassThrough } from "stream";
-import { uploadStreamToS3, generateS3Key } from "../s3Service";
+import { uploadStreamToS3 } from "../s3Service";
 
 // Interface for the request body
 interface VideoInfo {
@@ -36,18 +35,21 @@ export const validateYoutubeUrl = (youtubeUrl: string): boolean => {
  * @param youtubeUrl The YouTube URL
  * @returns Video info object
  */
-export const fetchVideoInfo = async (youtubeUrl: string): Promise<VideoInfo> => {
+export const fetchVideoInfo = async (
+  youtubeUrl: string
+): Promise<VideoInfo> => {
   const info = await ytdl.getInfo(youtubeUrl);
-  
+
   // Try to detect language from caption tracks
-  const languageCode: string | undefined = 
-    info.player_response.captions?.playerCaptionsTracklistRenderer?.captionTracks?.[0]?.languageCode;
-  
+  const languageCode: string | undefined =
+    info.player_response.captions?.playerCaptionsTracklistRenderer
+      ?.captionTracks?.[0]?.languageCode;
+
   return {
     title: info.videoDetails.title,
     lengthSeconds: info.videoDetails.lengthSeconds,
     formats: info.formats,
-    languageCode
+    languageCode,
   };
 };
 
@@ -56,16 +58,24 @@ export const fetchVideoInfo = async (youtubeUrl: string): Promise<VideoInfo> => 
  * @param formats Available video formats
  * @returns Selected format
  */
-export const selectVideoFormat = (formats: ytdl.videoFormat[]): ytdl.videoFormat => {
+export const selectVideoFormat = (
+  formats: ytdl.videoFormat[]
+): ytdl.videoFormat => {
   let format: ytdl.videoFormat;
-  
+
   try {
     // Try highest quality with audio first (for transcription we need audio)
-    format = ytdl.chooseFormat(formats, { filter: "audioandvideo", quality: "highest" });
+    format = ytdl.chooseFormat(formats, {
+      filter: "audioandvideo",
+      quality: "highest",
+    });
   } catch {
     try {
       // Fallback to 720p mp4 with audio
-      format = ytdl.chooseFormat(formats, { filter: "audioandvideo", quality: "136" });
+      format = ytdl.chooseFormat(formats, {
+        filter: "audioandvideo",
+        quality: "136",
+      });
     } catch {
       try {
         // Fallback to any format with audio
@@ -91,7 +101,7 @@ export const selectVideoFormat = (formats: ytdl.videoFormat[]): ytdl.videoFormat
       }
     }
   }
-  
+
   return format;
 };
 
@@ -107,13 +117,13 @@ export const createFilePath = (title: string, container: string): string => {
   if (!fs.existsSync(downloadsDir)) {
     fs.mkdirSync(downloadsDir, { recursive: true });
   }
-  
+
   // Clean the video title for filename (remove special characters)
   const cleanTitle = title
     .replace(/[^\w\s-]/g, "")
     .replace(/\s+/g, "_")
     .substring(0, 100); // Limit filename length
-  
+
   // Create output file path
   return path.join(downloadsDir, `${cleanTitle}.${container}`);
 };
@@ -137,30 +147,33 @@ export const downloadAndUploadVideo = async (
     try {
       // First, download the video to local storage
       const localWriteStream = fs.createWriteStream(localFilePath);
-      
+
       // Create download stream from YouTube
       const downloadStream = ytdl.downloadFromInfo(info, { format });
       downloadStream.pipe(localWriteStream);
-      
+
       // Handle download completion
       localWriteStream.on("finish", async () => {
         try {
           // After download completes, upload to S3
           const readStream = fs.createReadStream(localFilePath);
-          const contentType = format.container === 'mp4' ? 'video/mp4' : 'video/webm';
-          
+          const contentType =
+            format.container === "mp4" ? "video/mp4" : "video/webm";
+
           const s3Url = await uploadStreamToS3(readStream, s3Key, contentType);
           resolve({ s3Url, localFilePath });
         } catch (uploadError: any) {
-          reject(new Error(`Error uploading video to S3: ${uploadError.message}`));
+          reject(
+            new Error(`Error uploading video to S3: ${uploadError.message}`)
+          );
         }
       });
-      
+
       // Handle download errors
-      localWriteStream.on("error", (error: NodeJS.ErrnoException) => {
+      localWriteStream.on("error", (error: Error) => {
         reject(new Error(`Error saving video file locally: ${error.message}`));
       });
-      
+
       downloadStream.on("error", (error: Error) => {
         reject(new Error(`Error downloading video: ${error.message}`));
       });
@@ -178,28 +191,28 @@ export const downloadAndUploadVideo = async (
  * @returns Promise that resolves when download is complete
  */
 export const downloadVideo = (
-  info: ytdl.videoInfo, 
-  format: ytdl.videoFormat, 
+  info: ytdl.videoInfo,
+  format: ytdl.videoFormat,
   outputPath: string
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
     // Create a write stream to save the video file
     const outputStream = fs.createWriteStream(outputPath);
-    
+
     // Download the video file
     const downloadStream = ytdl.downloadFromInfo(info, { format });
     downloadStream.pipe(outputStream);
-    
+
     // Handle download completion
     outputStream.on("finish", () => {
       resolve();
     });
-    
+
     // Handle download errors
     outputStream.on("error", (error) => {
       reject(new Error("Error saving video file"));
     });
-    
+
     downloadStream.on("error", (error) => {
       reject(new Error("Error downloading video"));
     });

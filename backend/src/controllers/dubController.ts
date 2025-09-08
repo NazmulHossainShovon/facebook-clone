@@ -19,18 +19,18 @@ export const processYoutubeUrl = asyncHandler(
       // Process the video download (streams to both S3 and local storage)
       const { videoInfo, s3Url, localFilePath } = await processVideoDownload(youtubeUrl);
 
-      // Transcribe the video and get word timing data using the local file
-      const { transcriptionText, transcriptionFilePath, wordTimingDataFilePath } = await processVideoTranscription(
-        localFilePath,
-        videoInfo.languageCode
-      );
-      
-      // Clean up the local file after transcription
+      // Clean up the local file after download (since we'll download from S3 for transcription)
       try {
         fs.unlinkSync(localFilePath);
       } catch (error) {
         console.warn(`Failed to delete temporary file ${localFilePath}:`, error);
       }
+
+      // Transcribe the video and get word timing data using the S3 URL
+      const { transcriptionText, transcriptionFilePath, wordTimingDataFilePath } = await processVideoTranscription(
+        s3Url,
+        videoInfo.languageCode
+      );
 
       // Send success response
       res.status(200).json({

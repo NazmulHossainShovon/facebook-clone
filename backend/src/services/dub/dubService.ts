@@ -5,8 +5,6 @@ import {
   fetchVideoInfo,
   selectVideoFormat,
   downloadAndUploadVideo,
-  createFilePath,
-  downloadVideo,
 } from "./youtubeService";
 import {
   transcribeVideo,
@@ -20,9 +18,10 @@ import {
   detectPauses,
 } from "./dubHelpers";
 import { createAudioFromTranslatedText } from "./audioHelpers";
-import { generateS3Key } from "../s3Service";
+import { generateS3Key, downloadFromS3 } from "../s3Service";
 import dotenv from "dotenv";
 import fs from "fs";
+import path from "path";
 
 // Load environment variables
 dotenv.config();
@@ -66,10 +65,12 @@ export const processVideoDownload = async (youtubeUrl: string) => {
 
   // Generate S3 key for the video
   const s3Key = await generateS3Key("videos");
-  
+
   // Create temporary local file path
-  const localFilePath = `/tmp/${Date.now()}_${videoInfo.title.replace(/[^\w\s-]/g, "").substring(0, 50)}.${format.container}`;
-  
+  const localFilePath = `/tmp/${Date.now()}_${videoInfo.title
+    .replace(/[^\w\s-]/g, "")
+    .substring(0, 50)}.${format.container}`;
+
   // Download the video locally and then upload to S3
   const { s3Url, localFilePath: finalLocalPath } = await downloadAndUploadVideo(
     info,
@@ -82,13 +83,25 @@ export const processVideoDownload = async (youtubeUrl: string) => {
 };
 
 /**
+ * Extracts the S3 key from an S3 URL
+ * @param s3Url The full S3 URL
+ * @returns The S3 key
+ */
+const extractS3Key = (s3Url: string): string => {
+  // S3 URL format: https://bucket.s3.region.amazonaws.com/key
+  const url = new URL(s3Url);
+  // Remove the leading slash from the pathname to get the key
+  return url.pathname.substring(1);
+};
+
+/**
  * Transcribes the downloaded video and saves word timing data
- * @param filePath Path to the downloaded video file
+ * @param s3Url URL of the video file in S3
  * @param languageCode Language code for transcription
  * @returns Object containing transcription text, file path, and word timing data file path
  */
 export const processVideoTranscription = async (
-  filePath: string,
+  s3Url: string,
   languageCode?: string
 ): Promise<{
   transcriptionText: string | undefined;
@@ -101,36 +114,55 @@ export const processVideoTranscription = async (
 }> => {
   console.log("Starting video transcription with word timing data...");
   try {
-    const transcriptionId = await transcribeVideo(filePath, languageCode);
+    // Extract the S3 key from the URL
+    const s3Key = extractS3Key(s3Url);
+    
+    // Create a temporary local file path for the downloaded video
+    const fileName = path.basename(s3Key);
+    const localFilePath = `/tmp/${Date.now()}_${fileName}`;
+    
+    // Download the file from S3 to local storage
+    console.log(`Downloading file from S3: ${s3Key}`);
+    await downloadFromS3(s3Key, localFilePath);
+    console.log(`File downloaded to: ${localFilePath}`);
+
+    const transcriptionId = await transcribeVideo(localFilePath, languageCode);
     const transcriptionData = await getTranscriptionResult(transcriptionId);
 
     // Save the transcription text to a file
     const transcriptionFilePath = saveTranscriptionToFile(
       transcriptionData.text || "",
-      filePath
+      localFilePath
     );
 
     // Save word timing data to a JSON file
     const wordTimingDataFilePath = saveWordTimingDataToFile(
       transcriptionData.words,
-      filePath
+      localFilePath
     );
 
     // Translate the full transcription text and save to a text file
     const translatedTranscriptionFilePath =
-      await translateTranscriptionTextToFile(transcriptionData.text, filePath);
+      await translateTranscriptionTextToFile(transcriptionData.text, localFilePath);
 
     // Detect pauses in the transcription
     const pauses = detectPauses(transcriptionData.words);
 
     // Save pause data to a JSON file if pauses were detected
     const pauseDataFilePath =
-      pauses.length > 0 ? savePauseDataToFile(pauses, filePath) : undefined;
+      pauses.length > 0 ? savePauseDataToFile(pauses, localFilePath) : undefined;
 
     // Create audio from translated text file
     const audioFilePath = await createAudioFromTranslatedText(
       translatedTranscriptionFilePath
     );
+
+    // Clean up the temporary local file
+    try {
+      fs.unlinkSync(localFilePath);
+    } catch (error) {
+      console.warn(`Failed to delete temporary file ${localFilePath}:`, error);
+    }
 
     return {
       transcriptionText: transcriptionData.text,

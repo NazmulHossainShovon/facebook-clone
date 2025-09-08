@@ -1,9 +1,10 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Upload } from "@aws-sdk/lib-storage";
 import crypto from "crypto";
 import { Readable } from "stream";
 import { promisify } from "util";
+import fs from "fs";
 
 const randomBytes = promisify(crypto.randomBytes);
 
@@ -88,6 +89,38 @@ export const getPresignedUploadUrl = async (
 
   const command = new PutObjectCommand(params);
   return await getSignedUrl(s3, command, { expiresIn: 60 });
+};
+
+/**
+ * Downloads a file from S3 to a local file path
+ * @param key The S3 key for the object
+ * @param localPath The local file path to save the downloaded file
+ * @returns Promise that resolves when the download is complete
+ */
+export const downloadFromS3 = async (key: string, localPath: string): Promise<void> => {
+  const params = {
+    Bucket: bucketName,
+    Key: key,
+  };
+
+  const command = new GetObjectCommand(params);
+  const response = await s3.send(command);
+  
+  // Create a write stream to save the file locally
+  const writeStream = fs.createWriteStream(localPath);
+  
+  // Pipe the response body to the write stream
+  if (response.Body instanceof Readable) {
+    response.Body.pipe(writeStream);
+  } else {
+    throw new Error("Response body is not a readable stream");
+  }
+
+  // Wait for the write stream to finish
+  return new Promise((resolve, reject) => {
+    writeStream.on("finish", resolve);
+    writeStream.on("error", reject);
+  });
 };
 
 export default s3;
