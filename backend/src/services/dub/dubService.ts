@@ -7,21 +7,13 @@ import {
   downloadAndStreamToS3,
 } from "./youtubeService";
 import {
-  transcribeVideo,
-  getTranscriptionResult,
-  saveTranscriptionToFile,
-  savePauseDataToFile,
-} from "./transcriptionService";
-import {
-  saveWordTimingDataToFile,
-  translateTranscriptionTextToFile,
-  detectPauses,
-} from "./dubHelpers";
-import { createAudioFromTranslatedText } from "./audioHelpers";
-import { generateS3Key, downloadFromS3 } from "../s3Service";
+  downloadVideoFromS3,
+  processTranscription,
+  saveTranscriptionResults,
+  cleanupLocalFile,
+} from "./transcriptionProcessor";
+import { generateS3Key } from "../s3Service";
 import dotenv from "dotenv";
-import fs from "fs";
-import path from "path";
 
 // Load environment variables
 dotenv.config();
@@ -73,18 +65,6 @@ export const processVideoDownload = async (youtubeUrl: string) => {
 };
 
 /**
- * Extracts the S3 key from an S3 URL
- * @param s3Url The full S3 URL
- * @returns The S3 key
- */
-const extractS3Key = (s3Url: string): string => {
-  // S3 URL format: https://bucket.s3.region.amazonaws.com/key
-  const url = new URL(s3Url);
-  // Remove the leading slash from the pathname to get the key
-  return url.pathname.substring(1);
-};
-
-/**
  * Transcribes the downloaded video and saves word timing data
  * @param s3Url URL of the video file in S3
  * @param languageCode Language code for transcription
@@ -104,70 +84,36 @@ export const processVideoTranscription = async (
 }> => {
   console.log("Starting video transcription with word timing data...");
   try {
-    // Extract the S3 key from the URL
-    const s3Key = extractS3Key(s3Url);
-    
-    // Create downloads directory if it doesn't exist
-    const downloadsDir = path.join(__dirname, "downloads");
-    if (!fs.existsSync(downloadsDir)) {
-      fs.mkdirSync(downloadsDir, { recursive: true });
-    }
-    
-    // Create a local file path for the downloaded video in the downloads directory
-    const fileName = path.basename(s3Key);
-    const localFilePath = path.join(downloadsDir, `${Date.now()}_${fileName}`);
-    
     // Download the file from S3 to local storage
-    console.log(`Downloading file from S3: ${s3Key}`);
-    await downloadFromS3(s3Key, localFilePath);
-    console.log(`File downloaded to: ${localFilePath}`);
+    const localFilePath = await downloadVideoFromS3(s3Url);
 
-    const transcriptionId = await transcribeVideo(localFilePath, languageCode);
-    const transcriptionData = await getTranscriptionResult(transcriptionId);
-
-    // Save the transcription text to a file
-    const transcriptionFilePath = saveTranscriptionToFile(
-      transcriptionData.text || "",
-      localFilePath
+    // Process the transcription
+    const transcriptionData = await processTranscription(
+      localFilePath,
+      languageCode
     );
 
-    // Save word timing data to a JSON file
-    const wordTimingDataFilePath = saveWordTimingDataToFile(
-      transcriptionData.words,
-      localFilePath
-    );
-
-    // Translate the full transcription text and save to a text file
-    const translatedTranscriptionFilePath =
-      await translateTranscriptionTextToFile(transcriptionData.text, localFilePath);
-
-    // Detect pauses in the transcription
-    const pauses = detectPauses(transcriptionData.words);
-
-    // Save pause data to a JSON file if pauses were detected
-    const pauseDataFilePath =
-      pauses.length > 0 ? savePauseDataToFile(pauses, localFilePath) : undefined;
-
-    // Create audio from translated text file
-    const audioFilePath = await createAudioFromTranslatedText(
-      translatedTranscriptionFilePath
-    );
+    // Save transcription results to files
+    const {
+      transcriptionFilePath,
+      wordTimingDataFilePath,
+      translatedTranscriptionFilePath,
+      pauses,
+      pauseDataFilePath,
+      audioFilePath,
+    } = await saveTranscriptionResults(transcriptionData, localFilePath);
 
     // Clean up the temporary local file
-    try {
-      fs.unlinkSync(localFilePath);
-    } catch (error) {
-      console.warn(`Failed to delete temporary file ${localFilePath}:`, error);
-    }
+    cleanupLocalFile(localFilePath);
 
     return {
       transcriptionText: transcriptionData.text,
       transcriptionFilePath,
-      wordTimingDataFilePath, // Include path to word timing data file
-      translatedTranscriptionFilePath, // Include path to translated transcription text file
-      pauses, // Include pause data in the response
-      pauseDataFilePath, // Include path to pause data file
-      audioFilePath, // Include path to audio file
+      wordTimingDataFilePath,
+      translatedTranscriptionFilePath,
+      pauses,
+      pauseDataFilePath,
+      audioFilePath,
     };
   } catch (transcriptionError) {
     console.error("Error during transcription:", transcriptionError);
@@ -178,7 +124,7 @@ export const processVideoTranscription = async (
       translatedTranscriptionFilePath: undefined,
       pauses: undefined,
       pauseDataFilePath: undefined,
-      audioFilePath: undefined, // Include audio file path in error case
+      audioFilePath: undefined,
     };
   }
 };

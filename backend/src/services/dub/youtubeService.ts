@@ -2,7 +2,6 @@ import ytdl from "@distube/ytdl-core";
 import fs from "fs";
 import path from "path";
 import { uploadStreamToS3 } from "../s3Service";
-import { PassThrough } from "stream";
 
 // Interface for the request body
 interface VideoInfo {
@@ -148,7 +147,8 @@ export const downloadAndStreamToS3 = async (
       const downloadStream = ytdl.downloadFromInfo(info, { format });
 
       // Set content type based on format
-      const contentType = format.container === "mp4" ? "video/mp4" : "video/webm";
+      const contentType =
+        format.container === "mp4" ? "video/mp4" : "video/webm";
 
       // Stream directly to S3
       uploadStreamToS3(downloadStream, s3Key, contentType)
