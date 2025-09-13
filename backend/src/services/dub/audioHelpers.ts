@@ -6,6 +6,8 @@ import {
 } from "@aws-sdk/client-polly";
 import fs from "fs";
 import path from "path";
+import { PassThrough } from "stream";
+import { generateS3Key, uploadStreamToS3 } from "../s3Service";
 
 /**
  * Converts a ReadableStream to a Buffer
@@ -21,9 +23,9 @@ export const streamToBuffer = async (stream: any): Promise<Buffer> => {
 };
 
 /**
- * Creates audio from translated text file using AWS Polly and saves it in the same location
+ * Creates audio from translated text file using AWS Polly and uploads it to S3
  * @param translatedTextFilePath Path to the translated text file
- * @returns Path to the saved audio file
+ * @returns S3 URL of the uploaded audio file
  */
 export const createAudioFromTranslatedText = async (
   translatedTextFilePath: string | undefined
@@ -63,16 +65,19 @@ export const createAudioFromTranslatedText = async (
       return undefined;
     }
 
-    // Create audio filename (same base name as translated text file but with .mp3 extension)
-    const parsedPath = path.parse(translatedTextFilePath);
-    const audioFilePath = path.join(parsedPath.dir, `${parsedPath.name}.mp3`);
+    // Generate S3 key for the audio file
+    const s3Key = await generateS3Key("audios");
 
-    // Write audio stream to file
+    // Convert the AudioStream to a PassThrough stream for S3 upload
+    const passThroughStream = new PassThrough();
     const audioBuffer = await streamToBuffer(response.AudioStream);
-    fs.writeFileSync(audioFilePath, audioBuffer);
+    passThroughStream.end(audioBuffer);
 
-    console.log(`Audio file saved to: ${audioFilePath}`);
-    return audioFilePath;
+    // Upload audio stream directly to S3
+    const s3Url = await uploadStreamToS3(passThroughStream, s3Key, "audio/mpeg");
+
+    console.log(`Audio file uploaded to S3: ${s3Url}`);
+    return s3Url;
   } catch (error) {
     console.error("Error creating audio from translated text:", error);
     return undefined;
