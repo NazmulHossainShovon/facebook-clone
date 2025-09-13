@@ -33,13 +33,9 @@ export const processYoutubeUrl = asyncHandler(
       } = await processVideoTranscription(s3Url, videoInfo.languageCode);
 
       // Merge video and audio if both are available
-      let mergedVideoS3Url: string | undefined;
-      if (processedVideoUrl && audioFilePath) {
-        mergedVideoS3Url = await mergeVideoAndAudio(
-          processedVideoUrl,
-          audioFilePath
-        );
-      }
+      const mergedVideoS3Url: string | undefined = processedVideoUrl && audioFilePath 
+        ? await mergeVideoAndAudio(processedVideoUrl, audioFilePath)
+        : undefined;
 
       // Send success response
       res.status(200).json({

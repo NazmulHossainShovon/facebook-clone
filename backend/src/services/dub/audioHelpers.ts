@@ -5,14 +5,9 @@ import {
   VoiceId,
 } from "@aws-sdk/client-polly";
 import fs from "fs";
-import path from "path";
 import { PassThrough } from "stream";
 import { generateS3Key, uploadStreamToS3 } from "../s3Service";
 import { invokeVideoMergeLambda } from "../lambdaService";
-
-// Use node-fetch for compatibility
-import nodeFetch from 'node-fetch';
-const fetch = globalThis.fetch || nodeFetch;
 
 /**
  * Converts a ReadableStream to a Buffer
@@ -79,7 +74,11 @@ export const createAudioFromTranslatedText = async (
     passThroughStream.end(audioBuffer);
 
     // Upload audio stream directly to S3
-    const s3Url = await uploadStreamToS3(passThroughStream, s3Key, "audio/mpeg");
+    const s3Url = await uploadStreamToS3(
+      passThroughStream,
+      s3Key,
+      "audio/mpeg"
+    );
 
     console.log(`Audio file uploaded to S3: ${s3Url}`);
     return s3Url;
@@ -104,29 +103,34 @@ export const mergeVideoAndAudio = async (
     // Assuming URLs are in the format: https://bucket.s3.region.amazonaws.com/key
     const videoUrlObj = new URL(videoUrl);
     const audioUrlObj = new URL(audioUrl);
-    
-    const videoBucket = videoUrlObj.hostname.split('.')[0];
-    const audioBucket = audioUrlObj.hostname.split('.')[0];
-    
+
+    const videoBucket = videoUrlObj.hostname.split(".")[0];
+    const audioBucket = audioUrlObj.hostname.split(".")[0];
+
     // Verify both files are in the same bucket
     if (videoBucket !== audioBucket) {
       throw new Error("Video and audio files must be in the same S3 bucket");
     }
-    
+
     const bucket = videoBucket;
     const videoKey = videoUrlObj.pathname.substring(1); // Remove leading slash
     const audioKey = audioUrlObj.pathname.substring(1); // Remove leading slash
-    
+
     // Generate S3 key for the merged video
     const outputKey = await generateS3Key("videos");
-    
+
     // Invoke the Lambda function to merge video and audio
-    const mergedUrl = await invokeVideoMergeLambda(bucket, videoKey, audioKey, outputKey);
-    
+    const mergedUrl = await invokeVideoMergeLambda(
+      bucket,
+      videoKey,
+      audioKey,
+      outputKey
+    );
+
     if (!mergedUrl) {
       throw new Error("Failed to merge video and audio");
     }
-    
+
     console.log(`Merged video: ${mergedUrl}`);
     return mergedUrl;
   } catch (error) {
