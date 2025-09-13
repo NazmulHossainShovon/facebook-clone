@@ -44,7 +44,7 @@ export const validateRequest = (youtubeUrl: string): void => {
 /**
  * Processes the YouTube video download by streaming directly to S3
  * @param youtubeUrl The YouTube URL to process
- * @returns Object containing video info and S3 URL
+ * @returns Object containing video info and S3 URLs
  */
 export const processVideoDownload = async (youtubeUrl: string) => {
   // Get video info from YouTube
@@ -67,16 +67,18 @@ export const processVideoDownload = async (youtubeUrl: string) => {
   const bucket = url.hostname.split('.')[0];
   const key = url.pathname.substring(1);
 
-  // Invoke the audio removal Lambda function asynchronously
-  try {
-    await invokeAudioRemovalLambda(bucket, key);
-    console.log("Audio removal Lambda function invoked successfully");
-  } catch (error) {
+  // Invoke the audio removal Lambda function and get the processed video URL
+  const processedVideoUrl = await invokeAudioRemovalLambda(bucket, key).catch((error) => {
     console.error("Failed to invoke audio removal Lambda function:", error);
     // Note: We're not throwing the error here to avoid breaking the main flow
+    return undefined;
+  });
+
+  if (processedVideoUrl) {
+    console.log("Audio removal Lambda function processed successfully");
   }
 
-  return { videoInfo, s3Url };
+  return { videoInfo, s3Url, processedVideoUrl };
 };
 
 /**

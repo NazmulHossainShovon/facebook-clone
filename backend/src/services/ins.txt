@@ -1,0 +1,37 @@
+To use the Ffmpeg API Merge Audio-Video by fal.ai in Node.js, follow these steps:
+
+Install the fal-ai client package:
+
+bash
+npm install --save @fal-ai/client
+Set your API key as an environment variable (replace YOUR_API_KEY with your actual API key):
+
+bash
+export FAL_KEY="YOUR_API_KEY"
+Use the following sample code in Node.js to merge a video and an audio file using their URLs:
+
+js
+import { fal } from "@fal-ai/client";
+
+async function mergeAudioVideo() {
+  const result = await fal.subscribe("fal-ai/ffmpeg-api/merge-audio-video", {
+    input: {
+      video_url: "https://storage.googleapis.com/falserverless/example_inputs/ffmpeg-video.mp4",
+      audio_url: "https://storage.googleapis.com/falserverless/example_inputs/ffmpeg-audio.wav"
+    },
+    logs: true,
+    onQueueUpdate: (update) => {
+      if (update.status === "IN_PROGRESS") {
+        update.logs.map(log => log.message).forEach(console.log);
+      }
+    },
+  });
+
+  console.log("Merge result video URL: ", result.data.video.url);
+  console.log("Request ID: ", result.requestId);
+}
+
+mergeAudioVideo();
+This code subscribes to the Ffmpeg API endpoint for merging audio and video, passing URLs to the video and audio sources. It listens for progress logs and outputs the final merged video URL after processing.
+
+This straightforward approach allows using a serverless API to merge audio and video remotely with minimal code, suitable for Node.js environments. Let me know if more detailed examples or local ffmpeg usage with Node.js are needed.

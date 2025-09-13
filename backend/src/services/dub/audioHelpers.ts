@@ -8,6 +8,11 @@ import fs from "fs";
 import path from "path";
 import { PassThrough } from "stream";
 import { generateS3Key, uploadStreamToS3 } from "../s3Service";
+import { invokeVideoMergeLambda } from "../lambdaService";
+
+// Use node-fetch for compatibility
+import nodeFetch from 'node-fetch';
+const fetch = globalThis.fetch || nodeFetch;
 
 /**
  * Converts a ReadableStream to a Buffer
@@ -80,6 +85,52 @@ export const createAudioFromTranslatedText = async (
     return s3Url;
   } catch (error) {
     console.error("Error creating audio from translated text:", error);
+    return undefined;
+  }
+};
+
+/**
+ * Merges a video and audio file using AWS Lambda and uploads the result to S3
+ * @param videoUrl URL of the video file
+ * @param audioUrl URL of the audio file
+ * @returns S3 URL of the merged video
+ */
+export const mergeVideoAndAudio = async (
+  videoUrl: string,
+  audioUrl: string
+): Promise<string | undefined> => {
+  try {
+    // Extract bucket and key from URLs
+    // Assuming URLs are in the format: https://bucket.s3.region.amazonaws.com/key
+    const videoUrlObj = new URL(videoUrl);
+    const audioUrlObj = new URL(audioUrl);
+    
+    const videoBucket = videoUrlObj.hostname.split('.')[0];
+    const audioBucket = audioUrlObj.hostname.split('.')[0];
+    
+    // Verify both files are in the same bucket
+    if (videoBucket !== audioBucket) {
+      throw new Error("Video and audio files must be in the same S3 bucket");
+    }
+    
+    const bucket = videoBucket;
+    const videoKey = videoUrlObj.pathname.substring(1); // Remove leading slash
+    const audioKey = audioUrlObj.pathname.substring(1); // Remove leading slash
+    
+    // Generate S3 key for the merged video
+    const outputKey = await generateS3Key("videos");
+    
+    // Invoke the Lambda function to merge video and audio
+    const mergedUrl = await invokeVideoMergeLambda(bucket, videoKey, audioKey, outputKey);
+    
+    if (!mergedUrl) {
+      throw new Error("Failed to merge video and audio");
+    }
+    
+    console.log(`Merged video: ${mergedUrl}`);
+    return mergedUrl;
+  } catch (error) {
+    console.error("Error merging video and audio:", error);
     return undefined;
   }
 };
