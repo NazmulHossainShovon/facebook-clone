@@ -80,7 +80,7 @@ export const saveWordTimingDataToFile = (
 export const translateTranscriptionTextToFile = async (
   text: string | undefined,
   originalFileName: string,
-  targetLanguage = "it"
+  targetLanguage = "en"
 ): Promise<string | undefined> => {
   try {
     if (!text) {

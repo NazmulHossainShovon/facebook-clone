@@ -13,6 +13,7 @@ import {
   cleanupLocalFile,
 } from "./transcriptionProcessor";
 import { generateS3Key } from "../s3Service";
+import { invokeAudioRemovalLambda } from "../lambdaService";
 import dotenv from "dotenv";
 
 // Load environment variables
@@ -60,6 +61,20 @@ export const processVideoDownload = async (youtubeUrl: string) => {
 
   // Stream directly to S3 without storing locally
   const s3Url = await downloadAndStreamToS3(info, format, s3Key);
+
+  // Extract bucket and key from S3 URL for Lambda invocation
+  const url = new URL(s3Url);
+  const bucket = url.hostname.split('.')[0];
+  const key = url.pathname.substring(1);
+
+  // Invoke the audio removal Lambda function asynchronously
+  try {
+    await invokeAudioRemovalLambda(bucket, key);
+    console.log("Audio removal Lambda function invoked successfully");
+  } catch (error) {
+    console.error("Failed to invoke audio removal Lambda function:", error);
+    // Note: We're not throwing the error here to avoid breaking the main flow
+  }
 
   return { videoInfo, s3Url };
 };
