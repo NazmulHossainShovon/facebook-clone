@@ -1,13 +1,13 @@
 import express, { Request, Response } from "express";
 import { isAuth } from "../utils";
-import { processYoutubeUrl } from "../controllers/dubController";
+import { processS3Url } from "../controllers/dubController";
 
 export const dubRouter = express.Router();
 
 dubRouter.post(
-  "/",
+  "/s3",
   // isAuth,
-  processYoutubeUrl
+  processS3Url
 );
 
 // Health check endpoint

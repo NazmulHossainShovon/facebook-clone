@@ -42,6 +42,41 @@ export const validateRequest = (youtubeUrl: string): void => {
 };
 
 /**
+ * Processes an S3 video URL by invoking the audio removal Lambda function
+ * @param s3Url The S3 URL of the video to process
+ * @returns Object containing the processed video URL
+ */
+export const processS3Video = async (s3Url: string) => {
+  try {
+    // Validate that s3Url is provided
+    if (!s3Url) {
+      throw new Error("S3 URL is required");
+    }
+
+    // Extract bucket and key from S3 URL for Lambda invocation
+    const url = new URL(s3Url);
+    const bucket = url.hostname.split('.')[0];
+    const key = url.pathname.substring(1);
+
+    // Invoke the audio removal Lambda function and get the processed video URL
+    const processedVideoUrl = await invokeAudioRemovalLambda(bucket, key).catch((error) => {
+      console.error("Failed to invoke audio removal Lambda function:", error);
+      // Note: We're not throwing the error here to avoid breaking the main flow
+      return undefined;
+    });
+
+    if (processedVideoUrl) {
+      console.log("Audio removal Lambda function processed successfully");
+    }
+
+    return { processedVideoUrl };
+  } catch (error) {
+    console.error("Error processing S3 video:", error);
+    throw error;
+  }
+};
+
+/**
  * Processes the YouTube video download by streaming directly to S3
  * @param youtubeUrl The YouTube URL to process
  * @returns Object containing video info and S3 URLs
