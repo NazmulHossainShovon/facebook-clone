@@ -23,6 +23,21 @@ interface DubResponse {
   };
 }
 
+// Interface for the S3 processing response
+interface S3DubResponse {
+  message: string;
+  success: boolean;
+  videoTitle: string;
+  s3Url: string;
+  processedVideoUrl?: string;
+  mergedVideoS3Url?: string;
+  audioS3Url?: string;
+  transcriptionPath?: string;
+  wordTimingDataPath?: string;
+  duration: number;
+  transcriptionText?: string;
+}
+
 export const useProcessYoutubeUrl = () => {
   return useMutation<DubResponse, Error, DubRequest>({
     mutationFn: async (data: DubRequest) => {
@@ -33,9 +48,9 @@ export const useProcessYoutubeUrl = () => {
 };
 
 export const useProcessS3Url = () => {
-  return useMutation<DubResponse, Error, S3DubRequest>({
+  return useMutation<S3DubResponse, Error, S3DubRequest>({
     mutationFn: async (data: S3DubRequest) => {
-      const response = await apiClient.post<DubResponse>('/api/dub/s3', data);
+      const response = await apiClient.post<S3DubResponse>('/api/dub/s3', data);
       return response.data;
     },
   });

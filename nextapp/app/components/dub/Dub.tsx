@@ -9,6 +9,7 @@ const Dub = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedFileName, setUploadedFileName] = useState('');
   const [s3Url, setS3Url] = useState('');
+  const [mergedVideoUrl, setMergedVideoUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     mutate: processS3Url,
@@ -16,6 +17,7 @@ const Dub = () => {
     isError,
     error,
     isSuccess,
+    data,
     reset,
   } = useProcessS3Url();
 
@@ -27,6 +29,7 @@ const Dub = () => {
     setIsUploading(true);
     setUploadProgress(0);
     setUploadedFileName(file.name);
+    setMergedVideoUrl('');
 
     try {
       // Upload to S3 with progress tracking
@@ -43,6 +46,25 @@ const Dub = () => {
       // Handle error appropriately
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // Set merged video URL when data is available
+  React.useEffect(() => {
+    if (data?.success && data.mergedVideoS3Url) {
+      setMergedVideoUrl(data.mergedVideoS3Url);
+    }
+  }, [data]);
+
+  const handleDownload = () => {
+    if (mergedVideoUrl) {
+      const link = document.createElement('a');
+      link.href = mergedVideoUrl;
+      link.download = 'dubbed-video.mp4'; // You can customize the filename
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
@@ -73,6 +95,16 @@ const Dub = () => {
         {isSuccess && (
           <div className="mb-4 p-3 rounded-lg bg-green-100 text-green-800">
             Video processed successfully!
+            {mergedVideoUrl && (
+              <div className="mt-2">
+                <button
+                  onClick={handleDownload}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition-colors duration-300"
+                >
+                  Download Dubbed Video
+                </button>
+              </div>
+            )}
           </div>
         )}
 
