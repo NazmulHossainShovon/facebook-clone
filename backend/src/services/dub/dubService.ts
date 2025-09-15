@@ -7,17 +7,28 @@ import {
   downloadAndStreamToS3,
 } from "./youtubeService";
 import {
-  downloadVideoFromS3,
   processTranscription,
   saveTranscriptionResults,
-  cleanupLocalFile,
 } from "./transcriptionProcessor";
 import { generateS3Key } from "../s3Service";
 import { invokeAudioRemovalLambda } from "../lambdaService";
 import dotenv from "dotenv";
+import path from "path";
 
 // Load environment variables
 dotenv.config();
+
+/**
+ * Extracts the S3 key from an S3 URL
+ * @param s3Url The full S3 URL
+ * @returns The S3 key
+ */
+const extractS3Key = (s3Url: string): string => {
+  // S3 URL format: https://bucket.s3.region.amazonaws.com/key
+  const url = new URL(s3Url);
+  // Remove the leading slash from the pathname to get the key
+  return url.pathname.substring(1);
+};
 
 /**
  * Validates the YouTube URL from the request
@@ -136,14 +147,17 @@ export const processVideoTranscription = async (
 }> => {
   console.log("Starting video transcription with word timing data...");
   try {
-    // Download the file from S3 to local storage
-    const localFilePath = await downloadVideoFromS3(s3Url);
-
-    // Process the transcription
+    // Process the transcription directly using the S3 URL
     const transcriptionData = await processTranscription(
-      localFilePath,
+      s3Url,
       languageCode
     );
+
+    // For saving results to files, we still need a local file path for naming
+    // We'll create a temporary path based on the S3 URL
+    const s3Key = extractS3Key(s3Url);
+    const fileName = path.basename(s3Key);
+    const tempLocalFilePath = path.join(__dirname, "downloads", fileName);
 
     // Save transcription results to files
     const {
@@ -153,10 +167,7 @@ export const processVideoTranscription = async (
       pauses,
       pauseDataFilePath,
       audioFilePath,
-    } = await saveTranscriptionResults(transcriptionData, localFilePath);
-
-    // Clean up the temporary local file
-    cleanupLocalFile(localFilePath);
+    } = await saveTranscriptionResults(transcriptionData, tempLocalFilePath);
 
     return {
       transcriptionText: transcriptionData.text,

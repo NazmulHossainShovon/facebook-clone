@@ -51,25 +51,16 @@ export const savePauseDataToFile = (pauses: PauseData[], originalFileName: strin
 
 /**
  * Transcribes a video or audio file using AssemblyAI with speaker diarization for pause detection
- * @param filePath Path to the video/audio file
+ * @param fileUrl URL to the video/audio file (can be S3 URL or any public URL)
  * @param languageCode Language code for the audio (e.g., 'hi' for Hindi, 'en' for English)
  * @returns Promise that resolves with the transcribed text
  */
-export const transcribeVideo = async (filePath: string, languageCode?: string): Promise<string> => {
+export const transcribeVideo = async (fileUrl: string, languageCode?: string): Promise<string> => {
   try {
-    // Check if file exists
-    if (!fs.existsSync(filePath)) {
-      throw new Error(`File not found: ${filePath}`);
-    }
-
-    // Upload the file to AssemblyAI
-    console.log("Uploading file to AssemblyAI...");
-    const uploadResult = await client.files.upload(fs.createReadStream(filePath));
-    
     // Create a transcription request with language support and speaker diarization
     console.log("Creating transcription request with speaker diarization...");
     const transcriptionParams: any = {
-      audio_url: uploadResult,
+      audio_url: fileUrl,   // Use the URL directly instead of uploading a file
       speaker_labels: true, // Enable speaker diarization
       punctuate: true,      // Enable punctuation for better pause detection
       format_text: true,    // Format text with proper spacing
@@ -88,7 +79,7 @@ export const transcribeVideo = async (filePath: string, languageCode?: string): 
     console.log("Transcription ID:", transcription.id);
     return transcription.id;
   } catch (error) {
-    console.error("Error uploading file for transcription:", error);
+    console.error("Error creating transcription request:", error);
     throw error;
   }
 };
