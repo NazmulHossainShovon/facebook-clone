@@ -5,7 +5,6 @@ import {
   savePauseDataToFile,
 } from "./transcriptionService";
 import {
-  saveWordTimingDataToFile,
   translateTranscriptionTextToFile,
   detectPauses,
 } from "./dubHelpers";
@@ -50,12 +49,6 @@ export const saveTranscriptionResults = async (
     filePath
   );
 
-  // Save word timing data to a JSON file
-  const wordTimingDataFilePath = saveWordTimingDataToFile(
-    transcriptionData.words,
-    filePath
-  );
-
   // Translate the full transcription text and save to a text file
   const translatedTranscriptionFilePath = await translateTranscriptionTextToFile(
     transcriptionData.text,
@@ -76,7 +69,6 @@ export const saveTranscriptionResults = async (
 
   return {
     transcriptionFilePath,
-    wordTimingDataFilePath,
     translatedTranscriptionFilePath,
     pauses,
     pauseDataFilePath,

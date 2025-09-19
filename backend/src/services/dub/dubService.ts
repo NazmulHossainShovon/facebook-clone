@@ -139,7 +139,6 @@ export const processVideoTranscription = async (
 ): Promise<{
   transcriptionText: string | undefined;
   transcriptionFilePath: string | undefined;
-  wordTimingDataFilePath: string | undefined;
   translatedTranscriptionFilePath: string | undefined;
   pauses: any[] | undefined;
   pauseDataFilePath: string | undefined;
@@ -162,7 +161,6 @@ export const processVideoTranscription = async (
     // Save transcription results to files
     const {
       transcriptionFilePath,
-      wordTimingDataFilePath,
       translatedTranscriptionFilePath,
       pauses,
       pauseDataFilePath,
@@ -172,7 +170,6 @@ export const processVideoTranscription = async (
     return {
       transcriptionText: transcriptionData.text,
       transcriptionFilePath,
-      wordTimingDataFilePath,
       translatedTranscriptionFilePath,
       pauses,
       pauseDataFilePath,
@@ -183,7 +180,6 @@ export const processVideoTranscription = async (
     return {
       transcriptionText: undefined,
       transcriptionFilePath: undefined,
-      wordTimingDataFilePath: undefined,
       translatedTranscriptionFilePath: undefined,
       pauses: undefined,
       pauseDataFilePath: undefined,

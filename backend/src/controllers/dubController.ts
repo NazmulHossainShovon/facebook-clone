@@ -37,7 +37,6 @@ export const processS3Url = asyncHandler(
       const {
         transcriptionText,
         transcriptionFilePath,
-        wordTimingDataFilePath,
         translatedTranscriptionFilePath,
         audioFilePath,
       } = await processVideoTranscription(s3Url);
@@ -59,7 +58,6 @@ export const processS3Url = asyncHandler(
         mergedVideoS3Url: mergedVideoS3Url,
         audioS3Url: audioFilePath,
         transcriptionPath: transcriptionFilePath,
-        wordTimingDataPath: wordTimingDataFilePath,
         duration: duration,
         transcriptionText: transcriptionText,
       });
