@@ -149,7 +149,7 @@ export const detectPauses = (words: WordTiming[] | undefined): PauseData[] => {
   }
 
   const pauses: PauseData[] = [];
-  const PAUSE_THRESHOLD = 500; // 500ms threshold for detecting pauses
+  const PAUSE_THRESHOLD = 200; // 500ms threshold for detecting pauses
 
   for (let i = 0; i < words.length - 1; i++) {
     const currentWord = words[i];
