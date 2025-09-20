@@ -138,18 +138,8 @@ export const saveTranscriptionResults = async (
     filePath
   );
 
-  // Translate the full transcription text and save to a text file
-  const translatedTranscriptionFilePath = await translateTranscriptionTextToFile(
-    transcriptionData.text,
-    filePath
-  );
-
   // Detect pauses in the transcription
   const pauses = detectPauses(transcriptionData.words);
-
-  // Save pause data to a JSON file if pauses were detected
-  const pauseDataFilePath =
-    pauses.length > 0 ? savePauseDataToFile(pauses, filePath) : undefined;
 
   // Create SSML file from transcription with break tags for pauses
   const ssmlFilePath = createSSMLFromTranscription(
@@ -157,6 +147,15 @@ export const saveTranscriptionResults = async (
     pauses,
     transcriptionData.words
   );
+
+  // Translate the SSML file and save to a new SSML file
+  const translatedTranscriptionFilePath = await translateTranscriptionTextToFile(
+    ssmlFilePath
+  );
+
+  // Save pause data to a JSON file if pauses were detected
+  const pauseDataFilePath =
+    pauses.length > 0 ? savePauseDataToFile(pauses, filePath) : undefined;
 
   // Create audio from translated text file
   const audioFilePath = await createAudioFromTranslatedText(

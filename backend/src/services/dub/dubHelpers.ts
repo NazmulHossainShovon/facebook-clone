@@ -77,51 +77,141 @@ export const saveWordTimingDataToFile = (
 };
 
 /**
- * Translates the full transcription text and saves to a text file
- * @param text The full transcription text to translate
- * @param originalFileName The original video filename
+ * Translates an SSML file by translating content between break tags and saves to a new SSML file
+ * @param ssmlFilePath Path to the SSML file to translate
  * @param targetLanguage Target language code for translation (default: 'en')
- * @returns Path to the saved translated text file
+ * @returns Path to the saved translated SSML file
  */
 export const translateTranscriptionTextToFile = async (
-  text: string | undefined,
-  originalFileName: string,
+  ssmlFilePath: string,
   targetLanguage = "en"
 ): Promise<string | undefined> => {
   try {
-    if (!text) {
+    if (!ssmlFilePath || !fs.existsSync(ssmlFilePath)) {
+      console.error("SSML file not found:", ssmlFilePath);
       return undefined;
     }
+
+    // Read the SSML file content
+    const ssmlContent = fs.readFileSync(ssmlFilePath, "utf8");
 
     // Create AWS Translate client
     const client = createTranslateClient();
 
-    // Translate the full text
-    const translatedText = await translateText(client, text, targetLanguage);
+    // Parse SSML content to extract text segments between break tags
+    const segments = parseSSMLSegments(ssmlContent);
     
-    if (!translatedText) {
+    if (segments.length === 0) {
+      console.error("No translatable segments found in SSML file");
       return undefined;
     }
 
-    // Ensure downloads directory exists
-    const downloadsDir = ensureDownloadsDirectory();
-
-    // Generate translated text filename
-    const translatedFileName = generateTranslatedFileName(originalFileName, targetLanguage);
-    const translatedTextFilePath = path.join(downloadsDir, translatedFileName);
-
-    // Save translated text to file
-    const success = saveTranslatedTextToFile(translatedText, translatedTextFilePath);
-    
-    if (!success) {
-      return undefined;
+    // Translate each segment
+    const translatedSegments: string[] = [];
+    for (const segment of segments) {
+      if (segment.trim()) {
+        const translatedText = await translateText(client, segment, targetLanguage);
+        if (translatedText) {
+          translatedSegments.push(translatedText);
+        } else {
+          // If translation fails, keep original text
+          translatedSegments.push(segment);
+        }
+      } else {
+        translatedSegments.push(segment);
+      }
     }
 
-    return translatedTextFilePath;
+    // Reconstruct SSML with translated content
+    const translatedSSML = reconstructSSML(ssmlContent, translatedSegments);
+
+    // Generate translated SSML filename
+    const translatedSSMLPath = generateTranslatedSSMLFileName(ssmlFilePath, targetLanguage);
+
+    // Save translated SSML to file
+    fs.writeFileSync(translatedSSMLPath, translatedSSML, "utf8");
+    console.log(`Translated SSML file saved to: ${translatedSSMLPath}`);
+
+    return translatedSSMLPath;
   } catch (error) {
-    console.error("Error translating transcription text:", error);
+    console.error("Error translating SSML file:", error);
     return undefined;
   }
+};
+
+/**
+ * Parses SSML content to extract text segments between break tags
+ * @param ssmlContent The SSML content to parse
+ * @returns Array of text segments
+ */
+const parseSSMLSegments = (ssmlContent: string): string[] => {
+  try {
+    // Remove <speak> tags and get the inner content
+    const innerContent = ssmlContent.replace(/<speak[^>]*>|<\/speak>/g, '').trim();
+    
+    // Split by break tags to get segments
+    const segments = innerContent.split(/<break[^>]*\/>/);
+    
+    // Clean up segments by trimming whitespace
+    return segments.map(segment => segment.trim()).filter(segment => segment.length > 0);
+  } catch (error) {
+    console.error("Error parsing SSML segments:", error);
+    return [];
+  }
+};
+
+/**
+ * Reconstructs SSML content with translated segments
+ * @param originalSSML The original SSML content
+ * @param translatedSegments Array of translated text segments
+ * @returns Reconstructed SSML with translated content
+ */
+const reconstructSSML = (originalSSML: string, translatedSegments: string[]): string => {
+  try {
+    // Extract break tags from original SSML
+    const breakTags = originalSSML.match(/<break[^>]*\/>/g) || [];
+    
+    // Start with speak tag
+    let reconstructedSSML = '<speak>\n';
+    
+    // Combine translated segments with break tags
+    for (let i = 0; i < translatedSegments.length; i++) {
+      reconstructedSSML += translatedSegments[i];
+      
+      // Add break tag if there's one available and it's not the last segment
+      if (i < breakTags.length && i < translatedSegments.length - 1) {
+        reconstructedSSML += ` ${breakTags[i]}`;
+      }
+      
+      // Add space between segments if not the last one
+      if (i < translatedSegments.length - 1) {
+        reconstructedSSML += ' ';
+      }
+    }
+    
+    reconstructedSSML += '\n</speak>';
+    
+    return reconstructedSSML;
+  } catch (error) {
+    console.error("Error reconstructing SSML:", error);
+    // Fallback: create simple SSML with translated content
+    return `<speak>\n${translatedSegments.join(' ')}\n</speak>`;
+  }
+};
+
+/**
+ * Generates the filename for translated SSML files
+ * @param originalSSMLPath The original SSML file path
+ * @param targetLanguage Target language code
+ * @returns Generated filename for the translated SSML file
+ */
+const generateTranslatedSSMLFileName = (
+  originalSSMLPath: string,
+  targetLanguage: string
+): string => {
+  const parsedPath = path.parse(originalSSMLPath);
+  const translatedFileName = `${parsedPath.name}_${targetLanguage}.ssml`;
+  return path.join(parsedPath.dir, translatedFileName);
 };
 
 /**
