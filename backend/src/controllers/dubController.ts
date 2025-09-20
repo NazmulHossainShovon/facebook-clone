@@ -42,24 +42,15 @@ export const processS3Url = asyncHandler(
       } = await processVideoTranscription(s3Url);
 
       // Merge video and audio if both are available
-      const mergedVideoS3Url: string | undefined = processedVideoUrl && audioFilePath 
-        ? await mergeVideoAndAudio(processedVideoUrl, audioFilePath)
-        : undefined;
+      const mergedVideoS3Url: string | undefined =
+        processedVideoUrl && audioFilePath
+          ? await mergeVideoAndAudio(processedVideoUrl, audioFilePath)
+          : undefined;
 
-      // Send success response
+      // Send success response with only the merged video URL
       res.status(200).json({
-        message: transcriptionText
-          ? "Video processed and transcribed successfully"
-          : "Video processed successfully (transcription failed)",
         success: true,
-        videoTitle: videoTitle,
-        s3Url: s3Url,
-        processedVideoUrl: processedVideoUrl,
         mergedVideoS3Url: mergedVideoS3Url,
-        audioS3Url: audioFilePath,
-        transcriptionPath: transcriptionFilePath,
-        duration: duration,
-        transcriptionText: transcriptionText,
       });
     } catch (error: any) {
       console.error("Error processing S3 URL:", error);

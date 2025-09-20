@@ -25,17 +25,8 @@ interface DubResponse {
 
 // Interface for the S3 processing response
 interface S3DubResponse {
-  message: string;
   success: boolean;
-  videoTitle: string;
-  s3Url: string;
-  processedVideoUrl?: string;
   mergedVideoS3Url?: string;
-  audioS3Url?: string;
-  transcriptionPath?: string;
-  wordTimingDataPath?: string;
-  duration: number;
-  transcriptionText?: string;
 }
 
 export const useProcessYoutubeUrl = () => {
