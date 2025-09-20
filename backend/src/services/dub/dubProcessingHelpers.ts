@@ -1,7 +1,4 @@
-import {
-  processS3Video,
-  processVideoTranscription,
-} from "./dubService";
+import { processS3Video, processVideoTranscription } from "./dubService";
 import { mergeVideoAndAudio } from "./audioHelpers";
 import { deleteFromS3 } from "./../s3Service";
 
@@ -21,7 +18,9 @@ export const validateS3Url = (s3Url: string | undefined): void => {
  * @param s3Url The S3 URL of the video to process
  * @returns The processed video URL
  */
-export const processVideo = async (s3Url: string): Promise<string | undefined> => {
+export const processVideo = async (
+  s3Url: string
+): Promise<string | undefined> => {
   const { processedVideoUrl } = await processS3Video(s3Url);
   return processedVideoUrl;
 };
@@ -34,9 +33,9 @@ export const processVideo = async (s3Url: string): Promise<string | undefined> =
  * @returns Object containing transcription results including audio file path
  */
 export const transcribeVideo = async (
-  s3Url: string, 
-  targetLanguage: string = 'en', 
-  voiceGender: string = 'female'
+  s3Url: string,
+  targetLanguage = "en",
+  voiceGender = "female"
 ) => {
   const {
     transcriptionText,

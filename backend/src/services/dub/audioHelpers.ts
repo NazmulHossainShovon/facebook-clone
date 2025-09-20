@@ -33,8 +33,8 @@ export const streamToBuffer = async (stream: any): Promise<Buffer> => {
  */
 export const createAudioFromTranslatedText = async (
   translatedTextFilePath: string | undefined,
-  targetLanguage: string = 'en',
-  voiceGender: string = 'female'
+  targetLanguage = "en",
+  voiceGender = "female"
 ): Promise<string | undefined> => {
   try {
     if (!translatedTextFilePath || !fs.existsSync(translatedTextFilePath)) {
@@ -55,8 +55,13 @@ export const createAudioFromTranslatedText = async (
     });
 
     // Get the appropriate voice for the target language and gender
-    const selectedVoiceId = getVoiceId(targetLanguage, voiceGender as 'male' | 'female');
-    console.log(`Using voice: ${selectedVoiceId} for language: ${targetLanguage}, gender: ${voiceGender}`);
+    const selectedVoiceId = getVoiceId(
+      targetLanguage,
+      voiceGender as "male" | "female"
+    );
+    console.log(
+      `Using voice: ${selectedVoiceId} for language: ${targetLanguage}, gender: ${voiceGender}`
+    );
 
     // Configure Polly parameters with proper types
     const params = {

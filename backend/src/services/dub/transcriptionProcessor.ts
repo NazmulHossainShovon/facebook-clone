@@ -126,8 +126,8 @@ export const processTranscription = async (
 export const saveTranscriptionResults = async (
   transcriptionData: any,
   filePath: string,
-  targetLanguage: string = "en",
-  voiceGender: string = "female"
+  targetLanguage = "en",
+  voiceGender = "female"
 ) => {
   // Create downloads directory if it doesn't exist
   const downloadsDir = path.join(__dirname, "downloads");

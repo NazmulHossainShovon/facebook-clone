@@ -66,15 +66,17 @@ export const processS3Video = async (s3Url: string) => {
 
     // Extract bucket and key from S3 URL for Lambda invocation
     const url = new URL(s3Url);
-    const bucket = url.hostname.split('.')[0];
+    const bucket = url.hostname.split(".")[0];
     const key = url.pathname.substring(1);
 
     // Invoke the audio removal Lambda function and get the processed video URL
-    const processedVideoUrl = await invokeAudioRemovalLambda(bucket, key).catch((error) => {
-      console.error("Failed to invoke audio removal Lambda function:", error);
-      // Note: We're not throwing the error here to avoid breaking the main flow
-      return undefined;
-    });
+    const processedVideoUrl = await invokeAudioRemovalLambda(bucket, key).catch(
+      (error) => {
+        console.error("Failed to invoke audio removal Lambda function:", error);
+        // Note: We're not throwing the error here to avoid breaking the main flow
+        return undefined;
+      }
+    );
 
     if (processedVideoUrl) {
       console.log("Audio removal Lambda function processed successfully");
@@ -110,15 +112,17 @@ export const processVideoDownload = async (youtubeUrl: string) => {
 
   // Extract bucket and key from S3 URL for Lambda invocation
   const url = new URL(s3Url);
-  const bucket = url.hostname.split('.')[0];
+  const bucket = url.hostname.split(".")[0];
   const key = url.pathname.substring(1);
 
   // Invoke the audio removal Lambda function and get the processed video URL
-  const processedVideoUrl = await invokeAudioRemovalLambda(bucket, key).catch((error) => {
-    console.error("Failed to invoke audio removal Lambda function:", error);
-    // Note: We're not throwing the error here to avoid breaking the main flow
-    return undefined;
-  });
+  const processedVideoUrl = await invokeAudioRemovalLambda(bucket, key).catch(
+    (error) => {
+      console.error("Failed to invoke audio removal Lambda function:", error);
+      // Note: We're not throwing the error here to avoid breaking the main flow
+      return undefined;
+    }
+  );
 
   if (processedVideoUrl) {
     console.log("Audio removal Lambda function processed successfully");
@@ -136,8 +140,8 @@ export const processVideoDownload = async (youtubeUrl: string) => {
  */
 export const processVideoTranscription = async (
   s3Url: string,
-  targetLanguage: string = 'en',
-  voiceGender: string = 'female'
+  targetLanguage = "en",
+  voiceGender = "female"
 ): Promise<{
   transcriptionText: string | undefined;
   transcriptionFilePath: string | undefined;
@@ -149,9 +153,7 @@ export const processVideoTranscription = async (
   console.log("Starting video transcription with word timing data...");
   try {
     // Process the transcription directly using the S3 URL
-    const transcriptionData = await processTranscription(
-      s3Url
-    );
+    const transcriptionData = await processTranscription(s3Url);
 
     // For saving results to files, we still need a local file path for naming
     // We'll create a temporary path based on the S3 URL
@@ -166,7 +168,12 @@ export const processVideoTranscription = async (
       pauses,
       pauseDataFilePath,
       audioFilePath,
-    } = await saveTranscriptionResults(transcriptionData, tempLocalFilePath, targetLanguage, voiceGender);
+    } = await saveTranscriptionResults(
+      transcriptionData,
+      tempLocalFilePath,
+      targetLanguage,
+      voiceGender
+    );
 
     return {
       transcriptionText: transcriptionData.text,
