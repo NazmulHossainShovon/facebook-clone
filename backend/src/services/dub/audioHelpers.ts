@@ -3,6 +3,7 @@ import {
   SynthesizeSpeechCommand,
   OutputFormat,
   VoiceId,
+  TextType,
 } from "@aws-sdk/client-polly";
 import fs from "fs";
 import { PassThrough } from "stream";
@@ -51,6 +52,7 @@ export const createAudioFromTranslatedText = async (
     // Configure Polly parameters with proper types
     const params = {
       Text: text,
+      TextType: "ssml" as TextType,
       OutputFormat: OutputFormat.MP3,
       VoiceId: VoiceId.Joanna, // Default voice, can be customized
     };

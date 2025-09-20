@@ -1,6 +1,4 @@
-import {
-  TranslateClient,
-} from "@aws-sdk/client-translate";
+import { TranslateClient } from "@aws-sdk/client-translate";
 import fs from "fs";
 import path from "path";
 import {
@@ -8,7 +6,7 @@ import {
   translateText,
   ensureDownloadsDirectory,
   generateTranslatedFileName,
-  saveTranslatedTextToFile
+  saveTranslatedTextToFile,
 } from "./translationHelpers";
 
 // Interface for pause detection data
@@ -100,7 +98,7 @@ export const translateTranscriptionTextToFile = async (
 
     // Parse SSML content to extract text segments between break tags
     const segments = parseSSMLSegments(ssmlContent);
-    
+
     if (segments.length === 0) {
       console.error("No translatable segments found in SSML file");
       return undefined;
@@ -110,7 +108,11 @@ export const translateTranscriptionTextToFile = async (
     const translatedSegments: string[] = [];
     for (const segment of segments) {
       if (segment.trim()) {
-        const translatedText = await translateText(client, segment, targetLanguage);
+        const translatedText = await translateText(
+          client,
+          segment,
+          targetLanguage
+        );
         if (translatedText) {
           translatedSegments.push(translatedText);
         } else {
@@ -126,7 +128,10 @@ export const translateTranscriptionTextToFile = async (
     const translatedSSML = reconstructSSML(ssmlContent, translatedSegments);
 
     // Generate translated SSML filename
-    const translatedSSMLPath = generateTranslatedSSMLFileName(ssmlFilePath, targetLanguage);
+    const translatedSSMLPath = generateTranslatedSSMLFileName(
+      ssmlFilePath,
+      targetLanguage
+    );
 
     // Save translated SSML to file
     fs.writeFileSync(translatedSSMLPath, translatedSSML, "utf8");
@@ -147,13 +152,17 @@ export const translateTranscriptionTextToFile = async (
 const parseSSMLSegments = (ssmlContent: string): string[] => {
   try {
     // Remove <speak> tags and get the inner content
-    const innerContent = ssmlContent.replace(/<speak[^>]*>|<\/speak>/g, '').trim();
-    
+    const innerContent = ssmlContent
+      .replace(/<speak[^>]*>|<\/speak>/g, "")
+      .trim();
+
     // Split by break tags to get segments
     const segments = innerContent.split(/<break[^>]*\/>/);
-    
+
     // Clean up segments by trimming whitespace
-    return segments.map(segment => segment.trim()).filter(segment => segment.length > 0);
+    return segments
+      .map((segment) => segment.trim())
+      .filter((segment) => segment.length > 0);
   } catch (error) {
     console.error("Error parsing SSML segments:", error);
     return [];
@@ -166,36 +175,39 @@ const parseSSMLSegments = (ssmlContent: string): string[] => {
  * @param translatedSegments Array of translated text segments
  * @returns Reconstructed SSML with translated content
  */
-const reconstructSSML = (originalSSML: string, translatedSegments: string[]): string => {
+const reconstructSSML = (
+  originalSSML: string,
+  translatedSegments: string[]
+): string => {
   try {
     // Extract break tags from original SSML
     const breakTags = originalSSML.match(/<break[^>]*\/>/g) || [];
-    
+
     // Start with speak tag
-    let reconstructedSSML = '<speak>\n';
-    
+    let reconstructedSSML = "<speak>\n";
+
     // Combine translated segments with break tags
     for (let i = 0; i < translatedSegments.length; i++) {
       reconstructedSSML += translatedSegments[i];
-      
+
       // Add break tag if there's one available and it's not the last segment
       if (i < breakTags.length && i < translatedSegments.length - 1) {
         reconstructedSSML += ` ${breakTags[i]}`;
       }
-      
+
       // Add space between segments if not the last one
       if (i < translatedSegments.length - 1) {
-        reconstructedSSML += ' ';
+        reconstructedSSML += " ";
       }
     }
-    
-    reconstructedSSML += '\n</speak>';
-    
+
+    reconstructedSSML += "\n</speak>";
+
     return reconstructedSSML;
   } catch (error) {
     console.error("Error reconstructing SSML:", error);
     // Fallback: create simple SSML with translated content
-    return `<speak>\n${translatedSegments.join(' ')}\n</speak>`;
+    return `<speak>\n${translatedSegments.join(" ")}\n</speak>`;
   }
 };
 
@@ -225,7 +237,7 @@ export const detectPauses = (words: WordTiming[] | undefined): PauseData[] => {
   }
 
   const pauses: PauseData[] = [];
-  const PAUSE_THRESHOLD = 200; // 500ms threshold for detecting pauses
+  const PAUSE_THRESHOLD = 500; // 500ms threshold for detecting pauses
 
   for (let i = 0; i < words.length - 1; i++) {
     const currentWord = words[i];
