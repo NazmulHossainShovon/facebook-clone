@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Upload } from "@aws-sdk/lib-storage";
 import crypto from "crypto";
@@ -121,6 +121,21 @@ export const downloadFromS3 = async (key: string, localPath: string): Promise<vo
     writeStream.on("finish", resolve);
     writeStream.on("error", reject);
   });
+};
+
+/**
+ * Deletes an object from S3
+ * @param key The S3 key for the object to delete
+ * @returns Promise that resolves when the deletion is complete
+ */
+export const deleteFromS3 = async (key: string): Promise<void> => {
+  const params = {
+    Bucket: bucketName,
+    Key: key,
+  };
+
+  const command = new DeleteObjectCommand(params);
+  await s3.send(command);
 };
 
 export default s3;
