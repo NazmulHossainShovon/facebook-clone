@@ -39,8 +39,7 @@ const Dub = () => {
 
       setS3Url(url);
 
-      // Send S3 URL to backend
-      processS3Url({ s3Url: url });
+      // Don't automatically process the video - user will click the "Start Processing" button
     } catch (err) {
       console.error('Upload failed:', err);
       // Handle error appropriately
@@ -176,7 +175,7 @@ const Dub = () => {
               Reset
             </button>
 
-            {s3Url && (
+            {s3Url && !isSuccess && (
               <button
                 type="button"
                 onClick={() => processS3Url({ s3Url })}
@@ -185,7 +184,7 @@ const Dub = () => {
                 }`}
                 disabled={isPending}
               >
-                {isPending ? 'Processing...' : 'Process Video'}
+                {isPending ? 'Processing...' : 'Start Processing'}
               </button>
             )}
           </div>
