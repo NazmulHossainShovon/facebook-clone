@@ -3,6 +3,11 @@
 import React, { useState, useRef } from 'react';
 import { useProcessS3Url } from '@/hooks/dubHooks';
 import { uploadToS3 } from '@/utils/uploadToS3';
+import UploadSection from './UploadSection';
+import ProgressSection from './ProgressSection';
+import SuccessMessage from './SuccessMessage';
+import ErrorMessage from './ErrorMessage';
+import ActionButtons from './ActionButtons';
 
 const Dub = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -92,27 +97,14 @@ const Dub = () => {
 
         {/* Success message */}
         {isSuccess && (
-          <div className="mb-4 p-3 rounded-lg bg-green-100 text-green-800">
-            Video processed successfully!
-            {mergedVideoUrl && (
-              <div className="mt-2">
-                <button
-                  onClick={handleDownload}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition-colors duration-300"
-                >
-                  Download Dubbed Video
-                </button>
-              </div>
-            )}
-          </div>
+          <SuccessMessage 
+            mergedVideoUrl={mergedVideoUrl} 
+            handleDownload={handleDownload} 
+          />
         )}
 
         {/* Error message */}
-        {isError && (
-          <div className="mb-4 p-3 rounded-lg bg-red-100 text-red-800">
-            {error?.message || 'An error occurred while processing the video'}
-          </div>
-        )}
+        {isError && <ErrorMessage error={error} />}
 
         {/* Upload section */}
         <div className="flex flex-col space-y-4">
@@ -125,69 +117,25 @@ const Dub = () => {
             disabled={isUploading || isPending}
           />
 
-          <button
-            type="button"
-            onClick={handleFileUpload}
-            className={`border-2 border-dashed border-gray-300 rounded-lg px-4 py-8 text-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 transition-colors duration-300 flex flex-col items-center justify-center ${
-              isUploading || isPending ? 'opacity-70 cursor-not-allowed' : ''
-            }`}
-            disabled={isUploading || isPending}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-12 w-12 mb-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-              />
-            </svg>
-            <span>Click to upload video</span>
-            <span className="text-sm mt-1">(MP4, MOV, AVI, etc.)</span>
-          </button>
+          <UploadSection 
+            isUploading={isUploading} 
+            isPending={isPending} 
+            handleFileUpload={handleFileUpload} 
+          />
 
-          {(isUploading || s3Url) && (
-            <div className="mt-2">
-              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>{uploadedFileName}</span>
-                <span>{isUploading ? `${uploadProgress}%` : 'Uploaded'}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${isUploading ? uploadProgress : 100}%` }}
-                ></div>
-              </div>
-            </div>
-          )}
+          <ProgressSection 
+            isUploading={isUploading} 
+            uploadProgress={uploadProgress} 
+            uploadedFileName={uploadedFileName} 
+          />
 
-          <div className="flex space-x-2">
-            <button
-              type="button"
-              onClick={handleReset}
-              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 flex-1"
-            >
-              Reset
-            </button>
-
-            {s3Url && !isSuccess && (
-              <button
-                type="button"
-                onClick={() => processS3Url({ s3Url })}
-                className={`bg-black hover:bg-black/80 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 flex-1 ${
-                  isPending ? 'opacity-70 cursor-not-allowed' : ''
-                }`}
-                disabled={isPending}
-              >
-                {isPending ? 'Processing...' : 'Start Processing'}
-              </button>
-            )}
-          </div>
+          <ActionButtons 
+            handleReset={handleReset}
+            s3Url={s3Url}
+            isSuccess={isSuccess}
+            isPending={isPending}
+            processS3Url={processS3Url}
+          />
         </div>
       </div>
     </div>
