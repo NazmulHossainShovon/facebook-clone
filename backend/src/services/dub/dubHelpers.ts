@@ -1,9 +1,15 @@
 import {
   TranslateClient,
-  TranslateTextCommand,
 } from "@aws-sdk/client-translate";
 import fs from "fs";
 import path from "path";
+import {
+  createTranslateClient,
+  translateText,
+  ensureDownloadsDirectory,
+  generateTranslatedFileName,
+  saveTranslatedTextToFile
+} from "./translationHelpers";
 
 // Interface for pause detection data
 interface PauseData {
@@ -74,7 +80,7 @@ export const saveWordTimingDataToFile = (
  * Translates the full transcription text and saves to a text file
  * @param text The full transcription text to translate
  * @param originalFileName The original video filename
- * @param targetLanguage Target language code for translation (default: 'bn' for Bengali)
+ * @param targetLanguage Target language code for translation (default: 'en')
  * @returns Path to the saved translated text file
  */
 export const translateTranscriptionTextToFile = async (
@@ -88,49 +94,29 @@ export const translateTranscriptionTextToFile = async (
     }
 
     // Create AWS Translate client
-    const client = new TranslateClient({
-      region: process.env.AWS_REGION || "us-east-1",
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
-      },
-    });
+    const client = createTranslateClient();
 
-    // Translate the full text in a single API call
-    const params = {
-      Text: text,
-      SourceLanguageCode: "auto",
-      TargetLanguageCode: targetLanguage,
-    };
-
-    const command = new TranslateTextCommand(params);
-    const response = await client.send(command);
-
-    // Check if translation was successful
-    if (!response.TranslatedText) {
-      console.error("Translation failed: No translated text returned");
+    // Translate the full text
+    const translatedText = await translateText(client, text, targetLanguage);
+    
+    if (!translatedText) {
       return undefined;
     }
 
-    // Create downloads directory if it doesn't exist
-    const downloadsDir = path.join(__dirname, "downloads");
-    if (!fs.existsSync(downloadsDir)) {
-      fs.mkdirSync(downloadsDir, { recursive: true });
+    // Ensure downloads directory exists
+    const downloadsDir = ensureDownloadsDirectory();
+
+    // Generate translated text filename
+    const translatedFileName = generateTranslatedFileName(originalFileName, targetLanguage);
+    const translatedTextFilePath = path.join(downloadsDir, translatedFileName);
+
+    // Save translated text to file
+    const success = saveTranslatedTextToFile(translatedText, translatedTextFilePath);
+    
+    if (!success) {
+      return undefined;
     }
 
-    // Create translated text filename
-    const fileNameWithoutExt = path.parse(originalFileName).name;
-    const translatedTextFilePath = path.join(
-      downloadsDir,
-      `${fileNameWithoutExt}_${targetLanguage}.txt`
-    );
-
-    // Write translated text to file (similar to saveTranscriptionToFile)
-    fs.writeFileSync(translatedTextFilePath, response.TranslatedText, "utf8");
-
-    console.log(
-      `Translated transcription text saved to: ${translatedTextFilePath}`
-    );
     return translatedTextFilePath;
   } catch (error) {
     console.error("Error translating transcription text:", error);
