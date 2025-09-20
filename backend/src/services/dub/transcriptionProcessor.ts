@@ -4,10 +4,7 @@ import {
   saveTranscriptionToFile,
   savePauseDataToFile,
 } from "./transcriptionService";
-import {
-  translateTranscriptionTextToFile,
-  detectPauses,
-} from "./dubHelpers";
+import { translateTranscriptionTextToFile, detectPauses } from "./dubHelpers";
 import { createAudioFromTranslatedText } from "./audioHelpers";
 import path from "path";
 import fs from "fs";
@@ -49,11 +46,11 @@ export const createSSMLFromTranscription = (
   try {
     // Read the transcription text
     const transcriptionText = fs.readFileSync(transcriptionFilePath, "utf8");
-    
+
     // If no words data or pauses, create simple SSML
     if (!words || words.length === 0 || pauses.length === 0) {
       const simpleSSML = `<speak>\n${transcriptionText}\n</speak>`;
-      const ssmlFilePath = transcriptionFilePath.replace(/\.txt$/, '.ssml');
+      const ssmlFilePath = transcriptionFilePath.replace(/\.txt$/, ".ssml");
       fs.writeFileSync(ssmlFilePath, simpleSSML, "utf8");
       console.log(`Simple SSML file created: ${ssmlFilePath}`);
       return ssmlFilePath;
@@ -61,18 +58,18 @@ export const createSSMLFromTranscription = (
 
     // Create a map of pauses by their position (after which word they occur)
     const pauseMap = new Map<string, number>();
-    pauses.forEach(pause => {
+    pauses.forEach((pause) => {
       pauseMap.set(pause.position.afterWord, pause.duration);
     });
 
     // Split transcription into words and rebuild with SSML breaks
     const transcriptionWords = transcriptionText.split(/\s+/);
     let ssmlContent = "<speak>\n";
-    
+
     for (let i = 0; i < transcriptionWords.length; i++) {
       const word = transcriptionWords[i];
       ssmlContent += word;
-      
+
       // Check if there's a pause after this word
       const pauseDuration = pauseMap.get(word);
       if (pauseDuration) {
@@ -80,20 +77,22 @@ export const createSSMLFromTranscription = (
         const pauseSeconds = (pauseDuration / 1000).toFixed(2);
         ssmlContent += ` <break time="${pauseSeconds}s"/>`;
       }
-      
+
       // Add space if not the last word
       if (i < transcriptionWords.length - 1) {
         ssmlContent += " ";
       }
     }
-    
+
     ssmlContent += "\n</speak>";
-    
+
     // Save SSML file in the same directory as transcription file
-    const ssmlFilePath = transcriptionFilePath.replace(/\.txt$/, '.ssml');
+    const ssmlFilePath = transcriptionFilePath.replace(/\.txt$/, ".ssml");
     fs.writeFileSync(ssmlFilePath, ssmlContent, "utf8");
-    
-    console.log(`SSML file created with ${pauses.length} break tags: ${ssmlFilePath}`);
+
+    console.log(
+      `SSML file created with ${pauses.length} break tags: ${ssmlFilePath}`
+    );
     return ssmlFilePath;
   } catch (error) {
     console.error("Error creating SSML file:", error);
@@ -120,11 +119,15 @@ export const processTranscription = async (
  * Saves transcription results to files
  * @param transcriptionData The transcription data
  * @param filePath Path to the video file (used for naming files)
+ * @param targetLanguage Target language for translation
+ * @param voiceGender Voice gender for audio synthesis
  * @returns Object containing paths to saved files
  */
 export const saveTranscriptionResults = async (
   transcriptionData: any,
-  filePath: string
+  filePath: string,
+  targetLanguage: string = "en",
+  voiceGender: string = "female"
 ) => {
   // Create downloads directory if it doesn't exist
   const downloadsDir = path.join(__dirname, "downloads");
@@ -149,9 +152,8 @@ export const saveTranscriptionResults = async (
   );
 
   // Translate the SSML file and save to a new SSML file
-  const translatedTranscriptionFilePath = await translateTranscriptionTextToFile(
-    ssmlFilePath
-  );
+  const translatedTranscriptionFilePath =
+    await translateTranscriptionTextToFile(ssmlFilePath, targetLanguage);
 
   // Save pause data to a JSON file if pauses were detected
   const pauseDataFilePath =
@@ -159,7 +161,9 @@ export const saveTranscriptionResults = async (
 
   // Create audio from translated text file
   const audioFilePath = await createAudioFromTranslatedText(
-    translatedTranscriptionFilePath
+    translatedTranscriptionFilePath,
+    targetLanguage,
+    voiceGender
   );
 
   return {

@@ -7,6 +7,8 @@ interface DubRequest {
 
 interface S3DubRequest {
   s3Url: string;
+  targetLanguage?: string;
+  voiceGender?: string;
 }
 
 interface DubResponse {

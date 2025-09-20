@@ -12,12 +12,14 @@ import {
 // Interface for the request body
 interface DubRequestBody {
   s3Url: string;
+  targetLanguage?: string;
+  voiceGender?: string;
 }
 
 export const processS3Url = asyncHandler(
   async (req: Request, res: Response) => {
     try {
-      const { s3Url } = req.body as DubRequestBody;
+      const { s3Url, targetLanguage = 'en', voiceGender = 'female' } = req.body as DubRequestBody;
 
       // Validate that s3Url is provided
       validateS3Url(s3Url);
@@ -26,7 +28,7 @@ export const processS3Url = asyncHandler(
       const processedVideoUrl = await processVideo(s3Url);
 
       // Transcribe the video and get word timing data using the S3 URL
-      const { audioFilePath } = await transcribeVideo(s3Url);
+      const { audioFilePath } = await transcribeVideo(s3Url, targetLanguage, voiceGender);
 
       // Merge video and audio if both are available
       const mergedVideoS3Url = await mergeVideoAndAudioFiles(processedVideoUrl, audioFilePath);

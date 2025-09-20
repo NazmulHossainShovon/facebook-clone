@@ -29,15 +29,21 @@ export const processVideo = async (s3Url: string): Promise<string | undefined> =
 /**
  * Transcribes a video and gets word timing data
  * @param s3Url The S3 URL of the video to transcribe
+ * @param targetLanguage The target language for translation
+ * @param voiceGender The voice gender for audio synthesis
  * @returns Object containing transcription results including audio file path
  */
-export const transcribeVideo = async (s3Url: string) => {
+export const transcribeVideo = async (
+  s3Url: string, 
+  targetLanguage: string = 'en', 
+  voiceGender: string = 'female'
+) => {
   const {
     transcriptionText,
     transcriptionFilePath,
     translatedTranscriptionFilePath,
     audioFilePath,
-  } = await processVideoTranscription(s3Url);
+  } = await processVideoTranscription(s3Url, targetLanguage, voiceGender);
 
   return {
     transcriptionText,

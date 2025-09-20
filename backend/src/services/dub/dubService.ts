@@ -130,12 +130,14 @@ export const processVideoDownload = async (youtubeUrl: string) => {
 /**
  * Transcribes the downloaded video and saves word timing data
  * @param s3Url URL of the video file in S3
- * @param languageCode Language code for transcription
+ * @param targetLanguage Target language for translation
+ * @param voiceGender Voice gender for audio synthesis
  * @returns Object containing transcription text, file path, and word timing data file path
  */
 export const processVideoTranscription = async (
   s3Url: string,
-  languageCode?: string
+  targetLanguage: string = 'en',
+  voiceGender: string = 'female'
 ): Promise<{
   transcriptionText: string | undefined;
   transcriptionFilePath: string | undefined;
@@ -148,8 +150,7 @@ export const processVideoTranscription = async (
   try {
     // Process the transcription directly using the S3 URL
     const transcriptionData = await processTranscription(
-      s3Url,
-      languageCode
+      s3Url
     );
 
     // For saving results to files, we still need a local file path for naming
@@ -165,7 +166,7 @@ export const processVideoTranscription = async (
       pauses,
       pauseDataFilePath,
       audioFilePath,
-    } = await saveTranscriptionResults(transcriptionData, tempLocalFilePath);
+    } = await saveTranscriptionResults(transcriptionData, tempLocalFilePath, targetLanguage, voiceGender);
 
     return {
       transcriptionText: transcriptionData.text,

@@ -9,6 +9,7 @@ import fs from "fs";
 import { PassThrough } from "stream";
 import { generateS3Key, uploadStreamToS3 } from "../s3Service";
 import { invokeVideoMergeLambda } from "../lambdaService";
+import { getVoiceId } from "./voiceMapping";
 
 /**
  * Converts a ReadableStream to a Buffer
@@ -26,10 +27,14 @@ export const streamToBuffer = async (stream: any): Promise<Buffer> => {
 /**
  * Creates audio from translated text file using AWS Polly and uploads it to S3
  * @param translatedTextFilePath Path to the translated text file
+ * @param targetLanguage Target language for voice selection
+ * @param voiceGender Voice gender for voice selection
  * @returns S3 URL of the uploaded audio file
  */
 export const createAudioFromTranslatedText = async (
-  translatedTextFilePath: string | undefined
+  translatedTextFilePath: string | undefined,
+  targetLanguage: string = 'en',
+  voiceGender: string = 'female'
 ): Promise<string | undefined> => {
   try {
     if (!translatedTextFilePath || !fs.existsSync(translatedTextFilePath)) {
@@ -49,12 +54,16 @@ export const createAudioFromTranslatedText = async (
       },
     });
 
+    // Get the appropriate voice for the target language and gender
+    const selectedVoiceId = getVoiceId(targetLanguage, voiceGender as 'male' | 'female');
+    console.log(`Using voice: ${selectedVoiceId} for language: ${targetLanguage}, gender: ${voiceGender}`);
+
     // Configure Polly parameters with proper types
     const params = {
       Text: text,
       TextType: "ssml" as TextType,
       OutputFormat: OutputFormat.MP3,
-      VoiceId: VoiceId.Joanna, // Default voice, can be customized
+      VoiceId: selectedVoiceId as VoiceId,
     };
 
     // Synthesize speech
