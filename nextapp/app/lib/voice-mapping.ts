@@ -8,99 +8,144 @@ export interface VoiceOption {
 }
 
 // Popular languages with their AWS Polly voices
-export const VOICE_MAPPING: Record<string, { male: string[]; female: string[] }> = {
-  'en': { // English
-    male: ['Matthew', 'Joey', 'Justin', 'Kevin', 'Russell', 'Stephen', 'Brian', 'Geraint'],
-    female: ['Joanna', 'Kendra', 'Kimberly', 'Salli', 'Amy', 'Emma', 'Olivia', 'Aria', 'Ivy']
+export const VOICE_MAPPING: Record<
+  string,
+  { male: string[]; female: string[] }
+> = {
+  en: {
+    // English
+    male: [
+      'Brian',
+      'Matthew',
+      'Joey',
+      'Justin',
+      'Kevin',
+      'Russell',
+      'Stephen',
+      'Geraint',
+    ],
+    female: [
+      'Joanna',
+      'Kendra',
+      'Kimberly',
+      'Salli',
+      'Amy',
+      'Emma',
+      'Olivia',
+      'Aria',
+      'Ivy',
+    ],
   },
-  'es': { // Spanish
+  es: {
+    // Spanish
     male: ['Miguel', 'Enrique', 'Andres'],
-    female: ['Penelope', 'Lucia', 'Lupe', 'Conchita']
+    female: ['Penelope', 'Lucia', 'Lupe', 'Conchita'],
   },
-  'fr': { // French
+  fr: {
+    // French
     male: ['Mathieu', 'Remi'],
-    female: ['Celine', 'Chantal', 'Lea']
+    female: ['Celine', 'Chantal', 'Lea'],
   },
-  'de': { // German
+  de: {
+    // German
     male: ['Hans', 'Daniel'],
-    female: ['Marlene', 'Vicki']
+    female: ['Marlene', 'Vicki'],
   },
-  'it': { // Italian
+  it: {
+    // Italian
     male: ['Giorgio', 'Adriano'],
-    female: ['Carla', 'Bianca']
+    female: ['Carla', 'Bianca'],
   },
-  'pt': { // Portuguese
+  pt: {
+    // Portuguese
     male: ['Cristiano', 'Ricardo', 'Thiago'],
-    female: ['Vitoria', 'Camila', 'Ines']
+    female: ['Vitoria', 'Camila', 'Ines'],
   },
-  'ja': { // Japanese
+  ja: {
+    // Japanese
     male: ['Takumi'],
-    female: ['Mizuki', 'Tomoko', 'Kazuha']
+    female: ['Mizuki', 'Tomoko', 'Kazuha'],
   },
-  'ko': { // Korean
+  ko: {
+    // Korean
     male: [],
-    female: ['Seoyeon', 'Jihye']
+    female: ['Seoyeon', 'Jihye'],
   },
-  'zh': { // Chinese
+  zh: {
+    // Chinese
     male: [],
-    female: ['Zhiyu']
+    female: ['Zhiyu'],
   },
-  'ar': { // Arabic
+  ar: {
+    // Arabic
     male: ['Zayd'],
-    female: ['Zeina', 'Hala']
+    female: ['Zeina', 'Hala'],
   },
-  'hi': { // Hindi
+  hi: {
+    // Hindi
     male: [],
-    female: ['Aditi', 'Kajal']
+    female: ['Aditi', 'Kajal'],
   },
-  'tr': { // Turkish
+  tr: {
+    // Turkish
     male: [],
-    female: ['Filiz', 'Burcu']
+    female: ['Filiz', 'Burcu'],
   },
-  'ru': { // Russian
+  ru: {
+    // Russian
     male: ['Maxim'],
-    female: ['Tatyana']
+    female: ['Tatyana'],
   },
-  'pl': { // Polish
+  pl: {
+    // Polish
     male: ['Jacek', 'Jan'],
-    female: ['Ewa', 'Maja']
+    female: ['Ewa', 'Maja'],
   },
-  'nl': { // Dutch
+  nl: {
+    // Dutch
     male: ['Ruben'],
-    female: ['Lotte']
+    female: ['Lotte'],
   },
-  'sv': { // Swedish
+  sv: {
+    // Swedish
     male: [],
-    female: ['Astrid']
+    female: ['Astrid'],
   },
-  'no': { // Norwegian
+  no: {
+    // Norwegian
     male: ['Mads'],
-    female: ['Liv']
+    female: ['Liv'],
   },
-  'da': { // Danish
+  da: {
+    // Danish
     male: [],
-    female: ['Naja', 'Sofie']
+    female: ['Naja', 'Sofie'],
   },
-  'fi': { // Finnish
+  fi: {
+    // Finnish
     male: [],
-    female: ['Suvi']
+    female: ['Suvi'],
   },
-  'is': { // Icelandic
+  is: {
+    // Icelandic
     male: ['Karl'],
-    female: ['Dora']
+    female: ['Dora'],
   },
-  'cy': { // Welsh
+  cy: {
+    // Welsh
     male: ['Geraint'],
-    female: ['Gwyneth']
+    female: ['Gwyneth'],
   },
-  'cs': { // Czech
+  cs: {
+    // Czech
     male: [],
-    female: ['Jitka']
+    female: ['Jitka'],
   },
-  'ro': { // Romanian
+  ro: {
+    // Romanian
     male: [],
-    female: ['Carmen']
-  }
+    female: ['Carmen'],
+  },
 };
 
 // Popular languages list for the UI
@@ -119,7 +164,7 @@ export const POPULAR_LANGUAGES = [
   { code: 'tr', name: 'Turkish', flag: '🇹🇷' },
   { code: 'ru', name: 'Russian', flag: '🇷🇺' },
   { code: 'pl', name: 'Polish', flag: '🇵🇱' },
-  { code: 'nl', name: 'Dutch', flag: '🇳🇱' }
+  { code: 'nl', name: 'Dutch', flag: '🇳🇱' },
 ];
 
 /**
@@ -128,16 +173,19 @@ export const POPULAR_LANGUAGES = [
  * @param gender - 'male' or 'female'
  * @returns AWS Polly Voice ID
  */
-export const getVoiceId = (languageCode: string, gender: 'male' | 'female'): string => {
+export const getVoiceId = (
+  languageCode: string,
+  gender: 'male' | 'female'
+): string => {
   const voiceOptions = VOICE_MAPPING[languageCode];
-  
+
   if (!voiceOptions) {
     // Fallback to English if language not supported
     return gender === 'male' ? 'Matthew' : 'Joanna';
   }
-  
+
   const voices = voiceOptions[gender];
-  
+
   if (!voices || voices.length === 0) {
     // If no voices for the requested gender, try the opposite gender
     const fallbackVoices = voiceOptions[gender === 'male' ? 'female' : 'male'];
@@ -147,7 +195,7 @@ export const getVoiceId = (languageCode: string, gender: 'male' | 'female'): str
     // Ultimate fallback to English
     return gender === 'male' ? 'Matthew' : 'Joanna';
   }
-  
+
   // Return the first (usually best) voice for the language and gender
   return voices[0];
 };
@@ -158,7 +206,12 @@ export const getVoiceId = (languageCode: string, gender: 'male' | 'female'): str
  * @param gender - 'male' or 'female'
  * @returns boolean indicating if the combination is supported
  */
-export const isGenderSupportedForLanguage = (languageCode: string, gender: 'male' | 'female'): boolean => {
+export const isGenderSupportedForLanguage = (
+  languageCode: string,
+  gender: 'male' | 'female'
+): boolean => {
   const voiceOptions = VOICE_MAPPING[languageCode];
-  return voiceOptions && voiceOptions[gender] && voiceOptions[gender].length > 0;
+  return (
+    voiceOptions && voiceOptions[gender] && voiceOptions[gender].length > 0
+  );
 };
