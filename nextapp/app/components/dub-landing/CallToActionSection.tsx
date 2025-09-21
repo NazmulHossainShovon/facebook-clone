@@ -9,7 +9,10 @@ export default function CallToActionSection() {
         Join thousands of creators who trust our AI dubbing technology
       </p>
       <Link href="/dub/dub-app">
-        <Button size="lg" className="px-8 py-3 text-lg">
+        <Button 
+          size="lg" 
+          className="px-8 py-3 text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer"
+        >
           Start Dubbing Now
         </Button>
       </Link>

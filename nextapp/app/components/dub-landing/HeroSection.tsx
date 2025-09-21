@@ -8,17 +8,18 @@ export default function HeroSection() {
         AI Video Dubbing
       </h1>
       <p className="text-xl text-gray-600 mb-8">
-        Transform your videos with intelligent AI dubbing. Upload any video and get professional-quality voiceovers in multiple languages.
+        Transform your videos with intelligent AI dubbing. Upload any video and
+        get professional-quality voiceovers in multiple languages.
       </p>
       <div className="flex justify-center gap-4 mb-12">
         <Link href="/dub/dub-app">
-          <Button size="lg" className="px-8 py-3 text-lg">
+          <Button
+            size="lg"
+            className="px-8 py-3 text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer"
+          >
             Get Started
           </Button>
         </Link>
-        <Button variant="outline" size="lg" className="px-8 py-3 text-lg">
-          Learn More
-        </Button>
       </div>
     </div>
   );

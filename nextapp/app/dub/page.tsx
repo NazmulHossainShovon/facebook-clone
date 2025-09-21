@@ -1,5 +1,3 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import HeroSection from '@/components/dub-landing/HeroSection';
 import FeaturesSection from '@/components/dub-landing/FeaturesSection';
 import HowItWorksSection from '@/components/dub-landing/HowItWorksSection';
