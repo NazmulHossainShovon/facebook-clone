@@ -1,6 +1,8 @@
 import { processS3Video, processVideoTranscription } from "./dubService";
 import { mergeVideoAndAudio } from "./audioHelpers";
 import { deleteFromS3 } from "./../s3Service";
+import fs from "fs";
+import path from "path";
 
 /**
  * Validates that an S3 URL is provided
@@ -118,4 +120,20 @@ export const handleS3ProcessingError = (error: any, res: any) => {
     message: "Internal server error",
     success: false,
   });
+};
+
+/**
+ * Deletes the downloads folder and all its contents
+ */
+export const deleteDownloadsFolder = (): void => {
+  try {
+    const downloadsDir = path.join(__dirname, "downloads");
+    if (fs.existsSync(downloadsDir)) {
+      fs.rmSync(downloadsDir, { recursive: true, force: true });
+      console.log(`Successfully deleted downloads folder: ${downloadsDir}`);
+    }
+  } catch (error) {
+    console.error("Error deleting downloads folder:", error);
+    // Don't re-throw to allow caller to continue with the response
+  }
 };

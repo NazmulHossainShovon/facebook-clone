@@ -6,7 +6,8 @@ import {
   transcribeVideo,
   mergeVideoAndAudioFiles,
   deleteS3Object,
-  handleS3ProcessingError
+  handleS3ProcessingError,
+  deleteDownloadsFolder
 } from "../services/dub/dubProcessingHelpers";
 
 // Interface for the request body
@@ -32,6 +33,9 @@ export const processS3Url = asyncHandler(
 
       // Merge video and audio if both are available
       const mergedVideoS3Url = await mergeVideoAndAudioFiles(processedVideoUrl, audioFilePath);
+
+      // Delete the downloads folder after merging is complete
+      deleteDownloadsFolder();
 
       // Extract the S3 key from the URL and delete the original object
       // Example URL: https://bucket-name.s3.region.amazonaws.com/key
