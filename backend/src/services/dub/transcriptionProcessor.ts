@@ -49,7 +49,9 @@ export const createSSMLFromTranscription = (
 
     // If no words data or pauses, create simple SSML
     if (!words || words.length === 0 || pauses.length === 0) {
-      const simpleSSML = `<speak>\n${transcriptionText}\n</speak>`;
+      const simpleSSML = `<speak>
+${transcriptionText}
+</speak>`;
       const ssmlFilePath = transcriptionFilePath.replace(/\.txt$/, ".ssml");
       fs.writeFileSync(ssmlFilePath, simpleSSML, "utf8");
       console.log(`Simple SSML file created: ${ssmlFilePath}`);
@@ -62,9 +64,18 @@ export const createSSMLFromTranscription = (
       pauseMap.set(pause.position.afterWord, pause.duration);
     });
 
+    // Check if there's an initial pause at the beginning (after an empty string)
+    const initialPause = pauseMap.get("");
+
     // Split transcription into words and rebuild with SSML breaks
     const transcriptionWords = transcriptionText.split(/\s+/);
-    let ssmlContent = "<speak>\n";
+    let ssmlContent = "<speak>";
+
+    // Add initial pause if it exists
+    if (initialPause) {
+      const pauseSeconds = (initialPause / 1000).toFixed(2);
+      ssmlContent += `<break time="${pauseSeconds}s"/> `;
+    }
 
     for (let i = 0; i < transcriptionWords.length; i++) {
       const word = transcriptionWords[i];
@@ -84,7 +95,7 @@ export const createSSMLFromTranscription = (
       }
     }
 
-    ssmlContent += "\n</speak>";
+    ssmlContent += "</speak>";
 
     // Save SSML file in the same directory as transcription file
     const ssmlFilePath = transcriptionFilePath.replace(/\.txt$/, ".ssml");

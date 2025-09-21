@@ -183,16 +183,27 @@ const reconstructSSML = (
     // Extract break tags from original SSML
     const breakTags = originalSSML.match(/<break[^>]*\/>/g) || [];
 
+    // Check if there's a break tag immediately after the first <speak> tag
+    const hasInitialBreak = /<speak[^>]*>\s*<break[^>]*\/>/.test(originalSSML);
+
     // Start with speak tag
     let reconstructedSSML = "<speak>\n";
+
+    // If there was an initial break tag in the original SSML, add it at the start
+    if (hasInitialBreak && breakTags.length > 0) {
+      reconstructedSSML += `${breakTags[0]} `;
+    }
 
     // Combine translated segments with break tags
     for (let i = 0; i < translatedSegments.length; i++) {
       reconstructedSSML += translatedSegments[i];
 
+      // Determine which break tag to use based on whether we used the first one for initial break
+      const breakTagIndex = hasInitialBreak ? i + 1 : i;
+      
       // Add break tag if there's one available and it's not the last segment
-      if (i < breakTags.length && i < translatedSegments.length - 1) {
-        reconstructedSSML += ` ${breakTags[i]}`;
+      if (breakTagIndex < breakTags.length && i < translatedSegments.length - 1) {
+        reconstructedSSML += ` ${breakTags[breakTagIndex]}`;
       }
 
       // Add space between segments if not the last one
@@ -238,6 +249,22 @@ export const detectPauses = (words: WordTiming[] | undefined): PauseData[] => {
 
   const pauses: PauseData[] = [];
   const PAUSE_THRESHOLD = 200; // 200ms threshold for detecting pauses
+
+  // Insert initial pause if the first word doesn't start at 0
+  const firstWord = words[0];
+  if (firstWord && firstWord.start > 0) {
+    pauses.push({
+      duration: firstWord.start - 0,
+      position: {
+        afterWord: "",
+        beforeWord: firstWord.text,
+      },
+      timing: {
+        start: 0,
+        end: firstWord.start,
+      },
+    });
+  }
 
   for (let i = 0; i < words.length - 1; i++) {
     const currentWord = words[i];
