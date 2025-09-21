@@ -43,7 +43,7 @@ export default function AvatarMenu() {
       >
         <MenuItem onClick={handleLogout}>Logout</MenuItem>
         <MenuItem>
-          <Link href={`/${state.userInfo.name}`}>Profile</Link>
+          <Link href={`/social/${state.userInfo.name}`}>Profile</Link>
         </MenuItem>
       </Menu>
     </div>
