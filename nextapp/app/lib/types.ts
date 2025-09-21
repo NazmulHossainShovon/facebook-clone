@@ -13,6 +13,8 @@ type User = {
   sentFriendReqs: string[];
   token: string;
   profileImage?: string;
+  googleId?: string;
+  authProvider?: string;
 };
 
 type People = {

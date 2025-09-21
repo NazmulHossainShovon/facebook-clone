@@ -13,6 +13,7 @@ import { dubRouter } from "./routers/dubRouter";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { registerChatHandlers } from "./socketHandlers/chatHandler";
+import passport from "./config/passport";
 
 export const userSocketMap = new Map<string, string>();
 
@@ -52,6 +53,9 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Initialize passport
+app.use(passport.initialize());
 
 app.get("/", (req, res) => {
   res.send("Hello from the server!");
