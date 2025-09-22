@@ -25,10 +25,13 @@ export default function AuthCallback() {
         
         // Store token and user data
         localStorage.setItem('user-token', token);
+        localStorage.setItem('user-info', JSON.stringify(user));
         dispatch({ type: 'sign-in', payload: user });
         
-        // Redirect to home page
-        router.push('/');
+        // Redirect back to the original path or to home if no redirect path is set
+        const redirectPath = localStorage.getItem('redirectPath') || '/';
+        localStorage.removeItem('redirectPath'); // Clean up the redirect path
+        router.push(redirectPath);
       } catch (error) {
         console.error('Error parsing user data:', error);
         router.push('/login?error=authentication_failed');
