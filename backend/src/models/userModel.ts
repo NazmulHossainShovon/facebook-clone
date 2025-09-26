@@ -21,6 +21,14 @@ export class User {
   public sentFriendReqs!: string[];
   @prop()
   public friends!: string[];
+  
+  // Paddle payment fields
+  @prop()
+  public paddleSubscriptionId?: string;
+  @prop({ default: false })
+  public isPremium?: boolean;
+  @prop({ default: 'inactive' })
+  public paymentStatus?: string; // e.g., 'active', 'cancelled'
 }
 
 export const UserModel = getModelForClass(User);

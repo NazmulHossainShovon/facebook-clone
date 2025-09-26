@@ -9,6 +9,7 @@ import { PageClickEvent } from '@/lib/types';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PostCardSkeleton from '@/components/PostCardSkeleton';
 import ChatIntegration from '@/components/chat/ChatIntegration';
+import CheckoutButton from 'components/CheckoutButton';
 
 function HomePage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -26,8 +27,11 @@ function HomePage() {
   }, [data]);
 
   return (
-    <div className=" flex flex-col gap-4 pt-8 items-center">
+    <div className="flex flex-col gap-4 pt-8 items-center">
       <h2>Home Page</h2>
+      <div className="mb-4">
+        <CheckoutButton />
+      </div>
       {isLoading
         ? // Show 3 skeleton loaders while loading
           Array.from({ length: 3 }).map((_, index) => (
