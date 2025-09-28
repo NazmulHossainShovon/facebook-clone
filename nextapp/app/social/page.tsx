@@ -10,6 +10,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import PostCardSkeleton from '@/components/PostCardSkeleton';
 import ChatIntegration from '@/components/chat/ChatIntegration';
 import CheckoutButton from 'components/CheckoutButton';
+import Navbar from '@/components/navbar';
 
 function HomePage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -28,6 +29,7 @@ function HomePage() {
 
   return (
     <div className="flex flex-col gap-4 pt-8 items-center">
+      <Navbar />
       <h2>Home Page</h2>
       <div className="mb-4">
         <CheckoutButton />

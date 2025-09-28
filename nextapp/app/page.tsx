@@ -1,3 +1,7 @@
 export default function Home() {
-  return <p>Welcome to our apps!</p>;
+  return (
+    <div>
+      <p>Welcome to our apps!</p>
+    </div>
+  );
 }
