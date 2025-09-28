@@ -5,8 +5,18 @@ export default function DubNavbar() {
     <nav className="bg-black p-4">
       <ul className="flex space-x-4">
         <li>
+          <Link href="/" className="text-white hover:text-gray-300">
+            All apps
+          </Link>
+        </li>
+        <li>
           <Link href="/login" className="text-white hover:text-gray-300">
             Login
+          </Link>
+        </li>
+        <li>
+          <Link href="/dub" className="text-white hover:text-gray-300">
+            Intro
           </Link>
         </li>
         <li>
