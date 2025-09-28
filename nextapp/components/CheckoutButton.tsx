@@ -24,10 +24,6 @@ export default function CheckoutButton() {
             priceId: 'pri_01k611462xk2zy6240fghhves7',
             quantity: 1,
           },
-          {
-            priceId: 'pri_01k63m5aw6tpe7gh503x97zmjp',
-            quantity: 1,
-          },
         ],
       });
     } catch (error) {
