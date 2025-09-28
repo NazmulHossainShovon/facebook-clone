@@ -5,6 +5,11 @@ export default function Navbar() {
     <nav className="bg-black p-4">
       <ul className="flex space-x-4">
         <li>
+          <Link href="/" className="text-white hover:text-gray-300">
+            All apps
+          </Link>
+        </li>
+        <li>
           <Link href="/signup" className="text-white hover:text-gray-300">
             Sign Up
           </Link>
