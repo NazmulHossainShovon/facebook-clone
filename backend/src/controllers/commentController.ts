@@ -7,7 +7,7 @@ export const createComment = asyncHandler(
     const { postId, content } = req.body;
     const comment = await CommentModel.create({
       postId,
-      userId: req.user._id,
+      userId: req.user!._id,
       content,
     });
     res.status(201).json(comment);
@@ -34,8 +34,8 @@ export const deleteComment = asyncHandler(
       return;
     }
 
-    const isOwner = comment.userId?.toString?.() === req.user._id;
-    if (!isOwner && !req.user.isAdmin) {
+    const isOwner = comment.userId?.toString?.() === req.user!._id;
+    if (!isOwner && !req.user!.isAdmin) {
       res
         .status(403)
         .json({ message: "Not authorized to delete this comment" });
@@ -65,8 +65,8 @@ export const updateComment = asyncHandler(
       return;
     }
 
-    const isOwner = comment.userId?.toString?.() === req.user._id;
-    if (!isOwner && !req.user.isAdmin) {
+    const isOwner = comment.userId?.toString?.() === req.user!._id;
+    if (!isOwner && !req.user!.isAdmin) {
       res.status(403).json({ message: "Not authorized to edit this comment" });
       return;
     }

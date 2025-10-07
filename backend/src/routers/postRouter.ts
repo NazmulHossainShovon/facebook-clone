@@ -96,7 +96,7 @@ postRouter.get(
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
     const pagination = getPaginationParams(req);
-    const currentUser = await UserModel.findById(req.user._id);
+    const currentUser = await UserModel.findById(req.user!._id);
     const query = {
       authorName: { $in: currentUser?.friends },
     };
@@ -134,7 +134,7 @@ postRouter.post(
   "/create",
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
-    const user = await UserModel.findById(req.user._id);
+    const user = await UserModel.findById(req.user!._id);
     const post = await PostModel.create({
       post: req.body.post,
       images: req.body.images,
