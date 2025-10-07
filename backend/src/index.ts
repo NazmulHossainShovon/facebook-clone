@@ -52,6 +52,9 @@ app.use(
   })
 );
 
+// Use raw body parser specifically for Paddle webhooks before the JSON parser
+app.use('/paddle/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -70,6 +73,10 @@ app.use("/api/s3", s3Router);
 app.use("/api/chat", chatRouter);
 app.use("/api/dub", dubRouter);
 app.use("/api", paymentRouter);
+
+// Separate route for Paddle webhook to avoid JSON parsing interference
+import { handlePaddleWebhook } from "./routers/paymentRouter";
+app.post('/paddle/webhook', handlePaddleWebhook);
 
 const PORT: number = parseInt((process.env.PORT || "4000") as string, 10);
 
