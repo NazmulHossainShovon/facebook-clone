@@ -25,6 +25,9 @@ export default function CheckoutButton() {
             quantity: 1,
           },
         ],
+        customData: {
+          userId: 'user_12345',
+        },
       });
     } catch (error) {
       console.error('Error opening Paddle checkout:', error);
