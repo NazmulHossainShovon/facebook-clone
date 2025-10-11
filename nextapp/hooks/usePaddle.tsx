@@ -6,8 +6,9 @@ import {
 } from '@paddle/paddle-js';
 import { useEffect, useState } from 'react';
 
-export default function usePaddle() {
+export default function usePaddle(eventCallback?: (event: any) => void) {
   const [paddle, setPaddle] = useState<Paddle>();
+  
   useEffect(() => {
     initializePaddle({
       environment:
@@ -16,7 +17,8 @@ export default function usePaddle() {
           : 'sandbox',
       token: process.env.NEXT_PUBLIC_PADDLE_TOKEN!,
       debug: true,
-    } as unknown as InitializePaddleOptions).then(
+      eventCallback,
+    } as InitializePaddleOptions).then(
       (paddleInstance: Paddle | undefined) => {
         console.log(paddleInstance);
 
@@ -25,7 +27,7 @@ export default function usePaddle() {
         }
       }
     );
-  }, []);
+  }, [eventCallback]);
 
   return paddle;
 }

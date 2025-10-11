@@ -1,7 +1,34 @@
 'use client';
+import { useRouter } from 'next/navigation';
 import usePaddle from '../hooks/usePaddle';
+
 export default function CheckoutButton() {
-  const paddle = usePaddle();
+  const router = useRouter();
+
+  // Define the event callback function to handle checkout completion
+  const handlePaddleEvent = (event: any) => {
+    if (event?.name === 'checkout.completed') {
+      console.log('Paddle checkout completed:', event);
+      
+      // UI: redirect, show toast, etc.
+      router.push('/thanks'); // Redirect to thank you page
+      
+      // OPTIONAL (not authoritative): ping your backend to start verification/processing
+      fetch('/api/paddle/client-notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checkoutId: event.data?.id,
+          transactionId: event.data?.transaction_id,
+          customData: event.data?.custom_data,
+        }),
+      }).catch(error => {
+        console.error('Error sending client notification:', error);
+      });
+    }
+  };
+
+  const paddle = usePaddle(handlePaddleEvent);
 
   const openCheckout = () => {
     if (!paddle) {
@@ -44,6 +71,9 @@ export default function CheckoutButton() {
             quantity: 1,
           },
         ],
+        settings: {
+          successUrl: `${window.location.origin}/thanks`,
+        },
         customData: {
           userId: userId,
         },
