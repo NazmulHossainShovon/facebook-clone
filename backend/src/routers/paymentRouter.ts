@@ -94,8 +94,6 @@ router.post("/paddle/webhook", handlePaddleWebhook);
 async function processPaddleEvent(eventData: any) {
   try {
     const eventType = eventData.eventType;
-    const customData = eventData.data.customData;
-    console.log("Processing event type:", eventType, "with data:", customData);
 
     switch (eventType) {
       case "subscription.activated":
@@ -182,19 +180,18 @@ async function handleSubscriptionCancellation(eventData: any) {
 
 // Handler for successful payments
 async function handlePaymentSuccess(eventData: any) {
-  const transactionId = eventData.data.id;
-  const customerId = eventData.data.customerId;
+  const customData = eventData.data.customData;
+  const userId = customData?.userId;
 
-  // Update user's payment status if needed
-  const user = await UserModel.findOne({ paddleCustomerId: customerId });
+  // Find user by _id and add 15 minutes to their minutesLeft field
+  const user = await UserModel.findById(userId);
 
   if (user) {
-    // user.paymentStatus = "paid";
+    user.minutesLeft = (user.minutesLeft || 0) + 15;
     await user.save();
-
-    console.log(
-      `Payment successful for user ${user._id}, transaction: ${transactionId}`
-    );
+    console.log(`Added 15 minutes to user ${user._id}, new total: ${user.minutesLeft} minutes`);
+  } else {
+    console.warn(`User not found for ID: ${userId}`);
   }
 }
 
