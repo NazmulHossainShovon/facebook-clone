@@ -12,28 +12,28 @@ const router = Router();
 const paddle = new Paddle(process.env.PADDLE_API_KEY || "");
 
 // Payment status check endpoint
-router.get("/payment-status", isAuth, async (req, res) => {
-  try {
-    const userId = (req as any).user._id; // From isAuth middleware
+// router.get("/payment-status", isAuth, async (req, res) => {
+//   try {
+//     const userId = (req as any).user._id; // From isAuth middleware
 
-    const user = await UserModel.findById(userId).select(
-      "isPremium paymentStatus paddleSubscriptionId"
-    );
+//     const user = await UserModel.findById(userId).select(
+//       "isPremium paymentStatus paddleSubscriptionId"
+//     );
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+//     if (!user) {
+//       return res.status(404).json({ error: "User not found" });
+//     }
 
-    res.json({
-      isPremium: user.isPremium,
-      paymentStatus: user.paymentStatus,
-      paddleSubscriptionId: user.paddleSubscriptionId,
-    });
-  } catch (error) {
-    console.error("Error fetching payment status:", error);
-    res.status(500).json({ error: "Server error" });
-  }
-});
+//     res.json({
+//       isPremium: user.isPremium,
+//       paymentStatus: user.paymentStatus,
+//       paddleSubscriptionId: user.paddleSubscriptionId,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching payment status:", error);
+//     res.status(500).json({ error: "Server error" });
+//   }
+// });
 
 // Separate webhook handler to be used directly in the main server file
 export const handlePaddleWebhook = async (
@@ -118,6 +118,10 @@ async function processPaddleEvent(eventData: any) {
         // Handle failed payment
         await handlePaymentFailure(eventData);
         break;
+      case "transaction.completed":
+        // Handle transaction completion
+        await handlePaymentSuccess(eventData);
+        break;
 
       default:
         console.log(`Unhandled event type: ${eventType}`);
@@ -145,9 +149,9 @@ async function handleSubscriptionUpdate(eventData: any) {
 
   if (user) {
     // Update user's subscription status
-    user.paddleSubscriptionId = subscriptionId;
-    user.isPremium = status === "active" || status === "trialing";
-    user.paymentStatus = status;
+    // user.paddleSubscriptionId = subscriptionId;
+    // user.isPremium = status === "active" || status === "trialing";
+    // user.paymentStatus = status;
     await user.save();
 
     console.log(`Updated user ${user._id} subscription status: ${status}`);
@@ -168,8 +172,8 @@ async function handleSubscriptionCancellation(eventData: any) {
 
   if (user) {
     // Update user's subscription status
-    user.isPremium = false;
-    user.paymentStatus = "cancelled";
+    // user.isPremium = false;
+    // user.paymentStatus = "cancelled";
     await user.save();
 
     console.log(`Cancelled subscription for user ${user._id}`);
@@ -185,7 +189,7 @@ async function handlePaymentSuccess(eventData: any) {
   const user = await UserModel.findOne({ paddleCustomerId: customerId });
 
   if (user) {
-    user.paymentStatus = "paid";
+    // user.paymentStatus = "paid";
     await user.save();
 
     console.log(
@@ -202,7 +206,7 @@ async function handlePaymentFailure(eventData: any) {
   const user = await UserModel.findOne({ paddleCustomerId: customerId });
 
   if (user) {
-    user.paymentStatus = "failed";
+    // user.paymentStatus = "failed";
     await user.save();
 
     console.log(

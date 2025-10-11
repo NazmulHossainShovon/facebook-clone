@@ -18,6 +18,25 @@ export default function CheckoutButton() {
     }
 
     try {
+      // Retrieve user ID from localStorage
+      let userId = null;
+      if (typeof window !== 'undefined') {
+        const userInfo = localStorage.getItem('user-info');
+        if (userInfo) {
+          try {
+            const parsedUserInfo = JSON.parse(userInfo);
+            userId = parsedUserInfo._id || parsedUserInfo.id;
+          } catch (e) {
+            console.error('Error parsing user-info from localStorage:', e);
+          }
+        }
+      }
+
+      if (!userId) {
+        console.error('User ID not found in localStorage');
+        return;
+      }
+
       paddle.Checkout.open({
         items: [
           {
@@ -26,7 +45,7 @@ export default function CheckoutButton() {
           },
         ],
         customData: {
-          userId: 'user_12345',
+          userId: userId,
         },
       });
     } catch (error) {
