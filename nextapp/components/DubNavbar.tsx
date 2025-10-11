@@ -22,14 +22,21 @@ export default function DubNavbar() {
           </Link>
         </li>
         {userInfo?.name ? (
-          <li>
-            <button
-              onClick={() => handleLogout(dispatch, router)}
-              className="text-white hover:text-gray-300 cursor-pointer"
-            >
-              Logout
-            </button>
-          </li>
+          <>
+            <li>
+              <button
+                onClick={() => handleLogout(dispatch, router)}
+                className="text-white hover:text-gray-300 cursor-pointer"
+              >
+                Logout
+              </button>
+            </li>
+            <li>
+              <Link href="/dub/account" className="text-white hover:text-gray-300">
+                Account
+              </Link>
+            </li>
+          </>
         ) : (
           <li>
             <Link href="/login" className="text-white hover:text-gray-300">
