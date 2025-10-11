@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 
 export default function usePaddle(eventCallback?: (event: any) => void) {
   const [paddle, setPaddle] = useState<Paddle>();
-  
+
   useEffect(() => {
     initializePaddle({
       environment:
@@ -18,15 +18,11 @@ export default function usePaddle(eventCallback?: (event: any) => void) {
       token: process.env.NEXT_PUBLIC_PADDLE_TOKEN!,
       debug: true,
       eventCallback,
-    } as InitializePaddleOptions).then(
-      (paddleInstance: Paddle | undefined) => {
-        console.log(paddleInstance);
-
-        if (paddleInstance) {
-          setPaddle(paddleInstance);
-        }
+    } as InitializePaddleOptions).then((paddleInstance: Paddle | undefined) => {
+      if (paddleInstance) {
+        setPaddle(paddleInstance);
       }
-    );
+    });
   }, [eventCallback]);
 
   return paddle;
