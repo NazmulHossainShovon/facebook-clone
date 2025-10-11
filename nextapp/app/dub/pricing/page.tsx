@@ -42,8 +42,7 @@ export default function PricingPage() {
             Simple, Transparent Pricing
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Choose the plan that works best for your video dubbing needs. No
-            hidden fees.
+            Get started with our simple, straightforward plan. No hidden fees.
           </p>
         </div>
 
@@ -58,7 +57,6 @@ export default function PricingPage() {
               description={plan.description}
               features={plan.features}
               cta={plan.cta}
-              mostPopular={plan.mostPopular}
             />
           ))}
         </div>

@@ -8,7 +8,6 @@ interface PlanProps {
   description: string;
   features: string[];
   cta: string;
-  mostPopular: boolean;
 }
 
 export default function PlanCard({ 
@@ -18,8 +17,7 @@ export default function PlanCard({
   minutes, 
   description, 
   features, 
-  cta, 
-  mostPopular 
+  cta
 }: PlanProps) {
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
