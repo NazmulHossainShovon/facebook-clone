@@ -1,5 +1,12 @@
+'use client';
+
 import Dub from '@/components/dub/Dub';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function DubPage() {
-  return <Dub />;
+  return (
+    <ProtectedRoute>
+      <Dub />
+    </ProtectedRoute>
+  );
 }
