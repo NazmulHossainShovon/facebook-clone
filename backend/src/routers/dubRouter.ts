@@ -4,11 +4,7 @@ import { processS3Url } from "../controllers/dubController";
 
 export const dubRouter = express.Router();
 
-dubRouter.post(
-  "/s3",
-  // isAuth,
-  processS3Url
-);
+dubRouter.post("/s3", isAuth, processS3Url);
 
 // Health check endpoint
 dubRouter.get("/", (req: Request, res: Response) => {

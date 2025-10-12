@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
+import { UserModel } from "../models/userModel";
 import {
   validateS3Url,
   processVideo,
@@ -21,6 +22,33 @@ export const processS3Url = asyncHandler(
   async (req: Request, res: Response) => {
     try {
       const { s3Url, targetLanguage = 'en', voiceGender = 'female' } = req.body as DubRequestBody;
+
+      // Check if user has minutes left before proceeding
+      const reqWithUser = req as any; // Cast to access user property from auth middleware
+      if (!reqWithUser.user) {
+        res.status(401).json({
+          success: false,
+          error: "Unauthorized: No user information found",
+        });
+        return; // Exit early to avoid further processing
+      }
+
+      const user = await UserModel.findById(reqWithUser.user._id);
+      if (!user) {
+        res.status(404).json({
+          success: false,
+          error: "User not found",
+        });
+        return; // Exit early to avoid further processing
+      }
+
+      if ((user.minutesLeft ?? 0) <= 0) {
+        res.status(403).json({
+          success: false,
+          error: "Insufficient minutes: You need to purchase more minutes to continue using this service",
+        });
+        return; // Exit early to avoid further processing
+      }
 
       // Validate that s3Url is provided
       validateS3Url(s3Url);

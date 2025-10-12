@@ -3,6 +3,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import { promisify } from "util";
+import { isAuth } from "../utils";
 
 const randomBytes = promisify(crypto.randomBytes);
 
@@ -25,7 +26,7 @@ const s3 = new S3Client({
 
 const s3Router = express.Router();
 
-s3Router.get("/signed-url", async (req, res) => {
+s3Router.get("/signed-url", isAuth, async (req, res) => {
   const { contentType } = req.query;
   const userName = req.query.userName as string;
 
