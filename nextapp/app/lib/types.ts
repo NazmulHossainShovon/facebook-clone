@@ -15,7 +15,7 @@ type User = {
   profileImage?: string;
   googleId?: string;
   authProvider?: string;
-  minutesLeft?: number;
+  secondsLeft?: number;
 };
 
 type People = {

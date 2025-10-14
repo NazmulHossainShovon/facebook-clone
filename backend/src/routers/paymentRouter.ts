@@ -187,9 +187,11 @@ async function handlePaymentSuccess(eventData: any) {
   const user = await UserModel.findById(userId);
 
   if (user) {
-    user.minutesLeft = (user.minutesLeft || 0) + 15;
+    user.secondsLeft = (user.secondsLeft || 0) + 15 * 60;
     await user.save();
-    console.log(`Added 15 minutes to user ${user._id}, new total: ${user.minutesLeft} minutes`);
+    console.log(
+      `Added 15 seconds to user ${user._id}, new total: ${user.secondsLeft} seconds`
+    );
   } else {
     console.warn(`User not found for ID: ${userId}`);
   }

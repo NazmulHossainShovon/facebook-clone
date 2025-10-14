@@ -13,7 +13,7 @@ export class User {
   public profileImage?: string;
   @prop()
   public googleId?: string;
-  @prop({ default: 'local' })
+  @prop({ default: "local" })
   public authProvider?: string;
   @prop()
   public receivedFriendReqs!: string[];
@@ -21,10 +21,10 @@ export class User {
   public sentFriendReqs!: string[];
   @prop()
   public friends!: string[];
-  
+
   // Paddle payment fields
   @prop({ default: 0 })
-  public minutesLeft?: number;
+  public secondsLeft?: number;
 }
 
 export const UserModel = getModelForClass(User);
