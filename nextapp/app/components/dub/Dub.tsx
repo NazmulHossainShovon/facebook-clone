@@ -3,12 +3,13 @@
 import React, { useState, useRef } from 'react';
 import { useProcessS3Url } from '@/hooks/dubHooks';
 import { uploadToS3 } from '@/utils/uploadToS3';
-import { POPULAR_LANGUAGES, getVoiceId, isGenderSupportedForLanguage } from '@/lib/voice-mapping';
+import { isGenderSupportedForLanguage } from '@/lib/voice-mapping';
 import UploadSection from './UploadSection';
 import ProgressSection from './ProgressSection';
 import SuccessMessage from './SuccessMessage';
 import ErrorMessage from './ErrorMessage';
 import ActionButtons from './ActionButtons';
+import LanguageVoiceSelection from './LanguageVoiceSelection';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -19,7 +20,9 @@ const Dub = () => {
   const [s3Url, setS3Url] = useState('');
   const [mergedVideoUrl, setMergedVideoUrl] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
-  const [selectedGender, setSelectedGender] = useState<'male' | 'female'>('female');
+  const [selectedGender, setSelectedGender] = useState<'male' | 'female'>(
+    'female'
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const {
@@ -109,10 +112,15 @@ const Dub = () => {
   // Handle language change and update gender if not supported
   const handleLanguageChange = (languageCode: string) => {
     setSelectedLanguage(languageCode);
-    
+
     // If current gender is not supported for the new language, switch to supported one
     if (!isGenderSupportedForLanguage(languageCode, selectedGender)) {
-      const supportedGender = isGenderSupportedForLanguage(languageCode, 'female') ? 'female' : 'male';
+      const supportedGender = isGenderSupportedForLanguage(
+        languageCode,
+        'female'
+      )
+        ? 'female'
+        : 'male';
       setSelectedGender(supportedGender);
     }
   };
@@ -126,74 +134,23 @@ const Dub = () => {
 
         {/* Success message */}
         {isSuccess && (
-          <SuccessMessage 
-            mergedVideoUrl={mergedVideoUrl} 
-            handleDownload={handleDownload} 
+          <SuccessMessage
+            mergedVideoUrl={mergedVideoUrl}
+            handleDownload={handleDownload}
           />
         )}
 
         {/* Error message */}
         {isError && <ErrorMessage error={error} />}
 
-        {/* Language and Voice Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Target Language
-            </label>
-            <select
-              value={selectedLanguage}
-              onChange={(e) => handleLanguageChange(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={isUploading || isPending}
-            >
-              {POPULAR_LANGUAGES.map((lang) => (
-                <option key={lang.code} value={lang.code}>
-                  {lang.flag} {lang.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Voice Type
-            </label>
-            <div className="flex space-x-3">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="female"
-                  checked={selectedGender === 'female'}
-                  onChange={(e) => setSelectedGender(e.target.value as 'male' | 'female')}
-                  disabled={!isGenderSupportedForLanguage(selectedLanguage, 'female') || isUploading || isPending}
-                  className="mr-2"
-                />
-                <span className={!isGenderSupportedForLanguage(selectedLanguage, 'female') ? 'text-gray-400' : ''}>
-                  Female
-                </span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="male"
-                  checked={selectedGender === 'male'}
-                  onChange={(e) => setSelectedGender(e.target.value as 'male' | 'female')}
-                  disabled={!isGenderSupportedForLanguage(selectedLanguage, 'male') || isUploading || isPending}
-                  className="mr-2"
-                />
-                <span className={!isGenderSupportedForLanguage(selectedLanguage, 'male') ? 'text-gray-400' : ''}>
-                  Male
-                </span>
-              </label>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Using voice: {getVoiceId(selectedLanguage, selectedGender)}
-            </p>
-          </div>
-        </div>
+        <LanguageVoiceSelection
+          selectedLanguage={selectedLanguage}
+          selectedGender={selectedGender}
+          isUploading={isUploading}
+          isPending={isPending}
+          handleLanguageChange={handleLanguageChange}
+          setSelectedGender={setSelectedGender}
+        />
 
         {/* Upload section */}
         <div className="flex flex-col space-y-4">
@@ -206,19 +163,19 @@ const Dub = () => {
             disabled={isUploading || isPending}
           />
 
-          <UploadSection 
-            isUploading={isUploading} 
-            isPending={isPending} 
-            handleFileUpload={handleFileUpload} 
+          <UploadSection
+            isUploading={isUploading}
+            isPending={isPending}
+            handleFileUpload={handleFileUpload}
           />
 
-          <ProgressSection 
-            isUploading={isUploading} 
-            uploadProgress={uploadProgress} 
-            uploadedFileName={uploadedFileName} 
+          <ProgressSection
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
+            uploadedFileName={uploadedFileName}
           />
 
-          <ActionButtons 
+          <ActionButtons
             handleReset={handleReset}
             s3Url={s3Url}
             isSuccess={isSuccess}
