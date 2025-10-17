@@ -42,10 +42,10 @@ export const processS3Url = asyncHandler(
         return; // Exit early to avoid further processing
       }
 
-      if ((user.minutesLeft ?? 0) <= 0) {
+      if ((user.secondsLeft ?? 0) <= 0) {
         res.status(403).json({
           success: false,
-          error: "Insufficient minutes: You need to purchase more minutes to continue using this service",
+          error: "Insufficient seconds: You need to purchase more seconds to continue using this service",
         });
         return; // Exit early to avoid further processing
       }

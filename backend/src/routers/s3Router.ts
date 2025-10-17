@@ -4,6 +4,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import { promisify } from "util";
 import { isAuth } from "../utils";
+import { UserModel } from "../models/userModel";
 
 const randomBytes = promisify(crypto.randomBytes);
 
@@ -27,22 +28,51 @@ const s3 = new S3Client({
 const s3Router = express.Router();
 
 s3Router.get("/signed-url", isAuth, async (req, res) => {
-  const { contentType } = req.query;
-  const userName = req.query.userName as string;
+  const { contentType, userName, videoDuration } = req.query;
+  const userNameStr = userName as string;
+  const videoDurationNum = videoDuration ? parseInt(videoDuration as string) : undefined;
 
-  if (!userName || !contentType) {
+  if (!userNameStr || !contentType) {
     return res
       .status(400)
       .send({ message: "Missing userName or contentType query parameter" });
   }
 
+  // If it's a video, check that user has enough seconds left
+  if (contentType.toString().startsWith('video/')) {
+    if (videoDurationNum === undefined) {
+      return res
+        .status(400)
+        .send({ message: "Video duration is required for video uploads" });
+    }
+
+    // Get the current user
+    // Cast request to any to access user property from auth middleware
+    const reqWithUser = req as any;
+    const user = await UserModel.findById(reqWithUser.user._id);
+    if (!user) {
+      return res
+        .status(404)
+        .send({ message: "User not found" });
+    }
+
+    // Check if user has enough seconds left
+    if (!user.secondsLeft || user.secondsLeft < videoDurationNum) {
+      return res
+        .status(400)
+        .send({ 
+          message: `Not enough video seconds remaining. Required: ${videoDurationNum}s, Available: ${user.secondsLeft || 0}s` 
+        });
+    }
+  }
+
   const rawBytes = await randomBytes(16);
-  const imageName = userName + "/" + rawBytes.toString("hex");
+  const imageName = userNameStr + "/" + rawBytes.toString("hex");
 
   const params = {
     Bucket: bucketName,
     Key: imageName,
-    ContentType: req.query.contentType as string,
+    ContentType: contentType as string,
   };
 
   const command = new PutObjectCommand(params);

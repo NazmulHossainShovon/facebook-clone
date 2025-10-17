@@ -9,6 +9,8 @@ import ProgressSection from './ProgressSection';
 import SuccessMessage from './SuccessMessage';
 import ErrorMessage from './ErrorMessage';
 import ActionButtons from './ActionButtons';
+import { useToast } from '@/hooks/use-toast';
+import { Toaster } from '@/components/ui/toaster';
 
 const Dub = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -19,6 +21,7 @@ const Dub = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedGender, setSelectedGender] = useState<'male' | 'female'>('female');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   const {
     mutate: processS3Url,
     isPending,
@@ -48,9 +51,19 @@ const Dub = () => {
       setS3Url(url);
 
       // Don't automatically process the video - user will click the "Start Processing" button
-    } catch (err) {
+    } catch (err: any) {
       console.error('Upload failed:', err);
-      // Handle error appropriately
+      // Show error message in toast
+      let errorMessage = 'Upload failed';
+      if (err.response && err.response.data && err.response.data.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      toast({
+        title: errorMessage,
+        variant: 'destructive',
+      });
     } finally {
       setIsUploading(false);
     }
@@ -216,6 +229,7 @@ const Dub = () => {
           />
         </div>
       </div>
+      <Toaster />
     </div>
   );
 };
