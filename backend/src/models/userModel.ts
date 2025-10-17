@@ -23,7 +23,7 @@ export class User {
   public friends!: string[];
 
   // Paddle payment fields
-  @prop({ default: 0 })
+  @prop({ default: 20 })
   public secondsLeft?: number;
 }
 
