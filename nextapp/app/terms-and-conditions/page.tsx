@@ -102,14 +102,65 @@ export default function TermsAndConditionsPage() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">9. Changes to These Terms</h2>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">9. Refund Policy</h2>
+              <h3 className="text-xl font-medium text-gray-700 mb-3">9.1 Subscription Services</h3>
+              <p className="text-gray-600 mb-4">
+                For subscription services, you may be eligible for a prorated refund if you cancel within 14 days of your initial payment or renewal. Refunds will be processed to the original payment method within 5-10 business days.
+              </p>
+              
+              <h3 className="text-xl font-medium text-gray-700 mb-3">9.2 One-Time Payments</h3>
+              <p className="text-gray-600 mb-4">
+                One-time purchases are generally non-refundable. However, exceptions may be made in cases of service failure, billing errors, or other circumstances determined at our sole discretion.
+              </p>
+              
+              <h3 className="text-xl font-medium text-gray-700 mb-3">9.3 Requesting a Refund</h3>
+              <p className="text-gray-600 mb-4">
+                To request a refund, please contact us at shovon2228@gmail.com with your account information and reason for the refund request. Our team will review your request and respond within 5 business days.
+              </p>
+              
+              <h3 className="text-xl font-medium text-gray-700 mb-3">9.4 Non-Eligible Circumstances</h3>
+              <p className="text-gray-600">
+                Refunds will not be issued for misuse of the service, violation of these terms, or after extended use of the service beyond the trial/refund period.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">10. Privacy Policy</h2>
+              <h3 className="text-xl font-medium text-gray-700 mb-3">10.1 Information We Collect</h3>
+              <p className="text-gray-600 mb-4">
+                We collect information you provide directly to us, such as when you create an account, subscribe to our services, or communicate with us. This may include personal information like your name, email address, and payment information.
+              </p>
+              
+              <h3 className="text-xl font-medium text-gray-700 mb-3">10.2 How We Use Your Information</h3>
+              <p className="text-gray-600 mb-4">
+                We use your information to provide, maintain, and improve our services, process transactions, send communications, and for security purposes. We do not sell your personal information to third parties.
+              </p>
+              
+              <h3 className="text-xl font-medium text-gray-700 mb-3">10.3 Data Security</h3>
+              <p className="text-gray-600 mb-4">
+                We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.
+              </p>
+              
+              <h3 className="text-xl font-medium text-gray-700 mb-3">10.4 Your Rights</h3>
+              <p className="text-gray-600 mb-4">
+                Depending on your location, you may have rights regarding your personal information, including the right to access, correct, or delete your data. To exercise these rights, please contact us at shovon2228@gmail.com.
+              </p>
+              
+              <h3 className="text-xl font-medium text-gray-700 mb-3">10.5 Data Retention</h3>
+              <p className="text-gray-600">
+                We retain your personal information for as long as necessary to provide our services and comply with legal obligations. When no longer needed, we securely delete your information.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">10. Changes to These Terms</h2>
               <p className="text-gray-600">
                 We reserve the right to modify or replace these terms at any time. What constitutes a material change will be determined at our sole discretion.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">10. Contact Us</h2>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">11. Contact Us</h2>
               <p className="text-gray-600">
                 If you have any questions about these Terms and Conditions, please contact us at{' '}
                 <a href="mailto:shovon2228@gmail.com" className="text-blue-600 hover:underline">
