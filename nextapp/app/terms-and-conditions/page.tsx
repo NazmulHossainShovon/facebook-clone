@@ -53,7 +53,7 @@ export default function TermsAndConditionsPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-800 mb-4">3. One-Time Payment Services</h2>
               <p className="text-gray-600 mb-4">
-                For one-time payment services offered by appq.online, full payment is required at the time of purchase. One-time payments are non-refundable unless otherwise specified.
+                For one-time payment services offered by appq.online, full payment is required at the time of purchase. One-time payments are non-refundable.
               </p>
               <p className="text-gray-600">
                 One-time purchases may include access to premium features, additional storage, or other value-added services.
@@ -105,22 +105,12 @@ export default function TermsAndConditionsPage() {
               <h2 className="text-2xl font-semibold text-gray-800 mb-4">9. Refund Policy</h2>
               <h3 className="text-xl font-medium text-gray-700 mb-3">9.1 Subscription Services</h3>
               <p className="text-gray-600 mb-4">
-                For appq.online subscription services, you may be eligible for a prorated refund if you cancel within 14 days of your initial payment or renewal. Refunds will be processed to the original payment method within 5-10 business days.
+                appq.online offers refunds within 14 days of initial payment for subscription services.
               </p>
               
               <h3 className="text-xl font-medium text-gray-700 mb-3">9.2 One-Time Payments</h3>
               <p className="text-gray-600 mb-4">
-                appq.online one-time purchases are generally non-refundable. However, exceptions may be made in cases of service failure, billing errors, or other circumstances determined at our sole discretion.
-              </p>
-              
-              <h3 className="text-xl font-medium text-gray-700 mb-3">9.3 Requesting a Refund</h3>
-              <p className="text-gray-600 mb-4">
-                To request a refund from appq.online, please contact us at shovon2228@gmail.com with your account information and reason for the refund request. Our team will review your request and respond within 5 business days.
-              </p>
-              
-              <h3 className="text-xl font-medium text-gray-700 mb-3">9.4 Non-Eligible Circumstances</h3>
-              <p className="text-gray-600">
-                Refunds will not be issued for misuse of the appq.online service, violation of these terms, or after extended use of the service beyond the trial/refund period.
+                appq.online one-time purchases are non-refundable.
               </p>
             </section>
 
