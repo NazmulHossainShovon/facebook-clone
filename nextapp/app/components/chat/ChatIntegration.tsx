@@ -1,13 +1,15 @@
 'use client';
 
+import FriendChatHeader from './FriendChatHeader';
 import { useState, useContext, useEffect } from 'react';
 import { useChatSocket } from '../../hooks/use-chat';
 import { useChat } from '../../lib/chat-store';
 import ChatSidebar from './ChatSidebar';
-import ChatWindow from './ChatWindow';
 import { Store } from '../../lib/store';
 import { useGetUserFriends } from '../../hooks/user-hooks';
 import apiClient from '../../lib/api-client';
+import ChatWindowContainer from './ChatWindowContainer';
+import { ArrowLeft, MessageSquareMore } from 'lucide-react';
 
 export default function ChatIntegration() {
   const [open, setOpen] = useState(false);
@@ -110,29 +112,16 @@ export default function ChatIntegration() {
     <>
       {/* Floating Chat Button */}
       <button
-        className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white rounded-full shadow-lg w-14 h-14 flex items-center justify-center hover:bg-blue-700 focus:outline-none"
+        className="fixed bottom-6 right-6 z-50 bg-gray-800 text-gray-100 rounded-full shadow-lg w-14 h-14 flex items-center justify-center hover:bg-gray-700 focus:outline-none"
         onClick={() => setOpen(v => !v)}
         aria-label="Open Chat"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-7 h-7"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75V19.5A2.25 2.25 0 006.75 21.75h10.5a2.25 2.25 0 002.25-2.25V9.75"
-          />
-        </svg>
+        <MessageSquareMore />
       </button>
       {/* Chat Panel */}
       {open && (
         <div
-          className="fixed bottom-24 right-6 z-50 bg-white rounded-lg shadow-2xl flex w-[300px] h-[400px] overflow-hidden border border-gray-200
+          className="fixed bottom-24 right-6 z-50 bg-gray-900 rounded-lg shadow-2xl flex w-[300px] h-[400px] overflow-hidden border border-gray-700
           sm:w-[350px] sm:h-[500px] sm:right-2 sm:bottom-20
           xs:w-full xs:h-[90vh] xs:right-0 xs:bottom-0 xs:rounded-none xs:border-0 xs:shadow-none xs:max-w-full xs:max-h-[100vh]"
         >
@@ -162,14 +151,24 @@ export default function ChatIntegration() {
           />
           {selectedChatId && (
             <div className="flex-1 flex flex-col">
-              <button
-                type="button"
-                className="p-2 w-fit rounded hover:bg-gray-100 mb-2 fixed"
-                onClick={() => setSelectedChatId(undefined)}
-                aria-label="Back to chat list"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </button>
+              <div className="flex fixed items-center gap-2">
+                <button
+                  type="button"
+                  className="p-2 w-fit rounded hover:bg-gray-700 bg-gray-800 text-gray-100 mb-2 "
+                  onClick={() => setSelectedChatId(undefined)}
+                  aria-label="Back to chat list"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+                {/* Show user image for the selected chat */}
+                <FriendChatHeader
+                  friends={friends}
+                  chatRooms={chatRooms}
+                  currentUserId={currentUserId}
+                  selectedChatId={selectedChatId}
+                />
+              </div>
+
               <ChatWindowContainer
                 chatRoomId={selectedChatId}
                 onSendMessage={handleSendMessage}
@@ -181,5 +180,3 @@ export default function ChatIntegration() {
     </>
   );
 }
-import ChatWindowContainer from './ChatWindowContainer';
-import { ArrowLeft } from 'lucide-react';

@@ -18,7 +18,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend }) => {
   return (
     <form onSubmit={handleSend} className="flex gap-2">
       <input
-        className="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring"
+        className="flex-1 border border-gray-600 bg-gray-900 text-gray-100 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-gray-500 placeholder-gray-400"
         type="text"
         placeholder="Type a message..."
         value={value}
@@ -26,7 +26,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend }) => {
       />
       <button
         type="submit"
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        className="bg-gray-700 text-gray-100 px-4 py-2 rounded hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500"
         disabled={!value.trim()}
       >
         Send

@@ -4,6 +4,7 @@ import {
   getChatHistory,
   getUserChatRooms,
   markMessagesAsRead,
+  deleteMessage,
 } from "../controllers/chatController";
 
 const router = Router();
@@ -19,5 +20,8 @@ router.get("/messages/:chatRoomId", getChatHistory);
 
 // (Optional) Mark messages as read
 router.post("/messages/mark-read", markMessagesAsRead);
+
+// Delete a message by ID
+router.delete("/messages/:messageId", deleteMessage);
 
 export default router;

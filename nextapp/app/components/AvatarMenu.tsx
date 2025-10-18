@@ -6,6 +6,7 @@ import React, { useContext } from 'react';
 import { Store } from '../lib/store';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { handleLogout } from '../utils/logout';
 
 export default function AvatarMenu() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -18,11 +19,6 @@ export default function AvatarMenu() {
   };
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    dispatch({ type: 'sign-out' });
-    router.push('/login');
   };
 
   return (
@@ -41,9 +37,9 @@ export default function AvatarMenu() {
           'aria-labelledby': 'basic-button',
         }}
       >
-        <MenuItem onClick={handleLogout}>Logout</MenuItem>
+        <MenuItem onClick={() => handleLogout(dispatch, router)}>Logout</MenuItem>
         <MenuItem>
-          <Link href={`/${state.userInfo.name}`}>Profile</Link>
+          <Link href={`/social/${state.userInfo.name}`}>Profile</Link>
         </MenuItem>
       </Menu>
     </div>

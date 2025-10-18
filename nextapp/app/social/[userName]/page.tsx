@@ -34,7 +34,7 @@ type CombinedPost = PostWithSharedFlag | SharedPostWithFlag;
 function UserProfilePage() {
   const router = useRouter();
   const params = useParams();
-  const userName = params.userName as string;
+  const userName = decodeURIComponent(params.userName as string);
   const [post, setPost] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const {

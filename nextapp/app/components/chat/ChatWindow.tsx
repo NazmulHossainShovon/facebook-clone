@@ -30,8 +30,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-white">
+    <div className="flex flex-col h-full bg-gray-900 pt-8">
+      <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-gray-900">
         {messages.map((msg, idx) => (
           <MessageBubble
             key={idx}
@@ -41,7 +41,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <div className="border-t p-2 bg-gray-50">
+      <div className="border-t border-gray-700 p-2 bg-gray-800">
         <ChatInput onSend={onSendMessage} />
       </div>
     </div>

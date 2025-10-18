@@ -9,9 +9,12 @@ import { searchRouter } from "./routers/searchRouter";
 import { commentRouter } from "./routers/commentRouter";
 import s3Router from "./routers/s3Router";
 import chatRouter from "./routers/chatRouter";
+import { dubRouter } from "./routers/dubRouter";
+import paymentRouter from "./routers/paymentRouter";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { registerChatHandlers } from "./socketHandlers/chatHandler";
+import passport from "./config/passport";
 
 export const userSocketMap = new Map<string, string>();
 
@@ -49,8 +52,14 @@ app.use(
   })
 );
 
+// Use raw body parser specifically for Paddle webhooks before the JSON parser
+app.use('/paddle/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Initialize passport
+app.use(passport.initialize());
 
 app.get("/", (req, res) => {
   res.send("Hello from the server!");
@@ -62,6 +71,12 @@ app.use("/api/search", searchRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/s3", s3Router);
 app.use("/api/chat", chatRouter);
+app.use("/api/dub", dubRouter);
+app.use("/api", paymentRouter);
+
+// Separate route for Paddle webhook to avoid JSON parsing interference
+import { handlePaddleWebhook } from "./routers/paymentRouter";
+app.post('/paddle/webhook', handlePaddleWebhook);
 
 const PORT: number = parseInt((process.env.PORT || "4000") as string, 10);
 

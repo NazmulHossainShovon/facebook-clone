@@ -6,7 +6,7 @@ import { UserModel } from "../models/userModel";
 
 export const sharePost = asyncHandler(async (req: Request, res: Response) => {
   const { originalPostId, shareMessage } = req.body;
-  const user = await UserModel.findById(req.user._id);
+  const user = await UserModel.findById(req.user!._id);
 
   if (!user) {
     res.status(404).json({ message: "User not found" });

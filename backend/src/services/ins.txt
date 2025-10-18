@@ -1,0 +1,81 @@
+Create a notification destination (webhook) in Paddle (or via the notification-settings API) and copy the endpoint_secret_key. 
+developer.paddle.com
++1
+
+On your Express app use express.raw({ type: 'application/json' }) for the webhook route so you can verify the signature against the raw body. Do not let JSON body-parsing middleware alter the raw bytes for that route. 
+developer.paddle.com
+
+Verify the Paddle-Signature header (it contains ts and at least one h1). The signature is HMAC-SHA256 over "{ts}:{rawBody}" using the endpoint secret key; compare safely (constant-time). 
+developer.paddle.com
+
+Respond HTTP 200 within 5 seconds (ack quickly), then enqueue/process the event async (avoid long sync work). 
+developer.paddle.com
+
+Allowlist Paddle IPs (different lists for sandbox vs live) and handle retries/idempotency (Paddle retries many times on failure). 
+developer.paddle.com
+
+Recommended — use Paddle’s Node SDK (cleanest)
+
+Paddle provides a Node SDK that includes webhooks.unmarshal to validate and parse an incoming webhook (recommended — it handles header parsing, HMAC, timestamp tolerance, etc.). Example (JS):
+
+// npm i @paddle/paddle-node-sdk express
+import express from 'express';
+import { Paddle, EventName } from '@paddle/paddle-node-sdk';
+
+const paddle = new Paddle(process.env.PADDLE_API_KEY || '');
+const app = express();
+
+// IMPORTANT: raw body to allow signature verification
+app.post('/paddle/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const signature = (req.headers['paddle-signature'] || '').toString();
+  const raw = req.body.toString(); // pass raw string to SDK
+  const secret = process.env.PADDLE_WEBHOOK_SECRET; // endpoint_secret_key from Paddle
+
+  try {
+    // unmarshal validates signature and returns structured event data
+    const eventData = await paddle.webhooks.unmarshal(raw, secret, signature);
+
+    // enqueue/process async (do NOT block response)
+    // e.g. queueEvent(eventData)
+
+    res.status(200).send('ok'); // respond quickly
+  } catch (err) {
+    console.error('Webhook verification failed', err);
+    res.status(400).send('invalid signature');
+  }
+});
+
+app.listen(3000);
+
+
+Why this is recommended: the SDK handles parsing, timestamp tolerance and edge cases for you. Example usage in Paddle’s repo/docs.
+
+Retries, ordering, idempotency
+
+Respond with 200 OK before doing heavy processing. Paddle retries if it doesn’t get a 200 or if it times out. Live account retry policy: up to 60 retries over 3 days (first 20 attempts in the first hour). Sandbox retries less. Handle duplicate events safely. 
+developer.paddle.com
+
+Paddle cannot guarantee delivery order. Use occurred_at (or event timestamps/IDs) to enforce ordering or to ignore out-of-order/older events. 
+developer.paddle.com
+
+Common gotchas & checklist before deploy
+
+✅ Use HTTPS on your endpoint. 
+developer.paddle.com
+
+✅ Use express.raw({ type: 'application/json' }) on the webhook route (no JSON parsing before verification). 
+developer.paddle.com
+
+✅ Keep the endpoint_secret_key secret and per-notification-destination. 
+developer.paddle.com
+
+✅ Respond 200 quickly; process asynchronously. 
+developer.paddle.com
+
+✅ Implement idempotency (store processed event IDs) to avoid duplicate handling. 
+developer.paddle.com
+
+✅ Allowlist Paddle IPs / bypass WAF bot checks for webhook route. 
+developer.paddle.com
+
+✅ Test with Paddle’s simulator and via a tunnel (ngrok/hookdeck) in sandbox before going live.
