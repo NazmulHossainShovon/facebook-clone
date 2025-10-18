@@ -41,6 +41,31 @@ const Dub = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    const allowedTypes = [
+      'video/mp4', 
+      'video/mpeg', 
+      'video/quicktime', 
+      'video/x-msvideo', 
+      'video/x-matroska', 
+      'video/webm',
+      'video/avi',
+      'video/wmv',
+      'video/mov',
+      'video/flv',
+      'video/3gp',
+      'video/3g2'
+    ];
+    
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please select a video file (MP4, AVI, MOV, MKV, etc.)',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     reset();
     setIsUploading(true);
     setUploadProgress(0);
