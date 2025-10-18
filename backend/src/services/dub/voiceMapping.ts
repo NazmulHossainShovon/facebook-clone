@@ -6,9 +6,9 @@ export const VOICE_MAPPING: Record<
   en: {
     // English
     male: [
+      "Joey",
       "Brian",
       "Matthew",
-      "Joey",
       "Justin",
       "Kevin",
       "Russell",
@@ -16,10 +16,10 @@ export const VOICE_MAPPING: Record<
       "Geraint",
     ],
     female: [
+      "Salli",
       "Joanna",
       "Kendra",
       "Kimberly",
-      "Salli",
       "Amy",
       "Emma",
       "Olivia",
