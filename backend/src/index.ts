@@ -36,7 +36,7 @@ export const io = new Server(httpServer, {
     origin: [
       "http://localhost:3000",
       "https://facebook-clone-vooq.onrender.com",
-      "https://facebook-clone-rho-gray.vercel.app",
+      "https://www.appq.online",
     ],
     methods: ["GET", "POST"],
   },
@@ -47,13 +47,13 @@ app.use(
     origin: [
       "http://localhost:3000",
       "https://facebook-clone-vooq.onrender.com",
-      "https://facebook-clone-rho-gray.vercel.app",
+      "https://www.appq.online",
     ],
   })
 );
 
 // Use raw body parser specifically for Paddle webhooks before the JSON parser
-app.use('/paddle/webhook', express.raw({ type: 'application/json' }));
+app.use("/paddle/webhook", express.raw({ type: "application/json" }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -76,7 +76,7 @@ app.use("/api", paymentRouter);
 
 // Separate route for Paddle webhook to avoid JSON parsing interference
 import { handlePaddleWebhook } from "./routers/paymentRouter";
-app.post('/paddle/webhook', handlePaddleWebhook);
+app.post("/paddle/webhook", handlePaddleWebhook);
 
 const PORT: number = parseInt((process.env.PORT || "4000") as string, 10);
 
