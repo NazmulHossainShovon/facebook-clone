@@ -12,7 +12,6 @@ import ErrorMessage from './ErrorMessage';
 import ActionButtons from './ActionButtons';
 import LanguageVoiceSelection from './LanguageVoiceSelection';
 import { useToast } from '@/hooks/use-toast';
-import { Toaster } from '@/components/ui/toaster';
 
 const Dub = () => {
   const { state, dispatch } = useContext(Store);
@@ -43,20 +42,20 @@ const Dub = () => {
 
     // Validate file type
     const allowedTypes = [
-      'video/mp4', 
-      'video/mpeg', 
-      'video/quicktime', 
-      'video/x-msvideo', 
-      'video/x-matroska', 
+      'video/mp4',
+      'video/mpeg',
+      'video/quicktime',
+      'video/x-msvideo',
+      'video/x-matroska',
       'video/webm',
       'video/avi',
       'video/wmv',
       'video/mov',
       'video/flv',
       'video/3gp',
-      'video/3g2'
+      'video/3g2',
     ];
-    
+
     if (!allowedTypes.includes(file.type)) {
       toast({
         title: 'Invalid file type',
@@ -74,8 +73,10 @@ const Dub = () => {
 
     try {
       // Upload to S3 with progress tracking
-      const { imageUrl, secondsLeft } = await uploadToS3(file, 'user', progress =>
-        setUploadProgress(progress)
+      const { imageUrl, secondsLeft } = await uploadToS3(
+        file,
+        'user',
+        progress => setUploadProgress(progress)
       );
 
       setS3Url(imageUrl);
@@ -84,7 +85,7 @@ const Dub = () => {
       if (secondsLeft !== undefined) {
         const updatedUserInfo = {
           ...state.userInfo,
-          secondsLeft: secondsLeft
+          secondsLeft: secondsLeft,
         };
         // Dispatch the sign-in action with updated user info to update the store
         dispatch({ type: 'sign-in', payload: updatedUserInfo });
@@ -223,7 +224,6 @@ const Dub = () => {
           />
         </div>
       </div>
-      <Toaster />
     </div>
   );
 };
