@@ -3,6 +3,7 @@ import './globals.css';
 
 import { Providers } from './providers';
 import { ChatProvider } from './lib/chat-store';
+import Footer from 'components/Footer';
 
 export const metadata: Metadata = {
   title: 'Social Media',
@@ -16,9 +17,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans">
+      <body className="font-sans min-h-screen flex flex-col">
         <Providers>
-          <ChatProvider>{children}</ChatProvider>
+          <ChatProvider>
+            <div className="flex-grow">{children}</div>
+            <Footer />
+          </ChatProvider>
         </Providers>
       </body>
     </html>
