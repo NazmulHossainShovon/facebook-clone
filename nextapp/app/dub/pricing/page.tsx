@@ -25,12 +25,12 @@ export default function PricingPage() {
       answer: 'One minute refers to one minute of video content that you want dubbed. For example, if you have a 10-minute video, it will count as 10 minutes toward your plan.'
     },
     {
-      question: 'Can I switch plans?',
-      answer: 'Yes! You can upgrade, downgrade, or cancel your subscription at any time. Changes take effect immediately.'
+      question: 'Do I need a subscription?',
+      answer: 'No, we offer a simple pay-per-use model. You can purchase 15 minutes of dubbing time for $3 without any recurring subscription.'
     },
     {
-      question: 'Do unused minutes roll over?',
-      answer: 'No, unused minutes do not roll over to the next billing cycle. Minutes reset at the beginning of each month.'
+      question: 'Do unused minutes expire?',
+      answer: 'No, your 15 minutes of dubbing time never expire. You can use them whenever you need them, with no time limits.'
     }
   ];
 
