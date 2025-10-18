@@ -14,7 +14,7 @@ export default function DubNavbar() {
   const router = useRouter();
 
   return (
-    <nav className="bg-black p-4">
+    <nav className="bg-black p-4 fixed top-0 left-0 right-0 z-50">
       <ul className="flex space-x-4">
         <li>
           <Link href="/" className="text-white hover:text-gray-300">
