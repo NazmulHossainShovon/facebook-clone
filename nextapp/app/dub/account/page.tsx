@@ -38,10 +38,16 @@ export default function AccountPage() {
                 Minutes Left
               </h2>
               <div className="text-4xl font-bold text-indigo-600">
-                {userInfo?.secondsLeft !== undefined
-                  ? userInfo.secondsLeft / 60
-                  : 0}{' '}
-                minutes
+                {userInfo?.secondsLeft !== undefined ? (() => {
+                  const totalMinutes = userInfo.secondsLeft / 60;
+                  const minutes = Math.floor(totalMinutes);
+                  const seconds = Math.round((totalMinutes - minutes) * 60);
+                  return (
+                    <>
+                      {minutes} minutes {seconds > 0 ? `${seconds} seconds` : ''}
+                    </>
+                  );
+                })() : '0 minutes 0 seconds'}
               </div>
               <p className="text-gray-600 mt-2">
                 This is the amount of video dubbing time you have remaining.

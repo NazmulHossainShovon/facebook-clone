@@ -45,6 +45,11 @@ export default function Navbar() {
             </button>
           </li>
         )}
+        <li>
+          <Link href="/terms-and-conditions" className="text-white hover:text-gray-300">
+            Terms
+          </Link>
+        </li>
       </ul>
     </nav>
   );
