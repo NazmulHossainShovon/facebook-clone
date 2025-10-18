@@ -79,8 +79,28 @@ s3Router.get("/signed-url", isAuth, async (req, res) => {
   const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 60 });
 
   const imageUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${imageName}`;
+  let updatedSecondsLeft = undefined;
 
-  res.send({ uploadUrl, imageUrl });
+  // If it's a video, deduct the duration from user's secondsLeft
+  if (contentType.toString().startsWith('video/')) {
+    if (videoDurationNum !== undefined) {
+      // Get the current user
+      // Cast request to any to access user property from auth middleware
+      const reqWithUser = req as any;
+      const user = await UserModel.findById(reqWithUser.user._id);
+      if (!user) {
+        return res
+          .status(404)
+          .send({ message: "User not found" });
+      }
+
+      user.secondsLeft = (user.secondsLeft || 0) - videoDurationNum;
+      await user.save();
+      updatedSecondsLeft = user.secondsLeft;
+    }
+  }
+
+  res.send({ uploadUrl, imageUrl, secondsLeft: updatedSecondsLeft });
 });
 
 export default s3Router;

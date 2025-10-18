@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import { useProcessS3Url } from '@/hooks/dubHooks';
 import { uploadToS3 } from '@/utils/uploadToS3';
 import { isGenderSupportedForLanguage } from '@/lib/voice-mapping';
+import { Store } from '@/lib/store';
 import UploadSection from './UploadSection';
 import ProgressSection from './ProgressSection';
 import SuccessMessage from './SuccessMessage';
@@ -14,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 
 const Dub = () => {
+  const { state, dispatch } = useContext(Store);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedFileName, setUploadedFileName] = useState('');
@@ -47,11 +49,21 @@ const Dub = () => {
 
     try {
       // Upload to S3 with progress tracking
-      const url = await uploadToS3(file, 'user', progress =>
+      const { imageUrl, secondsLeft } = await uploadToS3(file, 'user', progress =>
         setUploadProgress(progress)
       );
 
-      setS3Url(url);
+      setS3Url(imageUrl);
+
+      // Update user's secondsLeft in the global store if available
+      if (secondsLeft !== undefined) {
+        const updatedUserInfo = {
+          ...state.userInfo,
+          secondsLeft: secondsLeft
+        };
+        // Dispatch the sign-in action with updated user info to update the store
+        dispatch({ type: 'sign-in', payload: updatedUserInfo });
+      }
 
       // Don't automatically process the video - user will click the "Start Processing" button
     } catch (err: any) {

@@ -51,7 +51,8 @@ export default function Signup() {
     const imageFile = data.image[0];
     let imageUrl = '';
     if (imageFile) {
-      imageUrl = await uploadToS3(imageFile, data.name);
+      const result = await uploadToS3(imageFile, data.name);
+      imageUrl = result.imageUrl;
     }
     const res = await signup({
       name: data.name,

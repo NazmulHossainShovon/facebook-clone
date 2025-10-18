@@ -18,11 +18,16 @@ const getVideoDuration = (file: File): Promise<number> => {
   });
 };
 
+export type UploadResult = {
+  imageUrl: string;
+  secondsLeft?: number;
+};
+
 export const uploadToS3 = async (
   file: File, 
   userName: string, 
   onProgress?: (progress: number) => void
-): Promise<string> => {
+): Promise<UploadResult> => {
   // Check if file is a video and get its duration
   let videoDuration: number | undefined;
   if (file.type.startsWith('video/')) {
@@ -42,7 +47,7 @@ export const uploadToS3 = async (
   
   try {
     const response = await apiClient.get(url);
-    const { uploadUrl, imageUrl } = response.data;
+    const { uploadUrl, imageUrl, secondsLeft } = response.data;
 
     // Upload file to S3 with progress tracking
     await new Promise<void>((resolve, reject) => {
@@ -81,7 +86,7 @@ export const uploadToS3 = async (
       xhr.send(file);
     });
 
-    return imageUrl;
+    return { imageUrl, secondsLeft };
   } catch (error: any) {
     // Re-throw the error with additional context
     throw error;
