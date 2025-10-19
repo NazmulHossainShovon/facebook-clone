@@ -30,7 +30,9 @@ const s3Router = express.Router();
 s3Router.get("/signed-url", isAuth, async (req, res) => {
   const { contentType, userName, videoDuration } = req.query;
   const userNameStr = userName as string;
-  const videoDurationNum = videoDuration ? parseInt(videoDuration as string) : undefined;
+  const videoDurationNum = videoDuration
+    ? parseInt(videoDuration as string)
+    : undefined;
 
   if (!userNameStr || !contentType) {
     return res
@@ -39,7 +41,7 @@ s3Router.get("/signed-url", isAuth, async (req, res) => {
   }
 
   // If it's a video, check that user has enough seconds left
-  if (contentType.toString().startsWith('video/')) {
+  if (contentType.toString().startsWith("video/")) {
     if (videoDurationNum === undefined) {
       return res
         .status(400)
@@ -51,18 +53,16 @@ s3Router.get("/signed-url", isAuth, async (req, res) => {
     const reqWithUser = req as any;
     const user = await UserModel.findById(reqWithUser.user._id);
     if (!user) {
-      return res
-        .status(404)
-        .send({ message: "User not found" });
+      return res.status(404).send({ message: "User not found" });
     }
 
     // Check if user has enough seconds left
     if (!user.secondsLeft || user.secondsLeft < videoDurationNum) {
-      return res
-        .status(400)
-        .send({ 
-          message: `Not enough video seconds remaining. Required: ${videoDurationNum}s, Available: ${user.secondsLeft || 0}s` 
-        });
+      return res.status(400).send({
+        message: `Not enough video seconds remaining. Required: ${videoDurationNum}s, Available: ${
+          user.secondsLeft || 0
+        }s. Go to Pricing to purchase more.`,
+      });
     }
   }
 
@@ -82,16 +82,14 @@ s3Router.get("/signed-url", isAuth, async (req, res) => {
   let updatedSecondsLeft = undefined;
 
   // If it's a video, deduct the duration from user's secondsLeft
-  if (contentType.toString().startsWith('video/')) {
+  if (contentType.toString().startsWith("video/")) {
     if (videoDurationNum !== undefined) {
       // Get the current user
       // Cast request to any to access user property from auth middleware
       const reqWithUser = req as any;
       const user = await UserModel.findById(reqWithUser.user._id);
       if (!user) {
-        return res
-          .status(404)
-          .send({ message: "User not found" });
+        return res.status(404).send({ message: "User not found" });
       }
 
       user.secondsLeft = (user.secondsLeft || 0) - videoDurationNum;
