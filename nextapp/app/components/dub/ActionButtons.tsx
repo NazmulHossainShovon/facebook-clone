@@ -7,6 +7,7 @@ interface ActionButtonsProps {
   selectedLanguage: string;
   selectedGender: 'male' | 'female';
   onProcessStart: () => void; // Function to call when processing starts
+  processingStarted: boolean; // Whether processing has started
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ 
@@ -15,7 +16,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   processS3Url,
   selectedLanguage,
   selectedGender,
-  onProcessStart
+  onProcessStart,
+  processingStarted
 }) => {
   return (
     <div className="flex flex-col space-y-2">
@@ -28,12 +30,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           Reset
         </button>
 
-        {s3Url && (
+        {s3Url && !processingStarted && (
           <button
             type="button"
             onClick={() => {
               processS3Url({ s3Url, targetLanguage: selectedLanguage, voiceGender: selectedGender });
-              onProcessStart(); // Reset the form when processing starts
+              onProcessStart(); // Set processing started state when clicked
             }}
             className="bg-black hover:bg-black/80 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 flex-1"
           >

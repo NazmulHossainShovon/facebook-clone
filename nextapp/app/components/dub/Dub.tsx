@@ -116,14 +116,11 @@ const Dub = () => {
     }
   };
 
-  // Function to call when processing starts - resets the form
+  // Function to call when processing starts - only show the message
   const handleProcessStart = () => {
     // Show the processing message
     setProcessingStarted(true);
-    // Reset the form to initial state after a brief delay to show the message
-    setTimeout(() => {
-      handleReset();
-    }, 1000); // Delay reset to allow user to see the message
+    // Do not reset the form until user clicks Reset button
   };
 
   // Handle language change and update gender if not supported
@@ -149,54 +146,59 @@ const Dub = () => {
           Upload Video
         </h1>
 
-        {/* Processing started message */}
-        {processingStarted && (
-          <div className="mb-4 p-3 bg-blue-100 text-blue-800 rounded-lg text-center">
-            We have started processing your video and will send the dubbed video download link to your email once we are done.
+        {/* Conditionally show form sections or processing message */}
+        {!processingStarted ? (
+          <>
+            <LanguageVoiceSelection
+              selectedLanguage={selectedLanguage}
+              selectedGender={selectedGender}
+              isUploading={isUploading}
+              isPending={false}
+              handleLanguageChange={handleLanguageChange}
+              setSelectedGender={setSelectedGender}
+            />
+
+            {/* Upload section */}
+            <div className="flex flex-col mb-6 space-y-4">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="video/*"
+                className="hidden"
+                disabled={isUploading}
+              />
+
+              <UploadSection
+                isUploading={isUploading}
+                isPending={false}
+                handleFileUpload={handleFileUpload}
+              />
+
+              <ProgressSection
+                isUploading={isUploading}
+                uploadProgress={uploadProgress}
+                uploadedFileName={uploadedFileName}
+              />
+            </div>
+          </>
+        ) : (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
+            <p className="text-blue-800">
+              We have started processing your video and will send the dubbed
+              video download link to your email once we are done.
+            </p>
           </div>
         )}
-
-        <LanguageVoiceSelection
+        <ActionButtons
+          handleReset={handleReset}
+          s3Url={s3Url}
+          processS3Url={processS3Url}
           selectedLanguage={selectedLanguage}
           selectedGender={selectedGender}
-          isUploading={isUploading}
-          isPending={false}
-          handleLanguageChange={handleLanguageChange}
-          setSelectedGender={setSelectedGender}
+          onProcessStart={handleProcessStart}
+          processingStarted={processingStarted}
         />
-
-        {/* Upload section */}
-        <div className="flex flex-col space-y-4">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="video/*"
-            className="hidden"
-            disabled={isUploading}
-          />
-
-          <UploadSection
-            isUploading={isUploading}
-            isPending={false}
-            handleFileUpload={handleFileUpload}
-          />
-
-          <ProgressSection
-            isUploading={isUploading}
-            uploadProgress={uploadProgress}
-            uploadedFileName={uploadedFileName}
-          />
-
-          <ActionButtons
-            handleReset={handleReset}
-            s3Url={s3Url}
-            processS3Url={processS3Url}
-            selectedLanguage={selectedLanguage}
-            selectedGender={selectedGender}
-            onProcessStart={handleProcessStart}
-          />
-        </div>
       </div>
     </div>
   );
