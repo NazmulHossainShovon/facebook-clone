@@ -21,17 +21,25 @@ export default function PricingPage() {
 
   const faqs = [
     {
+      question: 'Do new users get a free trial?',
+      answer:
+        'Yes, every new user receives 20 seconds of free video dubbing time upon signing up. You can use this to try out our service with no cost.',
+    },
+    {
       question: 'What counts as a minute?',
-      answer: 'One minute refers to one minute of video content that you want dubbed. For example, if you have a 10-minute video, it will count as 10 minutes toward your plan.'
+      answer:
+        'One minute refers to one minute of video content that you want dubbed. For example, if you have a 10-minute video, it will count as 10 minutes toward your plan.',
     },
     {
       question: 'Do I need a subscription?',
-      answer: 'No, we offer a simple pay-per-use model. You can purchase 15 minutes of dubbing time for $3 without any recurring subscription.'
+      answer:
+        'No, we offer a simple pay-per-use model. You can purchase 15 minutes of dubbing time for $3 without any recurring subscription.',
     },
     {
       question: 'Do unused minutes expire?',
-      answer: 'No, your 15 minutes of dubbing time never expire. You can use them whenever you need them, with no time limits.'
-    }
+      answer:
+        'No, your 15 minutes of dubbing time never expire. You can use them whenever you need them, with no time limits.',
+    },
   ];
 
   return (
