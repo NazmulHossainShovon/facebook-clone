@@ -7,8 +7,6 @@ import { isGenderSupportedForLanguage } from '@/lib/voice-mapping';
 import { Store } from '@/lib/store';
 import UploadSection from './UploadSection';
 import ProgressSection from './ProgressSection';
-import SuccessMessage from './SuccessMessage';
-import ErrorMessage from './ErrorMessage';
 import ActionButtons from './ActionButtons';
 import LanguageVoiceSelection from './LanguageVoiceSelection';
 import { useToast } from '@/hooks/use-toast';
@@ -19,22 +17,14 @@ const Dub = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedFileName, setUploadedFileName] = useState('');
   const [s3Url, setS3Url] = useState('');
-  const [mergedVideoUrl, setMergedVideoUrl] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedGender, setSelectedGender] = useState<'male' | 'female'>(
     'female'
   );
+  const [processingStarted, setProcessingStarted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const {
-    mutate: processS3Url,
-    isPending,
-    isError,
-    error,
-    isSuccess,
-    data,
-    reset,
-  } = useProcessS3Url();
+  const { mutate: processS3Url } = useProcessS3Url();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,11 +55,9 @@ const Dub = () => {
       return;
     }
 
-    reset();
     setIsUploading(true);
     setUploadProgress(0);
     setUploadedFileName(file.name);
-    setMergedVideoUrl('');
 
     try {
       // Upload to S3 with progress tracking
@@ -110,25 +98,6 @@ const Dub = () => {
     }
   };
 
-  // Set merged video URL when data is available
-  React.useEffect(() => {
-    if (data?.success && data.mergedVideoS3Url) {
-      setMergedVideoUrl(data.mergedVideoS3Url);
-    }
-  }, [data]);
-
-  const handleDownload = () => {
-    if (mergedVideoUrl) {
-      const link = document.createElement('a');
-      link.href = mergedVideoUrl;
-      link.download = 'dubbed-video.mp4'; // You can customize the filename
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
-
   const handleFileUpload = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -136,15 +105,25 @@ const Dub = () => {
   };
 
   const handleReset = () => {
-    reset();
     setS3Url('');
     setUploadedFileName('');
     setUploadProgress(0);
     setSelectedLanguage('en');
     setSelectedGender('female');
+    setProcessingStarted(false); // Reset the processing started flag
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  // Function to call when processing starts - resets the form
+  const handleProcessStart = () => {
+    // Show the processing message
+    setProcessingStarted(true);
+    // Reset the form to initial state after a brief delay to show the message
+    setTimeout(() => {
+      handleReset();
+    }, 1000); // Delay reset to allow user to see the message
   };
 
   // Handle language change and update gender if not supported
@@ -170,22 +149,18 @@ const Dub = () => {
           Upload Video
         </h1>
 
-        {/* Success message */}
-        {isSuccess && (
-          <SuccessMessage
-            mergedVideoUrl={mergedVideoUrl}
-            handleDownload={handleDownload}
-          />
+        {/* Processing started message */}
+        {processingStarted && (
+          <div className="mb-4 p-3 bg-blue-100 text-blue-800 rounded-lg text-center">
+            We have started processing your video and will send the dubbed video download link to your email once we are done.
+          </div>
         )}
-
-        {/* Error message */}
-        {isError && <ErrorMessage error={error} />}
 
         <LanguageVoiceSelection
           selectedLanguage={selectedLanguage}
           selectedGender={selectedGender}
           isUploading={isUploading}
-          isPending={isPending}
+          isPending={false}
           handleLanguageChange={handleLanguageChange}
           setSelectedGender={setSelectedGender}
         />
@@ -198,12 +173,12 @@ const Dub = () => {
             onChange={handleFileChange}
             accept="video/*"
             className="hidden"
-            disabled={isUploading || isPending}
+            disabled={isUploading}
           />
 
           <UploadSection
             isUploading={isUploading}
-            isPending={isPending}
+            isPending={false}
             handleFileUpload={handleFileUpload}
           />
 
@@ -216,11 +191,10 @@ const Dub = () => {
           <ActionButtons
             handleReset={handleReset}
             s3Url={s3Url}
-            isSuccess={isSuccess}
-            isPending={isPending}
             processS3Url={processS3Url}
             selectedLanguage={selectedLanguage}
             selectedGender={selectedGender}
+            onProcessStart={handleProcessStart}
           />
         </div>
       </div>
