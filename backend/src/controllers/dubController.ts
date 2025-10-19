@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import { UserModel } from "../models/userModel";
+import { sendMergedVideoEmail } from "../utils/awsSes";
 import {
   validateS3Url,
   processVideo,
@@ -69,6 +70,11 @@ export const processS3Url = asyncHandler(
       // Example URL: https://bucket-name.s3.region.amazonaws.com/key
       if (s3Url) {
         await deleteS3Object(s3Url);
+      }
+
+      // Send email with the merged video URL
+      if (user.email && mergedVideoS3Url) {
+        await sendMergedVideoEmail(user.email, user.name, mergedVideoS3Url);
       }
 
       // Send success response with only the merged video URL

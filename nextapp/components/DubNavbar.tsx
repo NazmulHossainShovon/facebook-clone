@@ -3,15 +3,12 @@
 import Link from 'next/link';
 import { useContext } from 'react';
 import { Store } from '../app/lib/store';
-import { useRouter } from 'next/navigation';
-import { handleLogout } from '../app/utils/logout';
+import Logout from './Logout';
 
 export default function DubNavbar() {
   const {
     state: { userInfo },
-    dispatch,
   } = useContext(Store);
-  const router = useRouter();
 
   return (
     <nav className="bg-black p-4 fixed top-0 left-0 right-0 z-50">
@@ -24,12 +21,7 @@ export default function DubNavbar() {
         {userInfo?.name ? (
           <>
             <li>
-              <button
-                onClick={() => handleLogout(dispatch, router)}
-                className="text-white hover:text-gray-300 cursor-pointer"
-              >
-                Logout
-              </button>
+              <Logout />
             </li>
             <li>
               <Link href="/dub/account" className="text-white hover:text-gray-300">

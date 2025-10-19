@@ -61,6 +61,7 @@ export default function CheckoutButton() {
 
       if (!userId) {
         console.error('User ID not found in localStorage');
+        router.push('/login');
         return;
       }
 

@@ -3,16 +3,10 @@
 import Link from 'next/link';
 import { useContext } from 'react';
 import { Store } from '../app/lib/store';
-import { handleLogout } from '../app/utils/logout';
-import { useRouter } from 'next/navigation';
+import Logout from './Logout';
 
 export default function Navbar() {
-  const { state: { userInfo }, dispatch } = useContext(Store);
-  const router = useRouter();
-
-  const handleUserLogout = () => {
-    handleLogout(dispatch, router);
-  };
+  const { state: { userInfo } } = useContext(Store);
 
   return (
     <nav className="bg-black p-4">
@@ -37,12 +31,7 @@ export default function Navbar() {
           </>
         ) : (
           <li>
-            <button 
-              onClick={handleUserLogout}
-              className="text-white hover:text-gray-300 cursor-pointer"
-            >
-              Logout
-            </button>
+            <Logout />
           </li>
         )}
         <li>

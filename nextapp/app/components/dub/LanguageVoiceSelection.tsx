@@ -1,5 +1,9 @@
 import React from 'react';
-import { POPULAR_LANGUAGES, getVoiceId, isGenderSupportedForLanguage } from '@/lib/voice-mapping';
+import {
+  POPULAR_LANGUAGES,
+  getVoiceId,
+  isGenderSupportedForLanguage,
+} from '@/lib/voice-mapping';
 
 interface LanguageVoiceSelectionProps {
   selectedLanguage: string;
@@ -26,11 +30,11 @@ const LanguageVoiceSelection: React.FC<LanguageVoiceSelectionProps> = ({
         </label>
         <select
           value={selectedLanguage}
-          onChange={(e) => handleLanguageChange(e.target.value)}
+          onChange={e => handleLanguageChange(e.target.value)}
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           disabled={isUploading || isPending}
         >
-          {POPULAR_LANGUAGES.map((lang) => (
+          {POPULAR_LANGUAGES.map(lang => (
             <option key={lang.code} value={lang.code}>
               {lang.flag} {lang.name}
             </option>
@@ -40,7 +44,7 @@ const LanguageVoiceSelection: React.FC<LanguageVoiceSelectionProps> = ({
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Voice Type
+          Output Voice Type
         </label>
         <div className="flex space-x-3">
           <label className="flex items-center">
@@ -49,11 +53,23 @@ const LanguageVoiceSelection: React.FC<LanguageVoiceSelectionProps> = ({
               name="gender"
               value="female"
               checked={selectedGender === 'female'}
-              onChange={(e) => setSelectedGender(e.target.value as 'male' | 'female')}
-              disabled={!isGenderSupportedForLanguage(selectedLanguage, 'female') || isUploading || isPending}
+              onChange={e =>
+                setSelectedGender(e.target.value as 'male' | 'female')
+              }
+              disabled={
+                !isGenderSupportedForLanguage(selectedLanguage, 'female') ||
+                isUploading ||
+                isPending
+              }
               className="mr-2"
             />
-            <span className={!isGenderSupportedForLanguage(selectedLanguage, 'female') ? 'text-gray-400' : ''}>
+            <span
+              className={
+                !isGenderSupportedForLanguage(selectedLanguage, 'female')
+                  ? 'text-gray-400'
+                  : ''
+              }
+            >
               Female
             </span>
           </label>
@@ -63,18 +79,27 @@ const LanguageVoiceSelection: React.FC<LanguageVoiceSelectionProps> = ({
               name="gender"
               value="male"
               checked={selectedGender === 'male'}
-              onChange={(e) => setSelectedGender(e.target.value as 'male' | 'female')}
-              disabled={!isGenderSupportedForLanguage(selectedLanguage, 'male') || isUploading || isPending}
+              onChange={e =>
+                setSelectedGender(e.target.value as 'male' | 'female')
+              }
+              disabled={
+                !isGenderSupportedForLanguage(selectedLanguage, 'male') ||
+                isUploading ||
+                isPending
+              }
               className="mr-2"
             />
-            <span className={!isGenderSupportedForLanguage(selectedLanguage, 'male') ? 'text-gray-400' : ''}>
+            <span
+              className={
+                !isGenderSupportedForLanguage(selectedLanguage, 'male')
+                  ? 'text-gray-400'
+                  : ''
+              }
+            >
               Male
             </span>
           </label>
         </div>
-        <p className="text-xs text-gray-500 mt-1">
-          Using voice: {getVoiceId(selectedLanguage, selectedGender)}
-        </p>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import './globals.css';
 import { Providers } from './providers';
 import { ChatProvider } from './lib/chat-store';
 import Footer from 'components/Footer';
+import { Toaster } from './components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'Social Media',
@@ -22,6 +23,7 @@ export default function RootLayout({
           <ChatProvider>
             <div className="flex-grow">{children}</div>
             <Footer />
+            <Toaster />
           </ChatProvider>
         </Providers>
       </body>
