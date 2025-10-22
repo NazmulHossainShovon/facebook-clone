@@ -7,8 +7,8 @@ import Footer from 'components/Footer';
 import { Toaster } from './components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Social Media',
-  description: 'A Facebook clone built with Next.js',
+  title: 'appq.online - Your All-in-One SaaS Platform',
+  description: 'A comprehensive SaaS platform offering multiple applications',
 };
 
 export default function RootLayout({

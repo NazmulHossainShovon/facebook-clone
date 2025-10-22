@@ -2,29 +2,31 @@ export default function HowItWorksSection() {
   const steps = [
     {
       number: 1,
-      title: "Upload Video",
-      description: "Upload your video file or provide a YouTube URL"
+      title: 'Upload Video',
+      description: 'Upload your video file',
     },
     {
       number: 2,
-      title: "AI Analysis",
-      description: "Our AI analyzes the audio and generates transcriptions"
+      title: 'AI Analysis',
+      description: 'Our AI analyzes the audio and generates transcriptions',
     },
     {
       number: 3,
-      title: "Voice Generation",
-      description: "Select voice options and generate the dubbed audio"
+      title: 'Voice Generation',
+      description: 'Select voice options and generate the dubbed audio',
     },
     {
       number: 4,
-      title: "Download",
-      description: "Download your professionally dubbed video"
-    }
+      title: 'Email Delivery',
+      description: 'Receive the dubbed video download link in your email',
+    },
   ];
 
   return (
     <div className="mt-20">
-      <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">How It Works</h2>
+      <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+        How It Works
+      </h2>
       <div className="grid md:grid-cols-4 gap-8">
         {steps.map((step, index) => (
           <div key={index} className="text-center">

@@ -110,7 +110,7 @@ export default function TermsAndConditionsPage() {
               
               <h3 className="text-xl font-medium text-gray-700 mb-3">9.2 One-Time Payments</h3>
               <p className="text-gray-600 mb-4">
-                appq.online one-time purchases are non-refundable.
+                For one-time payment services offered by appq.online, a minimum 14-day refund window applies to all products as required by our payment processor. Refunds requested within this period will be considered on a case-by-case basis.
               </p>
             </section>
 
