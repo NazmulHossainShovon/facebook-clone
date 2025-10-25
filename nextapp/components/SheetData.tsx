@@ -10,6 +10,7 @@ const SheetData = () => {
   const [data, setData] = useState<SheetRow[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [PlotComponent, setPlotComponent] = useState<any>(null);
 
   // Sample Google Sheet URL - replace with your actual sheet
   // For this to work, the sheet must be published to web
@@ -47,6 +48,11 @@ const SheetData = () => {
       }
     };
 
+    // Dynamically import Plot component to avoid SSR issues
+    import('react-plotly.js').then((PlotModule) => {
+      setPlotComponent(() => PlotModule.default);
+    });
+
     fetchData();
   }, []);
 
@@ -76,6 +82,94 @@ const SheetData = () => {
     return result;
   };
 
+  // Prepare chart data
+  const prepareChartData = (): { chartData: any[]; layout: any } => {
+    if (data.length === 0) return { chartData: [], layout: {} };
+
+    const headers = Object.keys(data[0]);
+    if (headers.length < 2) return { chartData: [], layout: {} };
+
+    // Try to detect numeric columns for charting
+    const numericColumns: string[] = [];
+    const firstDataRow = data[0];
+    
+    for (const header of headers) {
+      // Check if the value in the first row is numeric
+      const value = firstDataRow[header];
+      if (!isNaN(parseFloat(value)) && isFinite(parseFloat(value))) {
+        numericColumns.push(header);
+      }
+    }
+
+    let chartData: any[] = [];
+    let layout: any = {};
+
+    if (numericColumns.length > 0) {
+      // If we have numeric columns, create a bar chart
+      if (numericColumns.length === 1) {
+        // Single numeric column - use first non-numeric as x-axis
+        const numericCol = numericColumns[0];
+        const nonNumericCols = headers.filter(h => !numericColumns.includes(h));
+        const xCol = nonNumericCols.length > 0 ? nonNumericCols[0] : headers[0];
+        
+        const xValues: (string | number)[] = data.map(row => row[xCol]);
+        const yValues: number[] = data.map(row => parseFloat(row[numericCol]) || 0);
+        
+        chartData = [
+          {
+            x: xValues,
+            y: yValues,
+            type: 'bar',
+            marker: { color: '#3b82f6' },
+          }
+        ];
+        
+        layout = {
+          title: `Bar Chart: ${numericCol} by ${xCol}`,
+          xaxis: { title: xCol },
+          yaxis: { title: numericCol },
+        };
+      } else {
+        // Multiple numeric columns - create grouped bar chart
+        const nonNumericCols = headers.filter(h => !numericColumns.includes(h));
+        const xCol = nonNumericCols.length > 0 ? nonNumericCols[0] : headers[0];
+        const xValues: (string | number)[] = data.map(row => row[xCol]);
+        
+        chartData = numericColumns.map(col => ({
+          x: xValues,
+          y: data.map(row => parseFloat(row[col]) || 0),
+          type: 'bar',
+          name: col,
+        }));
+        
+        layout = {
+          title: `Comparison Chart`,
+          xaxis: { title: xCol },
+          yaxis: { title: 'Values' },
+          barmode: 'group',
+        };
+      }
+    } else {
+      // No numeric columns, create a simple chart with text data
+      const values: number[] = Array(data.length).fill(1); // Equal distribution
+      const labels: string[] = data.map((row, i) => `Row ${i + 1}`);
+      
+      chartData = [
+        {
+          values: values,
+          labels: labels,
+          type: 'pie',
+        }
+      ];
+      
+      layout = {
+        title: 'Data Distribution',
+      };
+    }
+
+    return { chartData, layout };
+  };
+
   if (loading) {
     return <div>Loading sheet data...</div>;
   }
@@ -84,9 +178,25 @@ const SheetData = () => {
     return <div>Error: {error}</div>;
   }
 
+  const { chartData, layout } = prepareChartData();
+
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Sheet Data (A1:C4)</h2>
+      
+      {/* Display the chart if we have chart data and Plot component is loaded */}
+      {chartData.length > 0 && PlotComponent && (
+        <div className="mb-8">
+          <PlotComponent
+            data={chartData}
+            layout={layout}
+            config={{ displayModeBar: true, responsive: true }}
+            style={{ width: '100%', height: '400px' }}
+          />
+        </div>
+      )}
+      
+      {/* Display the table data as well */}
       {data.length > 0 ? (
         <table className="min-w-full border-collapse border border-gray-200">
           <thead>
