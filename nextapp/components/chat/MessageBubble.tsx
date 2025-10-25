@@ -1,7 +1,7 @@
 import React from 'react';
 import { Trash } from 'lucide-react';
-import apiClient from '../../lib/api-client';
-import { useChat } from '../../lib/chat-store';
+import apiClient from '../../app/lib/api-client';
+import { useChat } from '../../app/lib/chat-store';
 
 interface Message {
   id: string;

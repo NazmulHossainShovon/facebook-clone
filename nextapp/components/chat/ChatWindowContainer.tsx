@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import ChatWindow from './ChatWindow';
-import { Store } from '../../lib/store';
-import { useChat } from '../../lib/chat-store';
+import { Store } from '../../app/lib/store';
+import { useChat } from '../../app/lib/chat-store';
 
 interface ChatWindowContainerProps {
   chatRoomId: string;

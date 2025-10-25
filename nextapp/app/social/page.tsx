@@ -2,15 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { useGetFriendPosts } from '@/hooks/post-hooks';
-import PostCard from '@/components/PostCard';
-import SharedPostCard from '@/components/SharedPostCard';
-import Pagination from '@/components/Pagination';
+import PostCard from 'components/PostCard';
+import SharedPostCard from 'components/SharedPostCard';
+import Pagination from 'components/Pagination';
 import { PageClickEvent } from '@/lib/types';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import PostCardSkeleton from '@/components/PostCardSkeleton';
-import ChatIntegration from '@/components/chat/ChatIntegration';
+import ProtectedRoute from 'components/ProtectedRoute';
+import PostCardSkeleton from 'components/PostCardSkeleton';
+import ChatIntegration from 'components/chat/ChatIntegration';
 import CheckoutButton from 'components/CheckoutButton';
-import Navbar from '@/components/navbar';
+import Navbar from 'components/navbar';
 
 function HomePage() {
   const [currentPage, setCurrentPage] = useState<number>(1);

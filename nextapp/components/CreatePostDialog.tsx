@@ -9,9 +9,9 @@ import {
   DialogFooter,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
+} from 'components/ui/dialog';
+import { Textarea } from 'components/ui/textarea';
+import { Input } from 'components/ui/input';
 
 interface CreatePostDialogProps {
   post: string;

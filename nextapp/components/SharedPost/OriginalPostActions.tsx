@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge';
 import CommentIcon from '@mui/icons-material/Comment';
 import ShareButton from '../ShareButton';
 
-import { Post } from '../../lib/types';
+import { Post } from '../../app/lib/types';
 
 type OriginalPostActionsProps = {
   isLiked: boolean;

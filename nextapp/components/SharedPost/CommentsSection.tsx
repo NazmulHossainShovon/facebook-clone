@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { CommentType } from '../../lib/types';
+import { CommentType } from '../../app/lib/types';
 
 type CommentsSectionProps = {
   showComments: boolean;
@@ -42,10 +42,14 @@ function CommentsSection({
         <Textarea
           placeholder="Write a comment..."
           value={comment}
-          onChange={(e) => setComment(e.target.value)}
+          onChange={e => setComment(e.target.value)}
           className="flex-1 min-h-[60px] text-xs"
         />
-        <Button onClick={handleSubmitComment} size="sm" disabled={!comment.trim()}>
+        <Button
+          onClick={handleSubmitComment}
+          size="sm"
+          disabled={!comment.trim()}
+        >
           Post
         </Button>
       </div>

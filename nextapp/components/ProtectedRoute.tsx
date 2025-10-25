@@ -1,11 +1,15 @@
 'use client';
 
 import { useContext, useEffect, useState } from 'react';
-import { Store } from '../lib/store';
+import { Store } from '../app/lib/store';
 import { usePathname, useRouter } from 'next/navigation';
 import { Box, CircularProgress } from '@mui/material';
 
-export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+export default function ProtectedRoute({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const {
     state: { userInfo },
   } = useContext(Store);
@@ -16,8 +20,9 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   useEffect(() => {
     if (typeof window !== 'undefined') {
       // Check if user is authenticated
-      const isAuthenticated = localStorage.getItem('user-info') || userInfo?.name;
-      
+      const isAuthenticated =
+        localStorage.getItem('user-info') || userInfo?.name;
+
       if (!isAuthenticated) {
         // Save the current path to redirect back after login
         localStorage.setItem('redirectPath', pathname);
@@ -32,7 +37,14 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   // If we're still checking, show loading spinner
   if (isChecking && !userInfo?.name) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -45,7 +57,14 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   // This should not happen, but just in case
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+      }}
+    >
       <CircularProgress />
     </Box>
   );

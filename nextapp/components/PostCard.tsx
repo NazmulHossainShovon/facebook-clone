@@ -8,11 +8,11 @@ import {
   useLikePost,
   useUnlikePost,
 } from '@/hooks/post-hooks';
-import { Store } from '../lib/store';
+import { Store } from '../app/lib/store';
 import Link from 'next/link';
 import EditPostModal from './EditPostModal';
 import ShareButton from './ShareButton';
-import { CommentType, Post } from '../lib/types';
+import { CommentType, Post } from '../app/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { twMerge } from 'tailwind-merge';
@@ -228,12 +228,21 @@ export default function PostCard({
             {likers?.length} people{' '}
           </DialogTrigger>
           <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-            <DialogTitle className="text-gray-900 dark:text-white">Likers</DialogTitle>
+            <DialogTitle className="text-gray-900 dark:text-white">
+              Likers
+            </DialogTitle>
             <div className="max-h-96 overflow-y-auto space-y-3">
               {likers?.map(liker => (
-                <div key={liker} className="hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors">
+                <div
+                  key={liker}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors"
+                >
                   <Link
-                    style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                    }}
                     href={`/${liker}`}
                     onClick={() => setLikersDialogOpen(false)}
                     className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
@@ -242,7 +251,9 @@ export default function PostCard({
                       <AvatarImage
                         src={`https://nazmul.sirv.com/facebook/${liker}.png`}
                       />
-                      <AvatarFallback className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white">CN</AvatarFallback>
+                      <AvatarFallback className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white">
+                        CN
+                      </AvatarFallback>
                     </Avatar>
                     <p className="font-medium">{liker}</p>
                   </Link>

@@ -2,12 +2,12 @@
 
 import FriendChatHeader from './FriendChatHeader';
 import { useState, useContext, useEffect } from 'react';
-import { useChatSocket } from '../../hooks/use-chat';
-import { useChat } from '../../lib/chat-store';
+import { useChatSocket } from '../../app/hooks/use-chat';
+import { useChat } from '../../app/lib/chat-store';
 import ChatSidebar from './ChatSidebar';
-import { Store } from '../../lib/store';
-import { useGetUserFriends } from '../../hooks/user-hooks';
-import apiClient from '../../lib/api-client';
+import { Store } from '../../app/lib/store';
+import { useGetUserFriends } from '../../app/hooks/user-hooks';
+import apiClient from '../../app/lib/api-client';
 import ChatWindowContainer from './ChatWindowContainer';
 import { ArrowLeft, MessageSquareMore } from 'lucide-react';
 

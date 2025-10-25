@@ -3,7 +3,7 @@
 import { Avatar } from '@mui/material';
 import React, { useContext, useState } from 'react';
 import Link from 'next/link';
-import { Store } from '../lib/store';
+import { Store } from '../app/lib/store';
 import { Button } from './ui/button';
 import {
   DropdownMenu,
@@ -11,17 +11,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { useGetUserFriends } from '../hooks/user-hooks';
+import { useGetUserFriends } from '../app/hooks/user-hooks';
 
 export default function FriendList() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const {
     state: { userInfo },
   } = useContext(Store);
-  
+
   // Fetch friends data with profile images
   const { data: friends, isLoading } = useGetUserFriends(userInfo.name);
-  
+
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };

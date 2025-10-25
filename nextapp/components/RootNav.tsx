@@ -5,8 +5,10 @@ import { useContext } from 'react';
 import { Store } from '../app/lib/store';
 import Logout from './Logout';
 
-export default function Navbar() {
-  const { state: { userInfo } } = useContext(Store);
+export default function RootNav() {
+  const {
+    state: { userInfo },
+  } = useContext(Store);
 
   return (
     <nav className="bg-black p-4">
@@ -35,7 +37,10 @@ export default function Navbar() {
           </li>
         )}
         <li>
-          <Link href="/terms-and-conditions" className="text-white hover:text-gray-300">
+          <Link
+            href="/terms-and-conditions"
+            className="text-white hover:text-gray-300"
+          >
             Terms
           </Link>
         </li>

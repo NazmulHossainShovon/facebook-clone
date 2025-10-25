@@ -1,7 +1,7 @@
 'use client';
 
 import { Avatar, Badge, Menu, MenuItem, Snackbar } from '@mui/material';
-import { socket, Store } from '../lib/store';
+import { socket, Store } from '../app/lib/store';
 import Link from 'next/link';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { useContext, useEffect, useState } from 'react';

@@ -1,21 +1,21 @@
 'use client';
 
 import { useContext } from 'react';
-import Input from '@/components/Input';
-import { Button } from '@/components/Button';
+import Input from 'components/Input';
+import { Button } from 'components/Button';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useSignupMutation } from '@/hooks/user-hooks';
 import { Store } from '@/lib/store';
 import { useRouter } from 'next/navigation';
 import { Box, LinearProgress } from '@mui/material';
 import { z } from 'zod';
-import FormErrorMessage from '@/components/FormErrorMessage';
+import FormErrorMessage from 'components/FormErrorMessage';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
-import Navbar from 'components/Navbar';
 import Link from 'next/link';
 
 import { uploadToS3 } from 'utils/uploadToS3';
+import RootNav from 'components/RootNav';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
@@ -73,7 +73,7 @@ export default function Signup() {
 
   return (
     <>
-      <Navbar />
+      <RootNav />
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
           <div>

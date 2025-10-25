@@ -7,7 +7,7 @@ import {
   DialogActions,
 } from '@mui/material';
 import { Button } from '../ui/button';
-import { useGetUserFriends } from '../../hooks/user-hooks';
+import { useGetUserFriends } from '../../app/hooks/user-hooks';
 
 interface UserSearchModalProps {
   open: boolean;

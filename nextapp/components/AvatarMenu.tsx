@@ -3,10 +3,10 @@
 import { Menu, MenuItem } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import React, { useContext } from 'react';
-import { Store } from '../lib/store';
+import { Store } from '../app/lib/store';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { handleLogout } from '../../utils/logout';
+import { handleLogout } from '../utils/logout';
 
 export default function AvatarMenu() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);

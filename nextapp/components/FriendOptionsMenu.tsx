@@ -2,7 +2,7 @@
 
 import { Button, Menu, MenuItem } from '@mui/material';
 import { useContext, useState } from 'react';
-import { Store } from '../lib/store';
+import { Store } from '../app/lib/store';
 import { useUnfriend } from '@/hooks/user-hooks';
 
 type FriendOptionsProps = {

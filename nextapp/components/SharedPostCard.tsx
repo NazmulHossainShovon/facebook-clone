@@ -1,6 +1,6 @@
 'use client';
 
-import { SharedPost } from '../lib/types';
+import { SharedPost } from '../app/lib/types';
 import CommentsDialog from './CommentsDialog';
 import {
   useCreateComment,

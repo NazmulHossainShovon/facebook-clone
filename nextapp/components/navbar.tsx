@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AvatarMenu from './AvatarMenu';
 import { useContext, useState } from 'react';
-import { Store } from '../lib/store';
+import { Store } from '../app/lib/store';
 import Input from './Input';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';

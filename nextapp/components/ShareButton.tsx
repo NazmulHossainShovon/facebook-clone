@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useContext } from 'react';
-import { Store } from '../lib/store';
-import { Post } from '../lib/types';
+import { Store } from '../app/lib/store';
+import { Post } from '../app/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { DropdownMenuItem } from './ui/dropdown-menu';

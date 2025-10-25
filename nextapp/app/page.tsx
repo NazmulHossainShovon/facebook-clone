@@ -1,10 +1,10 @@
+import RootNav from 'components/RootNav';
 import Link from 'next/link';
-import Navbar from '../components/Navbar';
 
 export default function Home() {
   return (
     <div className="">
-      <Navbar />
+      <RootNav />
       <h1 className="text-3xl font-bold mb-8 text-center">All Apps</h1>
       <p className="text-center mb-12">Welcome to our apps!</p>
 

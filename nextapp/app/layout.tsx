@@ -4,7 +4,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { Providers } from './providers';
 import { ChatProvider } from './lib/chat-store';
 import Footer from 'components/Footer';
-import { Toaster } from './components/ui/toaster';
+import { Toaster } from '../components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'appq.online - Your All-in-One SaaS Platform',
