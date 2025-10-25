@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import Navbar from 'components/Navbar';
 import Link from 'next/link';
 
-import { uploadToS3 } from '@/utils/uploadToS3';
+import { uploadToS3 } from 'utils/uploadToS3';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
@@ -64,7 +64,7 @@ export default function Signup() {
     dispatch({ type: 'sign-in', payload: res.user });
     localStorage.setItem('user-token', res.token);
     localStorage.setItem('user-info', JSON.stringify(res.user));
-    
+
     // Redirect back to the original path or to home if no redirect path is set
     const redirectPath = localStorage.getItem('redirectPath') || '/';
     localStorage.removeItem('redirectPath'); // Clean up the redirect path
@@ -123,11 +123,13 @@ export default function Signup() {
                 <FormErrorMessage message={errors.password.message} />
               )}
               <div className="flex flex-col gap-1">
-                <label htmlFor="image" className="text-sm text-gray-700">Profile Image</label>
-                <input 
+                <label htmlFor="image" className="text-sm text-gray-700">
+                  Profile Image
+                </label>
+                <input
                   id="image"
-                  {...register('image')} 
-                  type="file" 
+                  {...register('image')}
+                  type="file"
                   className="text-sm text-gray-500
                     file:mr-4 file:py-2 file:px-4
                     file:rounded-md file:border-0

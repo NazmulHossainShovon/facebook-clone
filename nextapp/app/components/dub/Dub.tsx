@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useContext } from 'react';
 import { useProcessS3Url } from '@/hooks/dubHooks';
-import { uploadToS3 } from '@/utils/uploadToS3';
+import { uploadToS3 } from 'utils/uploadToS3';
 import { isGenderSupportedForLanguage } from '@/lib/voice-mapping';
 import { Store } from '@/lib/store';
 import UploadSection from './UploadSection';
