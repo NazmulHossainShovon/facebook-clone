@@ -125,9 +125,37 @@ const SheetData = () => {
         ];
         
         layout = {
-          title: `Bar Chart: ${numericCol} by ${xCol}`,
-          xaxis: { title: xCol },
-          yaxis: { title: numericCol },
+          title: {
+            text: `Bar Chart: ${numericCol} by ${xCol}`,
+            font: {
+              family: 'Arial, sans-serif',
+              size: 16,
+              color: '#2d3748'
+            },
+            x: 0.5,  // Center the title horizontally
+            xanchor: 'center',
+            y: 0.95, // Position the title vertically
+            yanchor: 'top'
+          },
+          xaxis: { 
+            title: {
+              text: xCol,
+              font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' }
+            }
+          },
+          yaxis: { 
+            title: {
+              text: numericCol,
+              font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' }
+            }
+          },
+          margin: {
+            l: 60,
+            r: 30,
+            b: 60,
+            t: 70,  // Increased top margin to make room for title
+            pad: 4
+          }
         };
       } else {
         // Multiple numeric columns - create grouped bar chart
@@ -143,10 +171,38 @@ const SheetData = () => {
         }));
         
         layout = {
-          title: `Comparison Chart`,
-          xaxis: { title: xCol },
-          yaxis: { title: 'Values' },
+          title: {
+            text: `Comparison Chart: ${numericColumns.join(' vs ')}`,
+            font: {
+              family: 'Arial, sans-serif',
+              size: 16,
+              color: '#2d3748'
+            },
+            x: 0.5,  // Center the title horizontally
+            xanchor: 'center',
+            y: 0.95, // Position the title vertically
+            yanchor: 'top'
+          },
+          xaxis: { 
+            title: {
+              text: xCol,
+              font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' }
+            }
+          },
+          yaxis: { 
+            title: {
+              text: 'Values',
+              font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' }
+            }
+          },
           barmode: 'group',
+          margin: {
+            l: 60,
+            r: 30,
+            b: 60,
+            t: 70,  // Increased top margin to make room for title
+            pad: 4
+          }
         };
       }
     } else {
@@ -163,7 +219,25 @@ const SheetData = () => {
       ];
       
       layout = {
-        title: 'Data Distribution',
+        title: {
+          text: 'Data Distribution',
+          font: {
+            family: 'Arial, sans-serif',
+            size: 16,
+            color: '#2d3748'
+          },
+          x: 0.5,  // Center the title horizontally
+          xanchor: 'center',
+          y: 0.95, // Position the title vertically
+          yanchor: 'top'
+        },
+        margin: {
+          l: 60,
+          r: 30,
+          b: 60,
+          t: 70,  // Increased top margin to make room for title
+          pad: 4
+        }
       };
     }
 
