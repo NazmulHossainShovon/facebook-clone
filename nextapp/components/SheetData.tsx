@@ -6,6 +6,60 @@ interface SheetRow {
   [key: string]: string;
 }
 
+const createLayout = (
+  titleText: string,
+  xAxisTitle?: string,
+  yAxisTitle?: string,
+  additionalProps: any = {}
+) => {
+  const layout: any = {
+    title: {
+      text: titleText,
+      font: {
+        family: 'Arial, sans-serif',
+        size: 16,
+        color: '#2d3748',
+      },
+      x: 0.5, // Center the title horizontally
+      xanchor: 'center',
+      y: 0.95, // Position the title vertically
+      yanchor: 'top',
+    },
+    margin: {
+      l: 60,
+      r: 30,
+      b: 60,
+      t: 70, // Increased top margin to make room for title
+      pad: 4,
+    },
+  };
+
+  // Add x-axis title if provided
+  if (xAxisTitle) {
+    layout.xaxis = {
+      title: {
+        text: xAxisTitle,
+        font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' },
+      },
+    };
+  }
+
+  // Add y-axis title if provided
+  if (yAxisTitle) {
+    layout.yaxis = {
+      title: {
+        text: yAxisTitle,
+        font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' },
+      },
+    };
+  }
+
+  // Add any additional properties
+  Object.assign(layout, additionalProps);
+
+  return layout;
+};
+
 const SheetData = () => {
   const [data, setData] = useState<SheetRow[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -49,7 +103,7 @@ const SheetData = () => {
     };
 
     // Dynamically import Plot component to avoid SSR issues
-    import('react-plotly.js').then((PlotModule) => {
+    import('react-plotly.js').then(PlotModule => {
       setPlotComponent(() => PlotModule.default);
     });
 
@@ -83,54 +137,6 @@ const SheetData = () => {
   };
 
   // Helper function to create consistent layout with common properties
-  const createLayout = (titleText: string, xAxisTitle?: string, yAxisTitle?: string, additionalProps: any = {}) => {
-    const layout: any = {
-      title: {
-        text: titleText,
-        font: {
-          family: 'Arial, sans-serif',
-          size: 16,
-          color: '#2d3748'
-        },
-        x: 0.5,  // Center the title horizontally
-        xanchor: 'center',
-        y: 0.95, // Position the title vertically
-        yanchor: 'top'
-      },
-      margin: {
-        l: 60,
-        r: 30,
-        b: 60,
-        t: 70,  // Increased top margin to make room for title
-        pad: 4
-      }
-    };
-
-    // Add x-axis title if provided
-    if (xAxisTitle) {
-      layout.xaxis = {
-        title: {
-          text: xAxisTitle,
-          font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' }
-        }
-      };
-    }
-
-    // Add y-axis title if provided
-    if (yAxisTitle) {
-      layout.yaxis = {
-        title: {
-          text: yAxisTitle,
-          font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' }
-        }
-      };
-    }
-
-    // Add any additional properties
-    Object.assign(layout, additionalProps);
-
-    return layout;
-  };
 
   // Prepare chart data
   const prepareChartData = (): { chartData: any[]; layout: any } => {
@@ -142,7 +148,7 @@ const SheetData = () => {
     // Try to detect numeric columns for charting
     const numericColumns: string[] = [];
     const firstDataRow = data[0];
-    
+
     for (const header of headers) {
       // Check if the value in the first row is numeric
       const value = firstDataRow[header];
@@ -161,19 +167,21 @@ const SheetData = () => {
         const numericCol = numericColumns[0];
         const nonNumericCols = headers.filter(h => !numericColumns.includes(h));
         const xCol = nonNumericCols.length > 0 ? nonNumericCols[0] : headers[0];
-        
+
         const xValues: (string | number)[] = data.map(row => row[xCol]);
-        const yValues: number[] = data.map(row => parseFloat(row[numericCol]) || 0);
-        
+        const yValues: number[] = data.map(
+          row => parseFloat(row[numericCol]) || 0
+        );
+
         chartData = [
           {
             x: xValues,
             y: yValues,
             type: 'bar',
             marker: { color: '#3b82f6' },
-          }
+          },
         ];
-        
+
         layout = createLayout(
           `Bar Chart: ${numericCol} by ${xCol}`,
           xCol,
@@ -184,14 +192,14 @@ const SheetData = () => {
         const nonNumericCols = headers.filter(h => !numericColumns.includes(h));
         const xCol = nonNumericCols.length > 0 ? nonNumericCols[0] : headers[0];
         const xValues: (string | number)[] = data.map(row => row[xCol]);
-        
+
         chartData = numericColumns.map(col => ({
           x: xValues,
           y: data.map(row => parseFloat(row[col]) || 0),
           type: 'bar',
           name: col,
         }));
-        
+
         layout = createLayout(
           `Comparison Chart: ${numericColumns.join(' vs ')}`,
           xCol,
@@ -203,15 +211,15 @@ const SheetData = () => {
       // No numeric columns, create a simple chart with text data
       const values: number[] = Array(data.length).fill(1); // Equal distribution
       const labels: string[] = data.map((row, i) => `Row ${i + 1}`);
-      
+
       chartData = [
         {
           values: values,
           labels: labels,
           type: 'pie',
-        }
+        },
       ];
-      
+
       layout = createLayout('Data Distribution');
     }
 
@@ -231,7 +239,7 @@ const SheetData = () => {
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Sheet Data (A1:C4)</h2>
-      
+
       {/* Display the chart if we have chart data and Plot component is loaded */}
       {chartData.length > 0 && PlotComponent && (
         <div className="mb-8">
@@ -243,7 +251,7 @@ const SheetData = () => {
           />
         </div>
       )}
-      
+
       {/* Display the table data as well */}
       {data.length > 0 ? (
         <table className="min-w-full border-collapse border border-gray-200">
