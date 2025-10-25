@@ -82,6 +82,56 @@ const SheetData = () => {
     return result;
   };
 
+  // Helper function to create consistent layout with common properties
+  const createLayout = (titleText: string, xAxisTitle?: string, yAxisTitle?: string, additionalProps: any = {}) => {
+    const layout: any = {
+      title: {
+        text: titleText,
+        font: {
+          family: 'Arial, sans-serif',
+          size: 16,
+          color: '#2d3748'
+        },
+        x: 0.5,  // Center the title horizontally
+        xanchor: 'center',
+        y: 0.95, // Position the title vertically
+        yanchor: 'top'
+      },
+      margin: {
+        l: 60,
+        r: 30,
+        b: 60,
+        t: 70,  // Increased top margin to make room for title
+        pad: 4
+      }
+    };
+
+    // Add x-axis title if provided
+    if (xAxisTitle) {
+      layout.xaxis = {
+        title: {
+          text: xAxisTitle,
+          font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' }
+        }
+      };
+    }
+
+    // Add y-axis title if provided
+    if (yAxisTitle) {
+      layout.yaxis = {
+        title: {
+          text: yAxisTitle,
+          font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' }
+        }
+      };
+    }
+
+    // Add any additional properties
+    Object.assign(layout, additionalProps);
+
+    return layout;
+  };
+
   // Prepare chart data
   const prepareChartData = (): { chartData: any[]; layout: any } => {
     if (data.length === 0) return { chartData: [], layout: {} };
@@ -124,39 +174,11 @@ const SheetData = () => {
           }
         ];
         
-        layout = {
-          title: {
-            text: `Bar Chart: ${numericCol} by ${xCol}`,
-            font: {
-              family: 'Arial, sans-serif',
-              size: 16,
-              color: '#2d3748'
-            },
-            x: 0.5,  // Center the title horizontally
-            xanchor: 'center',
-            y: 0.95, // Position the title vertically
-            yanchor: 'top'
-          },
-          xaxis: { 
-            title: {
-              text: xCol,
-              font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' }
-            }
-          },
-          yaxis: { 
-            title: {
-              text: numericCol,
-              font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' }
-            }
-          },
-          margin: {
-            l: 60,
-            r: 30,
-            b: 60,
-            t: 70,  // Increased top margin to make room for title
-            pad: 4
-          }
-        };
+        layout = createLayout(
+          `Bar Chart: ${numericCol} by ${xCol}`,
+          xCol,
+          numericCol
+        );
       } else {
         // Multiple numeric columns - create grouped bar chart
         const nonNumericCols = headers.filter(h => !numericColumns.includes(h));
@@ -170,40 +192,12 @@ const SheetData = () => {
           name: col,
         }));
         
-        layout = {
-          title: {
-            text: `Comparison Chart: ${numericColumns.join(' vs ')}`,
-            font: {
-              family: 'Arial, sans-serif',
-              size: 16,
-              color: '#2d3748'
-            },
-            x: 0.5,  // Center the title horizontally
-            xanchor: 'center',
-            y: 0.95, // Position the title vertically
-            yanchor: 'top'
-          },
-          xaxis: { 
-            title: {
-              text: xCol,
-              font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' }
-            }
-          },
-          yaxis: { 
-            title: {
-              text: 'Values',
-              font: { family: 'Arial, sans-serif', size: 12, color: '#2d3748' }
-            }
-          },
-          barmode: 'group',
-          margin: {
-            l: 60,
-            r: 30,
-            b: 60,
-            t: 70,  // Increased top margin to make room for title
-            pad: 4
-          }
-        };
+        layout = createLayout(
+          `Comparison Chart: ${numericColumns.join(' vs ')}`,
+          xCol,
+          'Values',
+          { barmode: 'group' }
+        );
       }
     } else {
       // No numeric columns, create a simple chart with text data
@@ -218,27 +212,7 @@ const SheetData = () => {
         }
       ];
       
-      layout = {
-        title: {
-          text: 'Data Distribution',
-          font: {
-            family: 'Arial, sans-serif',
-            size: 16,
-            color: '#2d3748'
-          },
-          x: 0.5,  // Center the title horizontally
-          xanchor: 'center',
-          y: 0.95, // Position the title vertically
-          yanchor: 'top'
-        },
-        margin: {
-          l: 60,
-          r: 30,
-          b: 60,
-          t: 70,  // Increased top margin to make room for title
-          pad: 4
-        }
-      };
+      layout = createLayout('Data Distribution');
     }
 
     return { chartData, layout };
