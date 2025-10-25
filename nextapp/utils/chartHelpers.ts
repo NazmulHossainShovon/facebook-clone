@@ -385,12 +385,11 @@ export const createHistogram = (
   }
 };
 
-// Helper function to create box or violin plot
-export const createBoxViolinChart = (
+// Helper function to create box plot
+export const createBoxPlot = (
   headers: string[],
   data: SheetRow[],
-  numericColumns: string[],
-  chartType: string
+  numericColumns: string[]
 ): { chartData: any[]; layout: any } => {
   if (numericColumns.length >= 1) {
     const numericCol = numericColumns[0];
@@ -399,11 +398,47 @@ export const createBoxViolinChart = (
     const chartData = [
       {
         y: values,
-        type: chartType as any,
+        type: 'box',
       },
     ];
 
-    const layout = createLayout(`${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Plot: ${numericCol}`, undefined, numericCol);
+    const layout = createLayout(`Box Plot: ${numericCol}`, undefined, numericCol);
+    
+    return { chartData, layout };
+  } else {
+    // No numeric data fallback
+    return createNonNumericChart(data);
+  }
+};
+
+// Helper function to create violin plot
+export const createViolinPlot = (
+  headers: string[],
+  data: SheetRow[],
+  numericColumns: string[]
+): { chartData: any[]; layout: any } => {
+  if (numericColumns.length >= 1) {
+    const numericCol = numericColumns[0];
+    const values: number[] = data.map(row => parseFloat(row[numericCol]) || 0);
+
+    const chartData = [
+      {
+        y: values,
+        type: 'violin',
+        box: {
+          visible: true
+        },
+        meanline: {
+          visible: true
+        },
+        fillcolor: 'lightblue',
+        line: {
+          color: 'blue'
+        }
+      },
+    ];
+
+    const layout = createLayout(`Violin Plot: ${numericCol}`, undefined, numericCol);
     
     return { chartData, layout };
   } else {

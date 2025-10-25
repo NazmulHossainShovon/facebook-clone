@@ -11,7 +11,8 @@ import {
   createBubbleChart,
   createScatterLineAreaChart,
   createHistogram,
-  createBoxViolinChart,
+  createBoxPlot,
+  createViolinPlot,
   createFunnelChart,
   createLine3DChart,
   createGenericChart,
@@ -210,12 +211,17 @@ const SheetData = () => {
       );
     } else if (selectedChartType === 'histogram') {
       return createHistogram(headers, data, numericColumns);
-    } else if (['box', 'violin'].includes(selectedChartType)) {
-      return createBoxViolinChart(
+    } else if (selectedChartType === 'box') {
+      return createBoxPlot(
         headers,
         data,
-        numericColumns,
-        selectedChartType
+        numericColumns
+      );
+    } else if (selectedChartType === 'violin') {
+      return createViolinPlot(
+        headers,
+        data,
+        numericColumns
       );
     } else if (['funnel', 'funnelarea'].includes(selectedChartType)) {
       return createFunnelChart(
