@@ -14,8 +14,9 @@ const SheetData = () => {
   // Sample Google Sheet URL - replace with your actual sheet
   // For this to work, the sheet must be published to web
   // To publish: File > Publish to Web > Select "Comma-separated values (.csv)" > Publish
+  // Fetch only A1:C4 range
   const sheetUrl =
-    'https://docs.google.com/spreadsheets/d/1ltA9siijVSDkTE3fzB3UaWHO7dotBIrGH4R9wI_Qyqw/edit?gid=0#gid=0';
+    'https://docs.google.com/spreadsheets/d/1ltA9siijVSDkTE3fzB3UaWHO7dotBIrGH4R9wI_Qyqw/export?format=csv&gid=0&range=A1%3AC4';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,7 +86,7 @@ const SheetData = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Sheet Data</h2>
+      <h2 className="text-xl font-bold mb-4">Sheet Data (A1:C4)</h2>
       {data.length > 0 ? (
         <table className="min-w-full border-collapse border border-gray-200">
           <thead>
@@ -100,7 +101,7 @@ const SheetData = () => {
               ))}
             </tr>
           </thead>
-          {/* <tbody>
+          <tbody>
             {data.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
@@ -116,7 +117,7 @@ const SheetData = () => {
                 ))}
               </tr>
             ))}
-          </tbody> */}
+          </tbody>
         </table>
       ) : (
         <p>No data available</p>
