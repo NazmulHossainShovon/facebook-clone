@@ -101,6 +101,7 @@ const SheetData = () => {
   const [error, setError] = useState<string | null>(null);
   const [PlotComponent, setPlotComponent] = useState<any>(null);
   const [selectedChartType, setSelectedChartType] = useState<string>('bar');
+  const [selectedNumericColumn, setSelectedNumericColumn] = useState<string>('');
 
   // Sample Google Sheet URL - replace with your actual sheet
   // For this to work, the sheet must be published to web
@@ -145,6 +146,16 @@ const SheetData = () => {
 
     fetchData();
   }, []);
+
+  // Calculate numeric columns based on current data
+  const numericColumns = data.length > 0 ? detectNumericColumns(Object.keys(data[0]), data[0]) : [];
+
+  // Set default selected numeric column when chart type is violin and data is loaded
+  useEffect(() => {
+    if (selectedChartType === 'violin' && numericColumns.length > 0 && !selectedNumericColumn) {
+      setSelectedNumericColumn(numericColumns[0]);
+    }
+  }, [selectedChartType, numericColumns, selectedNumericColumn]);
 
   // Simple CSV parser
   const parseCSV = (csvText: string): SheetRow[] => {
@@ -215,7 +226,11 @@ const SheetData = () => {
     } else if (selectedChartType === 'box') {
       return createBoxPlot(headers, data, numericColumns);
     } else if (selectedChartType === 'violin') {
-      return createViolinPlot(headers, data, numericColumns);
+      // If a specific numeric column is selected, use only that column
+      // Otherwise, if there are numeric columns, default to the first one
+      const columnsToUse = selectedNumericColumn ? [selectedNumericColumn] : 
+                           numericColumns.length > 0 ? [numericColumns[0]] : numericColumns;
+      return createViolinPlot(headers, data, columnsToUse);
     } else if (['funnel', 'funnelarea'].includes(selectedChartType)) {
       return createFunnelChart(
         headers,
@@ -255,6 +270,9 @@ const SheetData = () => {
         selectedChartType={selectedChartType}
         setSelectedChartType={setSelectedChartType}
         chartTypes={chartTypes}
+        numericColumns={numericColumns}
+        selectedNumericColumn={selectedNumericColumn}
+        setSelectedNumericColumn={setSelectedNumericColumn}
       />
 
       {/* Display the chart if we have chart data and Plot component is loaded */}

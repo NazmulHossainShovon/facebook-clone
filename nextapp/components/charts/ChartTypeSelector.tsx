@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import ViolinPlotOptions from './ViolinPlotOptions';
 
 interface ChartTypeOption {
   label: string;
@@ -12,12 +13,18 @@ interface ChartTypeSelectorProps {
   selectedChartType: string;
   setSelectedChartType: (value: string) => void;
   chartTypes: ChartTypeOption[];
+  numericColumns?: string[];
+  selectedNumericColumn?: string;
+  setSelectedNumericColumn?: (value: string) => void;
 }
 
 const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
   selectedChartType,
   setSelectedChartType,
   chartTypes,
+  numericColumns = [],
+  selectedNumericColumn,
+  setSelectedNumericColumn,
 }) => {
   return (
     <div className="mb-4">
@@ -35,6 +42,14 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
           </option>
         ))}
       </select>
+
+      {selectedChartType === 'violin' && numericColumns.length > 0 && setSelectedNumericColumn && (
+        <ViolinPlotOptions
+          numericColumns={numericColumns}
+          selectedNumericColumn={selectedNumericColumn || ''}
+          setSelectedNumericColumn={setSelectedNumericColumn}
+        />
+      )}
     </div>
   );
 };
