@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
+import ChartTypeSelector from './ChartTypeSelector';
 import {
   detectNumericColumns,
   createSingleNumericChart,
@@ -16,7 +17,7 @@ import {
   createFunnelChart,
   createLine3DChart,
   createGenericChart,
-} from '../utils/chartHelpers';
+} from '../../utils/chartHelpers';
 
 export interface SheetRow {
   [key: string]: string;
@@ -212,17 +213,9 @@ const SheetData = () => {
     } else if (selectedChartType === 'histogram') {
       return createHistogram(headers, data, numericColumns);
     } else if (selectedChartType === 'box') {
-      return createBoxPlot(
-        headers,
-        data,
-        numericColumns
-      );
+      return createBoxPlot(headers, data, numericColumns);
     } else if (selectedChartType === 'violin') {
-      return createViolinPlot(
-        headers,
-        data,
-        numericColumns
-      );
+      return createViolinPlot(headers, data, numericColumns);
     } else if (['funnel', 'funnelarea'].includes(selectedChartType)) {
       return createFunnelChart(
         headers,
@@ -258,22 +251,11 @@ const SheetData = () => {
       <h2 className="text-xl font-bold mb-4">Sheet Data (A1:C4)</h2>
 
       {/* Chart type selector */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Select Chart Type:
-        </label>
-        <select
-          value={selectedChartType}
-          onChange={e => setSelectedChartType(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        >
-          {chartTypes.map((option, index) => (
-            <option key={index} value={option.value}>
-              {option.label} ({option.category})
-            </option>
-          ))}
-        </select>
-      </div>
+      <ChartTypeSelector
+        selectedChartType={selectedChartType}
+        setSelectedChartType={setSelectedChartType}
+        chartTypes={chartTypes}
+      />
 
       {/* Display the chart if we have chart data and Plot component is loaded */}
       {chartData.length > 0 && PlotComponent && (

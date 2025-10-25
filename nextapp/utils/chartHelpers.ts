@@ -1,4 +1,4 @@
-import { SheetRow } from 'components/SheetData';
+import { SheetRow } from 'components/charts/SheetData';
 
 // Helper function to create consistent layout with common properties
 export const createLayout = (
@@ -158,7 +158,8 @@ export const createPieChart = (
   if (numericColumns.length === 1) {
     const numericCol = numericColumns[0];
     const nonNumericCols = headers.filter(h => !numericColumns.includes(h));
-    const labelsCol = nonNumericCols.length > 0 ? nonNumericCols[0] : headers[0];
+    const labelsCol =
+      nonNumericCols.length > 0 ? nonNumericCols[0] : headers[0];
 
     const labels: string[] = data.map(row => row[labelsCol]);
     const values: number[] = data.map(row => parseFloat(row[numericCol]) || 0);
@@ -190,84 +191,102 @@ export const createBubbleChart = (
     const xCol = numericColumns[0];
     const yCol = numericColumns[1];
     const sizeCol = numericColumns[2];
-    
+
     const xValues: number[] = data.map(row => parseFloat(row[xCol]) || 0);
     const yValues: number[] = data.map(row => parseFloat(row[yCol]) || 0);
     const sizeValues: number[] = data.map(row => parseFloat(row[sizeCol]) || 1);
-    
+
     const chartData = [
       {
         x: xValues,
         y: yValues,
         type: 'scatter',
         mode: 'markers',
-        marker: { 
+        marker: {
           size: sizeValues,
           sizemode: 'diameter',
-          sizeref: 2 * Math.max(...sizeValues) / (100 * Math.min(1, Math.max(...sizeValues) / 100)),
-          color: '#3b82f6' 
+          sizeref:
+            (2 * Math.max(...sizeValues)) /
+            (100 * Math.min(1, Math.max(...sizeValues) / 100)),
+          color: '#3b82f6',
         },
         name: 'Bubble Chart',
       },
     ];
-    
-    const layout = createLayout(`Bubble Chart: ${xCol} vs ${yCol} vs ${sizeCol}`, xCol, yCol);
-    
+
+    const layout = createLayout(
+      `Bubble Chart: ${xCol} vs ${yCol} vs ${sizeCol}`,
+      xCol,
+      yCol
+    );
+
     return { chartData, layout };
   } else if (numericColumns.length >= 2) {
     // Use the second column as size if we only have 2 numeric columns
     const xCol = numericColumns[0];
     const yCol = numericColumns[1];
-    
+
     const xValues: number[] = data.map(row => parseFloat(row[xCol]) || 0);
     const yValues: number[] = data.map(row => parseFloat(row[yCol]) || 0);
-    const sizeValues: number[] = data.map(row => Math.abs(parseFloat(row[yCol]) || 10) + 5); // Use y values as bubble size
-    
+    const sizeValues: number[] = data.map(
+      row => Math.abs(parseFloat(row[yCol]) || 10) + 5
+    ); // Use y values as bubble size
+
     const chartData = [
       {
         x: xValues,
         y: yValues,
         type: 'scatter',
         mode: 'markers',
-        marker: { 
+        marker: {
           size: sizeValues,
           sizemode: 'diameter',
-          sizeref: 2 * Math.max(...sizeValues) / (100 * Math.min(1, Math.max(...sizeValues) / 100)),
-          color: '#3b82f6' 
+          sizeref:
+            (2 * Math.max(...sizeValues)) /
+            (100 * Math.min(1, Math.max(...sizeValues) / 100)),
+          color: '#3b82f6',
         },
         name: 'Bubble Chart',
       },
     ];
-    
+
     const layout = createLayout(`Bubble Chart: ${xCol} vs ${yCol}`, xCol, yCol);
-    
+
     return { chartData, layout };
   } else if (numericColumns.length === 1) {
     // Use index as x and y values as size if we only have 1 numeric column
     const numericCol = numericColumns[0];
-    
+
     const xValues: number[] = data.map((_, i) => i);
     const yValues: number[] = data.map((_, i) => i * 0.5); // Simple y progression
-    const sizeValues: number[] = data.map(row => Math.abs(parseFloat(row[numericCol]) || 10) + 5);
-    
+    const sizeValues: number[] = data.map(
+      row => Math.abs(parseFloat(row[numericCol]) || 10) + 5
+    );
+
     const chartData = [
       {
         x: xValues,
         y: yValues,
         type: 'scatter',
         mode: 'markers',
-        marker: { 
+        marker: {
           size: sizeValues,
           sizemode: 'diameter',
-          sizeref: 2 * Math.max(...sizeValues) / (100 * Math.min(1, Math.max(...sizeValues) / 100)),
-          color: '#3b82f6' 
+          sizeref:
+            (2 * Math.max(...sizeValues)) /
+            (100 * Math.min(1, Math.max(...sizeValues) / 100)),
+          color: '#3b82f6',
         },
         name: 'Bubble Chart',
       },
     ];
-    
-    const layout = createLayout(`Bubble Chart: ${numericCol}`, 'Index', 'Index');
-    
+
+    const layout = createLayout(
+      `Bubble Chart: ${numericCol}`,
+      'Index',
+      'Index'
+    );
+
     return { chartData, layout };
   } else {
     // No numeric columns - fallback to non-numeric chart
@@ -285,14 +304,14 @@ export const createScatterLineAreaChart = (
   if (numericColumns.length >= 2) {
     const xCol = numericColumns[0];
     const yCol = numericColumns[1];
-    
+
     const xValues: number[] = data.map(row => parseFloat(row[xCol]) || 0);
     const yValues: number[] = data.map(row => parseFloat(row[yCol]) || 0);
 
     let mode = 'markers';
     let fill = '';
     let name = 'Scatter Plot';
-    
+
     if (chartType === 'line') {
       mode = 'lines';
       name = 'Line Chart';
@@ -316,21 +335,24 @@ export const createScatterLineAreaChart = (
     ];
 
     const layout = createLayout(`${name}: ${xCol} vs ${yCol}`, xCol, yCol);
-    
+
     return { chartData, layout };
   } else if (numericColumns.length === 1) {
     // Create a chart with index as x-axis
     const numericCol = numericColumns[0];
-    
+
     const xValues: number[] = data.map((_, i) => i);
     const yValues: number[] = data.map(row => parseFloat(row[numericCol]) || 0);
 
     let mode = 'lines';
     let fill = '';
-    let name = chartType === 'line' ? 'Line Chart' : 
-              chartType === 'area' ? 'Area Chart' : 
-              'Scatter Plot'; // Default to scatter plot
-    
+    let name =
+      chartType === 'line'
+        ? 'Line Chart'
+        : chartType === 'area'
+          ? 'Area Chart'
+          : 'Scatter Plot'; // Default to scatter plot
+
     if (chartType === 'area') {
       fill = 'tozeroy';
     } else if (chartType === 'scatter') {
@@ -351,7 +373,7 @@ export const createScatterLineAreaChart = (
     ];
 
     const layout = createLayout(`${name}: ${numericCol}`, 'Index', numericCol);
-    
+
     return { chartData, layout };
   } else {
     // No numeric columns
@@ -376,8 +398,12 @@ export const createHistogram = (
       },
     ];
 
-    const layout = createLayout(`Histogram: ${numericCol}`, numericCol, 'Count');
-    
+    const layout = createLayout(
+      `Histogram: ${numericCol}`,
+      numericCol,
+      'Count'
+    );
+
     return { chartData, layout };
   } else {
     // No numeric data, use all rows as equal distribution
@@ -402,8 +428,12 @@ export const createBoxPlot = (
       },
     ];
 
-    const layout = createLayout(`Box Plot: ${numericCol}`, undefined, numericCol);
-    
+    const layout = createLayout(
+      `Box Plot: ${numericCol}`,
+      undefined,
+      numericCol
+    );
+
     return { chartData, layout };
   } else {
     // No numeric data fallback
@@ -426,20 +456,24 @@ export const createViolinPlot = (
         y: values,
         type: 'violin',
         box: {
-          visible: true
+          visible: true,
         },
         meanline: {
-          visible: true
+          visible: true,
         },
         fillcolor: 'lightblue',
         line: {
-          color: 'blue'
-        }
+          color: 'blue',
+        },
       },
     ];
 
-    const layout = createLayout(`Violin Plot: ${numericCol}`, undefined, numericCol);
-    
+    const layout = createLayout(
+      `Violin Plot: ${numericCol}`,
+      undefined,
+      numericCol
+    );
+
     return { chartData, layout };
   } else {
     // No numeric data fallback
@@ -457,7 +491,8 @@ export const createFunnelChart = (
   if (numericColumns.length === 1) {
     const numericCol = numericColumns[0];
     const nonNumericCols = headers.filter(h => !numericColumns.includes(h));
-    const labelsCol = nonNumericCols.length > 0 ? nonNumericCols[0] : headers[0];
+    const labelsCol =
+      nonNumericCols.length > 0 ? nonNumericCols[0] : headers[0];
 
     const labels: string[] = data.map(row => row[labelsCol]);
     const values: number[] = data.map(row => parseFloat(row[numericCol]) || 0);
@@ -470,8 +505,10 @@ export const createFunnelChart = (
       },
     ];
 
-    const layout = createLayout(`${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart: ${numericCol}`);
-    
+    const layout = createLayout(
+      `${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart: ${numericCol}`
+    );
+
     return { chartData, layout };
   } else {
     // No numeric columns or multiple numeric columns, create a simple chart
@@ -490,7 +527,7 @@ export const createLine3DChart = (
     const xCol = numericColumns[0];
     const yCol = numericColumns[1];
     const zCol = numericColumns[2];
-    
+
     const xValues: number[] = data.map(row => parseFloat(row[xCol]) || 0);
     const yValues: number[] = data.map(row => parseFloat(row[yCol]) || 0);
     const zValues: number[] = data.map(row => parseFloat(row[zCol]) || 0);
@@ -511,17 +548,17 @@ export const createLine3DChart = (
       scene: {
         xaxis: { title: xCol },
         yaxis: { title: yCol },
-        zaxis: { title: zCol }
+        zaxis: { title: zCol },
       },
       margin: { l: 60, r: 30, b: 60, t: 70, pad: 4 },
     };
-    
+
     return { chartData, layout };
   } else if (numericColumns.length >= 2) {
     // Use index as third dimension if we only have 2 numeric columns
     const xCol = numericColumns[0];
     const yCol = numericColumns[1];
-    
+
     const xValues: number[] = data.map(row => parseFloat(row[xCol]) || 0);
     const yValues: number[] = data.map(row => parseFloat(row[yCol]) || 0);
     const zValues: number[] = data.map((_, i) => i);
@@ -542,16 +579,16 @@ export const createLine3DChart = (
       scene: {
         xaxis: { title: xCol },
         yaxis: { title: yCol },
-        zaxis: { title: 'Index' }
+        zaxis: { title: 'Index' },
       },
       margin: { l: 60, r: 30, b: 60, t: 70, pad: 4 },
     };
-    
+
     return { chartData, layout };
   } else if (numericColumns.length === 1) {
     // Use index for y and z if we only have 1 numeric column
     const numericCol = numericColumns[0];
-    
+
     const xValues: number[] = data.map((_, i) => i);
     const yValues: number[] = data.map(row => parseFloat(row[numericCol]) || 0);
     const zValues: number[] = data.map((_, i) => i * 0.5); // Simple z progression
@@ -572,11 +609,11 @@ export const createLine3DChart = (
       scene: {
         xaxis: { title: 'Index' },
         yaxis: { title: numericCol },
-        zaxis: { title: 'Z (Index)' }
+        zaxis: { title: 'Z (Index)' },
       },
       margin: { l: 60, r: 30, b: 60, t: 70, pad: 4 },
     };
-    
+
     return { chartData, layout };
   } else {
     // No numeric columns - fallback to non-numeric chart
@@ -607,8 +644,12 @@ export const createGenericChart = (
       },
     ];
 
-    const layout = createLayout(`${selectedChartType.charAt(0).toUpperCase() + selectedChartType.slice(1)}: ${numericCol} by ${xCol}`, xCol, numericCol);
-    
+    const layout = createLayout(
+      `${selectedChartType.charAt(0).toUpperCase() + selectedChartType.slice(1)}: ${numericCol} by ${xCol}`,
+      xCol,
+      numericCol
+    );
+
     return { chartData, layout };
   } else if (numericColumns.length > 1) {
     // Multiple numeric columns - create a basic chart with first numeric column as y-axis
@@ -625,12 +666,26 @@ export const createGenericChart = (
       },
     ];
 
-    const layout = createLayout(`${selectedChartType.charAt(0).toUpperCase() + selectedChartType.slice(1)}: ${numericCol}`, xCol, numericCol);
-    
+    const layout = createLayout(
+      `${selectedChartType.charAt(0).toUpperCase() + selectedChartType.slice(1)}: ${numericCol}`,
+      xCol,
+      numericCol
+    );
+
     return { chartData, layout };
   } else {
     // No numeric columns - use only chart types that make sense with non-numeric data
-    if (['bar', 'pie', 'funnel', 'funnelarea', 'sunburst', 'treemap', 'icicle'].includes(selectedChartType)) {
+    if (
+      [
+        'bar',
+        'pie',
+        'funnel',
+        'funnelarea',
+        'sunburst',
+        'treemap',
+        'icicle',
+      ].includes(selectedChartType)
+    ) {
       const values: number[] = Array(data.length).fill(1); // Equal distribution
       const labels: string[] = data.map((row, i) => `Row ${i + 1}`);
 
@@ -642,8 +697,10 @@ export const createGenericChart = (
         },
       ];
 
-      const layout = createLayout(`${selectedChartType.charAt(0).toUpperCase() + selectedChartType.slice(1)}: Data Distribution`);
-      
+      const layout = createLayout(
+        `${selectedChartType.charAt(0).toUpperCase() + selectedChartType.slice(1)}: Data Distribution`
+      );
+
       return { chartData, layout };
     } else {
       // For chart types that don't work well with non-numeric data, fall back to a basic chart

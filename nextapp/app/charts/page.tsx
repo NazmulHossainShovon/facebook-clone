@@ -1,4 +1,4 @@
-import SheetData from 'components/SheetData';
+import SheetData from 'components/charts/SheetData';
 import React from 'react';
 
 const ChartsHome = () => {
