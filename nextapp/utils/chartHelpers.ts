@@ -762,3 +762,91 @@ export const createGenericChart = (
     }
   }
 };
+
+// Helper function to create 2D histogram contour chart
+export const createHistogram2DContour = (
+  headers: string[],
+  data: SheetRow[],
+  numericColumns: string[]
+): { chartData: any[]; layout: any } => {
+  if (numericColumns.length >= 2) {
+    const xCol = numericColumns[0];
+    const yCol = numericColumns[1];
+
+    const x: number[] = data.map(row => parseFloat(row[xCol]) || 0);
+    const y: number[] = data.map(row => parseFloat(row[yCol]) || 0);
+
+    const chartData = [
+      {
+        x: x,
+        y: y,
+        type: 'histogram2dcontour',
+        colorscale: 'Blues',  // Optional: Color scheme (e.g., 'Viridis', 'Hot')
+        contours: {
+          showlabels: true,  // Optional: Show contour labels
+          labelfont: {
+            family: 'Raleway',
+            color: 'white'  // Optional: Label styling
+          }
+        },
+        hoverlabel: {
+          bgcolor: 'white',     // Optional: Hover tooltip background
+          bordercolor: 'black', // Optional: Hover tooltip border
+          font: {
+            family: 'Raleway',
+            color: 'black'    // Optional: Hover text styling
+          }
+        }
+      }
+    ];
+
+    const layout = createLayout(
+      `2D Histogram Contour: ${xCol} vs ${yCol}`,
+      xCol,
+      yCol
+    );
+
+    return { chartData, layout };
+  } else if (numericColumns.length === 1) {
+    // Use the same column for both x and y if only one numeric column is available
+    const numericCol = numericColumns[0];
+
+    const x: number[] = data.map(row => parseFloat(row[numericCol]) || 0);
+    const y: number[] = data.map(row => parseFloat(row[numericCol]) || 0); // Use same values for y
+
+    const chartData = [
+      {
+        x: x,
+        y: y,
+        type: 'histogram2dcontour',
+        colorscale: 'Blues',  // Optional: Color scheme (e.g., 'Viridis', 'Hot')
+        contours: {
+          showlabels: true,  // Optional: Show contour labels
+          labelfont: {
+            family: 'Raleway',
+            color: 'white'  // Optional: Label styling
+          }
+        },
+        hoverlabel: {
+          bgcolor: 'white',     // Optional: Hover tooltip background
+          bordercolor: 'black', // Optional: Hover tooltip border
+          font: {
+            family: 'Raleway',
+            color: 'black'    // Optional: Hover text styling
+          }
+        }
+      }
+    ];
+
+    const layout = createLayout(
+      `2D Histogram Contour: ${numericCol} vs ${numericCol}`,
+      numericCol,
+      numericCol
+    );
+
+    return { chartData, layout };
+  } else {
+    // No numeric data fallback
+    return createNonNumericChart(data);
+  }
+};

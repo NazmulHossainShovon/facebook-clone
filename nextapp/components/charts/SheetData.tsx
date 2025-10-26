@@ -19,6 +19,7 @@ import {
   createFunnelChart,
   createLine3DChart,
   createGenericChart,
+  createHistogram2DContour,
 } from '../../utils/chartHelpers';
 import { chartTypes } from '../../constants/charts/chartTypes';
 
@@ -117,6 +118,8 @@ const SheetData = () => {
       );
     } else if (selectedChartType === 'line3d') {
       return createLine3DChart(headers, data, numericColumns);
+    } else if (selectedChartType === 'histogram2dcontour') {
+      return createHistogram2DContour(headers, data, numericColumns);
     } else {
       // For other chart types, create a generic chart based on available data
       return createGenericChart(
