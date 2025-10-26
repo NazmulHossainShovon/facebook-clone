@@ -10,6 +10,7 @@ interface ChartTypeSelectorProps {
   chartTypes: ChartTypeOption[];
   numericColumns?: string[];
   nonNumericColumns?: string[]; // Added this prop
+  allHeaders?: string[]; // Added this prop to show all headers as options
   selectedNumericColumn?: string;
   setSelectedNumericColumn?: (value: string) => void;
   selectedNonNumericColumn?: string;
@@ -24,6 +25,7 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
   chartTypes,
   numericColumns = [],
   nonNumericColumns = [],
+  allHeaders = [],
   selectedNumericColumn,
   setSelectedNumericColumn,
   selectedNonNumericColumn,
@@ -67,20 +69,20 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
 
         {(selectedChartType === 'funnel' ||
           selectedChartType === 'funnelarea') &&
-          numericColumns.length > 0 &&
+          allHeaders.length > 0 &&
           setSelectedNumericColumn && (
             <div className="md:col-span-7">
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Select Numeric Column (X-axis/Values):
+                    Select X-axis Column:
                   </label>
                   <select
                     value={selectedNumericColumn}
                     onChange={e => setSelectedNumericColumn(e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
-                    {numericColumns.map((col, index) => (
+                    {allHeaders.map((col, index) => (
                       <option key={index} value={col}>
                         {col}
                       </option>
@@ -89,34 +91,25 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
                 </div>
 
                 {setSelectedNonNumericColumn && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Select Labels Column (Y-axis/Stages):
-                      </label>
-                      <select
-                        value={selectedNonNumericColumn || ''}
-                        onChange={e =>
-                          setSelectedNonNumericColumn(e.target.value)
-                        }
-                        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        {nonNumericColumns.length > 0 &&
-                          nonNumericColumns.map((col, index) => (
-                            <option key={index} value={col}>
-                              {col}
-                            </option>
-                          ))}
-                        {numericColumns.length > 1 &&
-                          numericColumns
-                            .filter(col => col !== selectedNumericColumn)
-                            .map((col, index) => (
-                              <option key={`numeric-${index}`} value={col}>
-                                {col} (Numeric)
-                              </option>
-                            ))}
-                      </select>
-                    </div>
-                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Select Y-axis Column:
+                    </label>
+                    <select
+                      value={selectedNonNumericColumn || ''}
+                      onChange={e =>
+                        setSelectedNonNumericColumn(e.target.value)
+                      }
+                      className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      {allHeaders.map((col, index) => (
+                        <option key={index} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
           )}

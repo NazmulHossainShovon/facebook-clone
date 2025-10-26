@@ -149,6 +149,7 @@ const SheetData = () => {
         chartTypes={chartTypes}
         numericColumns={numericColumns}
         nonNumericColumns={nonNumericColumns}
+        allHeaders={allHeaders}
         selectedNumericColumn={selectedNumericColumn}
         setSelectedNumericColumn={setSelectedNumericColumn}
         selectedNonNumericColumn={selectedNonNumericColumn}
