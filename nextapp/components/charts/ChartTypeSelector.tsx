@@ -2,12 +2,7 @@
 
 import React from 'react';
 import ViolinPlotOptions from './ViolinPlotOptions';
-
-interface ChartTypeOption {
-  label: string;
-  value: string;
-  category: string;
-}
+import { ChartTypeOption } from '../../constants/charts/chartTypes';
 
 interface ChartTypeSelectorProps {
   selectedChartType: string;
