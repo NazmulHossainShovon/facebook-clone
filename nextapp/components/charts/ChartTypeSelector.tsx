@@ -68,7 +68,7 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
           )}
 
         {(selectedChartType === 'funnel' ||
-          selectedChartType === 'funnelarea') &&
+          selectedChartType === 'histogram2dcontour') &&
           allHeaders.length > 0 &&
           setSelectedNumericColumn &&
           setSelectedNonNumericColumn && (
