@@ -1,7 +1,7 @@
-import HeroSection from '@/components/dub-landing/HeroSection';
-import FeaturesSection from '@/components/dub-landing/FeaturesSection';
-import HowItWorksSection from '@/components/dub-landing/HowItWorksSection';
-import CallToActionSection from '@/components/dub-landing/CallToActionSection';
+import HeroSection from 'components/dub-landing/HeroSection';
+import FeaturesSection from 'components/dub-landing/FeaturesSection';
+import HowItWorksSection from 'components/dub-landing/HowItWorksSection';
+import CallToActionSection from 'components/dub-landing/CallToActionSection';
 
 export default function DubLandingPage() {
   return (

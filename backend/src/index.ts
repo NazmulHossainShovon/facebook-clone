@@ -11,6 +11,7 @@ import s3Router from "./routers/s3Router";
 import chatRouter from "./routers/chatRouter";
 import { dubRouter } from "./routers/dubRouter";
 import paymentRouter from "./routers/paymentRouter";
+import { geminiRouter } from "./routers/geminiRouter";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { registerChatHandlers } from "./socketHandlers/chatHandler";
@@ -73,6 +74,7 @@ app.use("/api/s3", s3Router);
 app.use("/api/chat", chatRouter);
 app.use("/api/dub", dubRouter);
 app.use("/api", paymentRouter);
+app.use("/api/gemini", geminiRouter);
 
 // Separate route for Paddle webhook to avoid JSON parsing interference
 import { handlePaddleWebhook } from "./routers/paymentRouter";
