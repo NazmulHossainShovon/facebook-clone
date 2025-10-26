@@ -35,7 +35,7 @@ const SheetData = () => {
   // To publish: File > Publish to Web > Select "Comma-separated values (.csv)" > Publish
   // Fetch only A1:C4 range
   const sheetUrl =
-    'https://docs.google.com/spreadsheets/d/1ltA9siijVSDkTE3fzB3UaWHO7dotBIrGH4R9wI_Qyqw/export?format=csv&gid=0&range=A1%3AC4';
+    'https://docs.google.com/spreadsheets/d/1Z4M4UY6dykUeLG5-Cf4vQWfDaLE1numAFXgePSrPkDs/export?format=csv&gid=0&range=A1%3AD4';
 
   const { data, loading, error, PlotComponent } = useSheetData({ sheetUrl });
 
