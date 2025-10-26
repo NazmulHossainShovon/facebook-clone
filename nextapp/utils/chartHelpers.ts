@@ -445,7 +445,8 @@ export const createBoxPlot = (
 export const createViolinPlot = (
   headers: string[],
   data: SheetRow[],
-  numericColumns: string[]
+  numericColumns: string[],
+  xAxisTitle?: string
 ): { chartData: any[]; layout: any } => {
   if (numericColumns.length >= 1) {
     const numericCol = numericColumns[0];
@@ -470,7 +471,7 @@ export const createViolinPlot = (
 
     const layout = createLayout(
       `Violin Plot: ${numericCol}`,
-      undefined,
+      xAxisTitle || undefined,
       numericCol
     );
 

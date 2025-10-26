@@ -16,6 +16,8 @@ interface ChartTypeSelectorProps {
   numericColumns?: string[];
   selectedNumericColumn?: string;
   setSelectedNumericColumn?: (value: string) => void;
+  xAxisTitle?: string;
+  setXAxisTitle?: (value: string) => void;
 }
 
 const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
@@ -25,6 +27,8 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
   numericColumns = [],
   selectedNumericColumn,
   setSelectedNumericColumn,
+  xAxisTitle,
+  setXAxisTitle,
 }) => {
   return (
     <div className="mb-4">
@@ -48,6 +52,8 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
           numericColumns={numericColumns}
           selectedNumericColumn={selectedNumericColumn || ''}
           setSelectedNumericColumn={setSelectedNumericColumn}
+          xAxisTitle={xAxisTitle}
+          setXAxisTitle={setXAxisTitle}
         />
       )}
     </div>

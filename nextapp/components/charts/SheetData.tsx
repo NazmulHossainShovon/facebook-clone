@@ -103,6 +103,7 @@ const SheetData = () => {
   const [PlotComponent, setPlotComponent] = useState<any>(null);
   const [selectedChartType, setSelectedChartType] = useState<string>('bar');
   const [selectedNumericColumn, setSelectedNumericColumn] = useState<string>('');
+  const [xAxisTitle, setXAxisTitle] = useState<string>('');
 
   // Sample Google Sheet URL - replace with your actual sheet
   // For this to work, the sheet must be published to web
@@ -232,7 +233,7 @@ const SheetData = () => {
       // Otherwise, if there are numeric columns, default to the first one
       const columnsToUse = selectedNumericColumn ? [selectedNumericColumn] : 
                            numericColumns.length > 0 ? [numericColumns[0]] : numericColumns;
-      return createViolinPlot(headers, data, columnsToUse);
+      return createViolinPlot(headers, data, columnsToUse, xAxisTitle);
     } else if (['funnel', 'funnelarea'].includes(selectedChartType)) {
       return createFunnelChart(
         headers,
@@ -275,6 +276,8 @@ const SheetData = () => {
         numericColumns={numericColumns}
         selectedNumericColumn={selectedNumericColumn}
         setSelectedNumericColumn={setSelectedNumericColumn}
+        xAxisTitle={xAxisTitle}
+        setXAxisTitle={setXAxisTitle}
       />
 
       {/* Display the chart if we have chart data and Plot component is loaded */}
