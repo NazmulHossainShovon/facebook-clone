@@ -487,14 +487,25 @@ export const createFunnelChart = (
   headers: string[],
   data: SheetRow[],
   numericColumns: string[],
-  chartType: string
+  chartType: string,
+  selectedNumericColumn?: string,
+  selectedNonNumericColumn?: string
 ): { chartData: any[]; layout: any } => {
   if (numericColumns.length >= 1) {
-    // Try to find a non-numeric column to use as labels
+    // Determine which columns to use based on user selection or defaults
+    const numericCol =
+      selectedNumericColumn && numericColumns.includes(selectedNumericColumn)
+        ? selectedNumericColumn
+        : numericColumns[0];
+
     const nonNumericCols = headers.filter(h => !numericColumns.includes(h));
     const labelsCol =
-      nonNumericCols.length > 0 ? nonNumericCols[0] : headers[0];
-    const numericCol = numericColumns[0];
+      selectedNonNumericColumn &&
+      nonNumericCols.includes(selectedNonNumericColumn)
+        ? selectedNonNumericColumn
+        : nonNumericCols.length > 0
+          ? nonNumericCols[0]
+          : headers[0];
 
     // Extract labels and values from the data
     const labels: string[] = data.map(
@@ -523,7 +534,7 @@ export const createFunnelChart = (
       `${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart: ${numericCol}`,
       'Values',
       'Stages',
-      { showlegend: true }
+      { showlegend: false }
     );
 
     const layout = {

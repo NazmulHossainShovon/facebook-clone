@@ -26,6 +26,8 @@ const SheetData = () => {
   const [selectedChartType, setSelectedChartType] = useState<string>('bar');
   const [selectedNumericColumn, setSelectedNumericColumn] =
     useState<string>('');
+  const [selectedNonNumericColumn, setSelectedNonNumericColumn] =
+    useState<string>('');
   const [xAxisTitle, setXAxisTitle] = useState<string>('');
 
   // Sample Google Sheet URL - replace with your actual sheet
@@ -37,9 +39,13 @@ const SheetData = () => {
 
   const { data, loading, error, PlotComponent } = useSheetData({ sheetUrl });
 
-  // Calculate numeric columns based on current data
+  // Calculate numeric and non-numeric columns based on current data
+  const allHeaders = data.length > 0 ? Object.keys(data[0]) : [];
   const numericColumns =
-    data.length > 0 ? detectNumericColumns(Object.keys(data[0]), data[0]) : [];
+    data.length > 0 ? detectNumericColumns(allHeaders, data[0]) : [];
+  const nonNumericColumns = allHeaders.filter(
+    header => !numericColumns.includes(header)
+  );
 
   // Use custom hook for violin plot logic
   useViolinPlot({
@@ -105,7 +111,9 @@ const SheetData = () => {
         headers,
         data,
         numericColumns,
-        selectedChartType
+        selectedChartType,
+        selectedNumericColumn,
+        selectedNonNumericColumn
       );
     } else if (selectedChartType === 'line3d') {
       return createLine3DChart(headers, data, numericColumns);
@@ -140,8 +148,11 @@ const SheetData = () => {
         setSelectedChartType={setSelectedChartType}
         chartTypes={chartTypes}
         numericColumns={numericColumns}
+        nonNumericColumns={nonNumericColumns}
         selectedNumericColumn={selectedNumericColumn}
         setSelectedNumericColumn={setSelectedNumericColumn}
+        selectedNonNumericColumn={selectedNonNumericColumn}
+        setSelectedNonNumericColumn={setSelectedNonNumericColumn}
         xAxisTitle={xAxisTitle}
         setXAxisTitle={setXAxisTitle}
       />
@@ -153,7 +164,7 @@ const SheetData = () => {
             data={chartData}
             layout={layout}
             config={{ displayModeBar: true, responsive: true }}
-            style={{ width: '100%', height: '600px' }}
+            style={{ width: '100%', height: '400px' }}
           />
         </div>
       )}
