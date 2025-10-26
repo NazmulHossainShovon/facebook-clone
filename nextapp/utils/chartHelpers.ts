@@ -1,4 +1,4 @@
-import { SheetRow } from 'components/charts/SheetData';
+import { SheetRow } from '../types/chartTypes';
 
 // Helper function to create consistent layout with common properties
 export const createLayout = (

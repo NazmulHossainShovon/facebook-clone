@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import useViolinPlot from '../../hooks/charts/useViolinPlot';
+import useSheetData from '../../hooks/charts/useSheetData';
 
 import ChartTypeSelector from './ChartTypeSelector';
 import {
@@ -19,10 +20,6 @@ import {
   createLine3DChart,
   createGenericChart,
 } from '../../utils/chartHelpers';
-
-export interface SheetRow {
-  [key: string]: string;
-}
 
 interface ChartTypeOption {
   label: string;
@@ -97,12 +94,9 @@ const chartTypes: ChartTypeOption[] = [
 ];
 
 const SheetData = () => {
-  const [data, setData] = useState<SheetRow[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [PlotComponent, setPlotComponent] = useState<any>(null);
   const [selectedChartType, setSelectedChartType] = useState<string>('bar');
-  const [selectedNumericColumn, setSelectedNumericColumn] = useState<string>('');
+  const [selectedNumericColumn, setSelectedNumericColumn] =
+    useState<string>('');
   const [xAxisTitle, setXAxisTitle] = useState<string>('');
 
   // Sample Google Sheet URL - replace with your actual sheet
@@ -112,45 +106,11 @@ const SheetData = () => {
   const sheetUrl =
     'https://docs.google.com/spreadsheets/d/1ltA9siijVSDkTE3fzB3UaWHO7dotBIrGH4R9wI_Qyqw/export?format=csv&gid=0&range=A1%3AC4';
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // For Google Sheets, we can fetch as CSV or JSON
-        // Using CSV format here and converting to JSON
-        const response = await fetch(sheetUrl);
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch data: ${response.status} ${response.statusText}`
-          );
-        }
-
-        const csvText = await response.text();
-        const parsedData = parseCSV(csvText);
-        setData(parsedData);
-      } catch (err) {
-        console.error('Error fetching sheet data:', err);
-        setError(
-          err instanceof Error ? err.message : 'An unknown error occurred'
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Dynamically import Plot component to avoid SSR issues
-    import('react-plotly.js').then(PlotModule => {
-      setPlotComponent(() => PlotModule.default);
-    });
-
-    fetchData();
-  }, []);
+  const { data, loading, error, PlotComponent } = useSheetData({ sheetUrl });
 
   // Calculate numeric columns based on current data
-  const numericColumns = data.length > 0 ? detectNumericColumns(Object.keys(data[0]), data[0]) : [];
+  const numericColumns =
+    data.length > 0 ? detectNumericColumns(Object.keys(data[0]), data[0]) : [];
 
   // Use custom hook for violin plot logic
   useViolinPlot({
@@ -159,32 +119,6 @@ const SheetData = () => {
     selectedNumericColumn,
     setSelectedNumericColumn,
   });
-
-  // Simple CSV parser
-  const parseCSV = (csvText: string): SheetRow[] => {
-    const lines = csvText.trim().split('\n');
-    if (lines.length < 2) return [];
-
-    const headers = lines[0]
-      .split(',')
-      .map(header => header.trim().replace(/^"|"$/g, ''));
-    const result: SheetRow[] = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const currentLine = lines[i].split(',');
-      const obj: SheetRow = {};
-
-      for (let j = 0; j < headers.length; j++) {
-        // Remove quotes from beginning and end if they exist
-        const value = currentLine[j]?.trim().replace(/^"|"$/g, '') || '';
-        obj[headers[j]] = value;
-      }
-
-      result.push(obj);
-    }
-
-    return result;
-  };
 
   // Prepare chart data based on selected chart type
   const prepareChartData = (): { chartData: any[]; layout: any } => {
@@ -231,8 +165,11 @@ const SheetData = () => {
     } else if (selectedChartType === 'violin') {
       // If a specific numeric column is selected, use only that column
       // Otherwise, if there are numeric columns, default to the first one
-      const columnsToUse = selectedNumericColumn ? [selectedNumericColumn] : 
-                           numericColumns.length > 0 ? [numericColumns[0]] : numericColumns;
+      const columnsToUse = selectedNumericColumn
+        ? [selectedNumericColumn]
+        : numericColumns.length > 0
+          ? [numericColumns[0]]
+          : numericColumns;
       return createViolinPlot(headers, data, columnsToUse, xAxisTitle);
     } else if (['funnel', 'funnelarea'].includes(selectedChartType)) {
       return createFunnelChart(
