@@ -523,8 +523,8 @@ export const createFunnelChart = (
 
     const baseLayout = createLayout(
       `${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart: ${numericCol}`,
-      'Values',
-      'Stages',
+      numericCol,
+      selectedNonNumericColumn,
       { showlegend: false }
     );
 
