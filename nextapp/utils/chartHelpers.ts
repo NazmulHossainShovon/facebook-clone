@@ -489,31 +489,84 @@ export const createFunnelChart = (
   numericColumns: string[],
   chartType: string
 ): { chartData: any[]; layout: any } => {
-  if (numericColumns.length === 1) {
-    const numericCol = numericColumns[0];
+  if (numericColumns.length >= 1) {
+    // Try to find a non-numeric column to use as labels
     const nonNumericCols = headers.filter(h => !numericColumns.includes(h));
     const labelsCol =
       nonNumericCols.length > 0 ? nonNumericCols[0] : headers[0];
+    const numericCol = numericColumns[0];
 
-    const labels: string[] = data.map(row => row[labelsCol]);
+    // Extract labels and values from the data
+    const labels: string[] = data.map(
+      row => row[labelsCol] || `Stage ${data.indexOf(row) + 1}`
+    );
     const values: number[] = data.map(row => parseFloat(row[numericCol]) || 0);
 
     const chartData = [
       {
-        y: values,
-        x: labels,
         type: chartType as any,
+        y: labels,
+        x: values,
+        textinfo: 'value+percent previous',
+        textposition: 'inside',
+        marker: {
+          color: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'],
+          line: { width: 2, color: '#FFFFFF' },
+        },
+        connector: {
+          line: { color: '#CCCCCC', width: 2, dash: 'dot' },
+        },
       },
     ];
 
-    const layout = createLayout(
-      `${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart: ${numericCol}`
+    const baseLayout = createLayout(
+      `${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart: ${numericCol}`,
+      'Values',
+      'Stages',
+      { showlegend: true }
     );
+
+    const layout = {
+      ...baseLayout,
+    };
 
     return { chartData, layout };
   } else {
-    // No numeric columns or multiple numeric columns, create a simple chart
-    return createNonNumericChart(data);
+    // No numeric columns, fallback to a simple chart
+    const labels: string[] = data.map((row, i) => `Row ${i + 1}`);
+    const values: number[] = data.map(() => 1); // Equal distribution
+
+    const chartData = [
+      {
+        type: chartType as any,
+        y: labels,
+        x: values,
+        textinfo: 'value+percent previous',
+        textposition: 'inside',
+        marker: {
+          color: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'],
+          line: { width: 2, color: '#FFFFFF' },
+        },
+        connector: {
+          line: { color: '#CCCCCC', width: 2, dash: 'dot' },
+        },
+      },
+    ];
+
+    const baseLayout = createLayout(
+      `${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart: Data Distribution`,
+      'Values',
+      'Stages',
+      { showlegend: false }
+    );
+
+    const layout = {
+      ...baseLayout,
+      width: 600,
+      height: 500,
+    };
+
+    return { chartData, layout };
   }
 };
 
