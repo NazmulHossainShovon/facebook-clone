@@ -13,15 +13,19 @@ import {
   createPieChart,
   createBubbleChart,
   createScatterLineAreaChart,
-  createHistogram,
+} from '../../utils/charts/chartHelpers';
+import { chartTypes } from '../../constants/charts/chartTypes';
+import {
   createBoxPlot,
-  createViolinPlot,
   createFunnelChart,
-  createLine3DChart,
+  createHistogram,
+  createViolinPlot,
+} from 'utils/charts/chartHelpers2';
+import {
   createGenericChart,
   createHistogram2DContour,
-} from '../../utils/chartHelpers';
-import { chartTypes } from '../../constants/charts/chartTypes';
+  createLine3DChart,
+} from 'utils/charts/chartHelpers1';
 
 const SheetData = () => {
   const [selectedChartType, setSelectedChartType] = useState<string>('bar');
