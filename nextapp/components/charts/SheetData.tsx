@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import useViolinPlot from '../../hooks/charts/useViolinPlot';
 
 import ChartTypeSelector from './ChartTypeSelector';
 import {
@@ -150,12 +151,13 @@ const SheetData = () => {
   // Calculate numeric columns based on current data
   const numericColumns = data.length > 0 ? detectNumericColumns(Object.keys(data[0]), data[0]) : [];
 
-  // Set default selected numeric column when chart type is violin and data is loaded
-  useEffect(() => {
-    if (selectedChartType === 'violin' && numericColumns.length > 0 && !selectedNumericColumn) {
-      setSelectedNumericColumn(numericColumns[0]);
-    }
-  }, [selectedChartType, numericColumns, selectedNumericColumn]);
+  // Use custom hook for violin plot logic
+  useViolinPlot({
+    selectedChartType,
+    numericColumns,
+    selectedNumericColumn,
+    setSelectedNumericColumn,
+  });
 
   // Simple CSV parser
   const parseCSV = (csvText: string): SheetRow[] => {
