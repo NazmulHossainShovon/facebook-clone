@@ -498,18 +498,9 @@ export const createFunnelChart = (
         ? selectedNumericColumn
         : numericColumns[0];
 
-    const nonNumericCols = headers.filter(h => !numericColumns.includes(h));
-    const labelsCol =
-      selectedNonNumericColumn &&
-      nonNumericCols.includes(selectedNonNumericColumn)
-        ? selectedNonNumericColumn
-        : nonNumericCols.length > 0
-          ? nonNumericCols[0]
-          : headers[0];
-
     // Extract labels and values from the data
-    const labels: string[] = data.map(
-      row => row[labelsCol] || `Stage ${data.indexOf(row) + 1}`
+    const labels = data.map(
+      row => parseFloat(row[selectedNonNumericColumn!]) || 0
     );
     const values: number[] = data.map(row => parseFloat(row[numericCol]) || 0);
 
