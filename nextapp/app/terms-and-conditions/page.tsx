@@ -53,7 +53,7 @@ export default function TermsAndConditionsPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-800 mb-4">3. One-Time Payment Services</h2>
               <p className="text-gray-600 mb-4">
-                For one-time payment services offered by appq.online, full payment is required at the time of purchase. One-time payments are non-refundable.
+                For one-time payment services offered by appq.online, full payment is required at the time of purchase. A minimum 14-day refund window applies to all one-time payment products as required by our payment processor. Refunds requested within this period will be considered on a case-by-case basis.
               </p>
               <p className="text-gray-600">
                 One-time purchases may include access to premium features, additional storage, or other value-added services.
