@@ -21,7 +21,7 @@ export const createLayout = (
       yanchor: 'top',
     },
     margin: {
-      l: 60,
+      l: 80,
       r: 30,
       b: 60,
       t: 70, // Increased top margin to make room for title
