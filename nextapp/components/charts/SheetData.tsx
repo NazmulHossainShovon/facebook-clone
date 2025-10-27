@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useViolinPlot from '../../hooks/charts/useViolinPlot';
-import useSheetData from '../../hooks/charts/useSheetData';
 
 import ChartTypeSelector from './ChartTypeSelector';
+import SheetUrlInput from './SheetUrlInput';
 import {
   detectNumericColumns,
   createSingleNumericChart,
@@ -27,6 +27,32 @@ import {
   createLine3DChart,
 } from 'utils/charts/chartHelpers1';
 
+// Simple CSV parser (copied from useSheetData hook to avoid importing it)
+const parseCSV = (csvText: string) => {
+  const lines = csvText.trim().split('\n');
+  if (lines.length < 2) return [];
+
+  const headers = lines[0]
+    .split(',')
+    .map(header => header.trim().replace(/^"|"$/g, ''));
+  const result: any[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const currentLine = lines[i].split(',');
+    const obj: any = {};
+
+    for (let j = 0; j < headers.length; j++) {
+      // Remove quotes from beginning and end if they exist
+      const value = currentLine[j]?.trim().replace(/^"|"$/g, '') || '';
+      obj[headers[j]] = value;
+    }
+
+    result.push(obj);
+  }
+
+  return result;
+};
+
 const SheetData = () => {
   const [selectedChartType, setSelectedChartType] = useState<string>('bar');
   const [selectedNumericColumn, setSelectedNumericColumn] =
@@ -34,15 +60,25 @@ const SheetData = () => {
   const [selectedNonNumericColumn, setSelectedNonNumericColumn] =
     useState<string>('');
   const [xAxisTitle, setXAxisTitle] = useState<string>('');
+  const [sheetUrl, setSheetUrl] = useState<string>('');
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [PlotComponent, setPlotComponent] = useState<any>(null);
 
-  // Sample Google Sheet URL - replace with your actual sheet
-  // For this to work, the sheet must be published to web
-  // To publish: File > Publish to Web > Select "Comma-separated values (.csv)" > Publish
-  // Fetch only A1:C4 range
-  const sheetUrl =
-    'https://docs.google.com/spreadsheets/d/1Z4M4UY6dykUeLG5-Cf4vQWfDaLE1numAFXgePSrPkDs/export?format=csv&gid=0&range=A1%3AD4';
+  // Initialize with a sample URL
+  useEffect(() => {
+    setSheetUrl(
+      'https://docs.google.com/spreadsheets/d/1Z4M4UY6dykUeLG5-Cf4vQWfDaLE1numAFXgePSrPkDs/export?format=csv&gid=0&range=A1%3AD4'
+    );
+  }, []);
 
-  const { data, loading, error, PlotComponent } = useSheetData({ sheetUrl });
+  // Dynamically import Plot component to avoid SSR issues
+  useEffect(() => {
+    import('react-plotly.js').then(PlotModule => {
+      setPlotComponent(() => PlotModule.default);
+    });
+  }, []);
 
   // Calculate numeric and non-numeric columns based on current data
   const allHeaders = data.length > 0 ? Object.keys(data[0]) : [];
@@ -59,6 +95,40 @@ const SheetData = () => {
     selectedNumericColumn,
     setSelectedNumericColumn,
   });
+
+  // Function to fetch data from the sheet URL
+  const fetchSheetData = async () => {
+    if (!sheetUrl) {
+      setError('Please enter a valid sheet URL');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // For Google Sheets, we can fetch as CSV or JSON
+      // Using CSV format here and converting to JSON
+      const response = await fetch(sheetUrl);
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch data: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const csvText = await response.text();
+      const parsedData = parseCSV(csvText);
+      setData(parsedData);
+    } catch (err) {
+      console.error('Error fetching sheet data:', err);
+      setError(
+        err instanceof Error ? err.message : 'An unknown error occurred'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Prepare chart data based on selected chart type
   const prepareChartData = (): { chartData: any[]; layout: any } => {
@@ -153,7 +223,15 @@ const SheetData = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Sheet Data (A1:C4)</h2>
+      <h2 className="text-xl font-bold mb-4">Sheet Data Chart Generator</h2>
+
+      {/* Input for sheet URL */}
+      <SheetUrlInput
+        sheetUrl={sheetUrl}
+        setSheetUrl={setSheetUrl}
+        loading={loading}
+        onFetchData={fetchSheetData}
+      />
 
       {/* Chart type selector */}
       <ChartTypeSelector
@@ -181,43 +259,6 @@ const SheetData = () => {
             style={{ width: '100%', height: '400px' }}
           />
         </div>
-      )}
-
-      {/* Display the table data as well */}
-      {data.length > 0 ? (
-        <table className="min-w-full border-collapse border border-gray-200">
-          <thead>
-            <tr className="bg-gray-100">
-              {Object.keys(data[0]).map((header, index) => (
-                <th
-                  key={index}
-                  className="border border-gray-300 px-4 py-2 text-left"
-                >
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, rowIndex) => (
-              <tr
-                key={rowIndex}
-                className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-              >
-                {Object.values(row).map((cell, cellIndex) => (
-                  <td
-                    key={cellIndex}
-                    className="border border-gray-300 px-4 py-2"
-                  >
-                    {cell}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No data available</p>
       )}
     </div>
   );
