@@ -45,42 +45,6 @@ const extractSheetId = (url: string): string | null => {
   return match ? match[1] : null;
 };
 
-// Helper: Parse range like "A1:B3" to { startCol, startRow, endCol, endRow } (1-indexed rows, 0-indexed cols)
-const parseRange = (range: string) => {
-  const [start, end] = range.split(':');
-  if (!start || !end) {
-    throw new Error('Invalid range format. Expected: A1:B3');
-  }
-
-  // Parse start (e.g., A1 -> col='A', row=1)
-  const startMatch = start.match(/^([A-Z]+)(\d+)$/);
-  if (!startMatch) throw new Error('Invalid start cell in range');
-  const startCol = colLetterToNumber(startMatch[1]);
-  const startRow = parseInt(startMatch[2], 10);
-
-  // Parse end (e.g., B3 -> col='B', row=3)
-  const endMatch = end.match(/^([A-Z]+)(\d+)$/);
-  if (!endMatch) throw new Error('Invalid end cell in range');
-  const endCol = colLetterToNumber(endMatch[1]);
-  const endRow = parseInt(endMatch[2], 10);
-
-  if (startRow > endRow || startCol > endCol) {
-    throw new Error('Start must precede end in range');
-  }
-
-  return { startCol, startRow, endCol, endRow };
-};
-
-// Helper function to convert Excel column letters to index (A=0, B=1, etc.)
-const getColumnIndex = (column: string): number => {
-  let result = 0;
-  for (let i = 0; i < column.length; i++) {
-    result *= 26;
-    result += column.charCodeAt(i) - 'A'.charCodeAt(0) + 1;
-  }
-  return result - 1;
-};
-
 /**
  * Fetches values from a specified range in a Google Sheet (published as CSV)
  * and returns a 1D array of cell values (row-major order: left-to-right, top-to-bottom).
@@ -91,7 +55,11 @@ const getColumnIndex = (column: string): number => {
  * @returns {Promise<(string | number)[]>} - 1D array of cell values preserving types
  * @throws Error on invalid URL, range, fetch failure, or out-of-bounds range
  */
-const getSheetRangeValues = async (sheetUrl, range, apiKey) => {
+const getSheetRangeValues = async (
+  sheetUrl: string,
+  range: string,
+  apiKey: string
+) => {
   const sheetId = extractSheetId(sheetUrl);
   if (!sheetId) {
     throw new Error(
@@ -125,7 +93,7 @@ const getSheetRangeValues = async (sheetUrl, range, apiKey) => {
     }
 
     // Flatten and type-preserve (API returns strings; detect numbers)
-    const toValue = cell => {
+    const toValue = (cell: any) => {
       if (cell === null || cell === undefined) return '';
       const str = String(cell).trim();
       const num = Number(str);
