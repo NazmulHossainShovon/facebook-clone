@@ -64,17 +64,16 @@ export const createBoxPlot = (
 // Helper function to create violin plot
 export const createViolinPlot = (
   headers: string[],
-  data: SheetRow[],
+  data: any[],
   numericColumns: string[],
   xAxisTitle?: string
 ): { chartData: any[]; layout: any } => {
-  if (numericColumns.length >= 1) {
+  if (data.length >= 1) {
     const numericCol = numericColumns[0];
-    const values: number[] = data.map(row => parseFloat(row[numericCol]) || 0);
 
     const chartData = [
       {
-        y: values,
+        y: data,
         type: 'violin',
         box: {
           visible: true,

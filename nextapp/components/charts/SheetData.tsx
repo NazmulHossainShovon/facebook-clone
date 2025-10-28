@@ -45,16 +45,6 @@ const extractSheetId = (url: string): string | null => {
   return match ? match[1] : null;
 };
 
-/**
- * Fetches values from a specified range in a Google Sheet (published as CSV)
- * and returns a 1D array of cell values (row-major order: left-to-right, top-to-bottom).
- * Preserves original types: numbers as Number, text as string, empties as ''.
- *
- * @param {string} sheetUrl - Full Google Sheets URL (e.g., 'https://docs.google.com/spreadsheets/d/1abc123xyz/edit')
- * @param {string} range - A1-style range (e.g., 'A1:A4', 'A1:C1', 'A1:B3')
- * @returns {Promise<(string | number)[]>} - 1D array of cell values preserving types
- * @throws Error on invalid URL, range, fetch failure, or out-of-bounds range
- */
 const getSheetRangeValues = async (
   sheetUrl: string,
   range: string,
@@ -171,51 +161,8 @@ const SheetData = () => {
             selectedNumericColumn,
             googleApiKey
           );
-          console.log(values);
-          // Convert the 1D array of values to the required format for setData
-          // Parse the range to determine if it's a single column or single row
-          const [start, end] = selectedNumericColumn.split(':');
-          const startCol = start.match(/[A-Z]+/)?.[0];
-          const startRow = parseInt(start.match(/\d+/)?.[0] || '1');
-          const endCol = end.match(/[A-Z]+/)?.[0];
-          const endRow = parseInt(end.match(/\d+/)?.[0] || '1');
 
-          let parsedData: any[] = [];
-
-          // Check if it's a single column (same column letter, different rows)
-          if (startCol === endCol && startRow !== endRow) {
-            // Single column - create an array with one object containing an array of values
-            const colName = startCol || 'Column';
-            parsedData = [{ [colName]: values }]; // Format: [{ 'A': [val1, val2, val3...] }]
-          }
-          // Check if it's a single row (same row number, different columns)
-          else if (startRow === endRow && startCol !== endCol) {
-            // Single row - create an object with column names as keys and values
-            const row: any = {};
-            for (let i = 0; i < values.length; i++) {
-              const colName = String.fromCharCode('A'.charCodeAt(0) + i);
-              row[colName] = values[i];
-            }
-            parsedData = [row]; // Format: [{ 'A': val1, 'B': val2, 'C': val3... }]
-          } else {
-            // Multiple rows and columns - format as multiple objects with generic property names
-            const colCount = endCol
-              ? colLetterToNumber(endCol) - colLetterToNumber(startCol!) + 1
-              : 1;
-            const rowCount = endRow - startRow + 1;
-
-            for (let r = 0; r < rowCount; r++) {
-              const row: any = {};
-              for (let c = 0; c < colCount; c++) {
-                const colName = String.fromCharCode('A'.charCodeAt(0) + c);
-                const index = r * colCount + c;
-                row[colName] = values[index];
-              }
-              parsedData.push(row);
-            }
-          }
-
-          setData(parsedData);
+          setData(values);
         } else {
           // If no range is specified, proceed with the current approach
           // Extract the spreadsheet ID from the URL
@@ -304,7 +251,7 @@ const SheetData = () => {
     if (data.length === 0) return { chartData: [], layout: {} };
 
     const headers = Object.keys(data[0]);
-    if (headers.length < 2) return { chartData: [], layout: {} };
+    // if (headers.length < 2) return { chartData: [], layout: {} };
 
     // Try to detect numeric columns for charting
     const firstDataRow = data[0];
