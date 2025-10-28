@@ -1,7 +1,6 @@
 import { Router, Request, Response } from "express";
 import { UserModel } from "../models/userModel";
 import { Paddle } from "@paddle/paddle-node-sdk";
-import { isAuth } from "../utils";
 
 interface PaddleRequest extends Request {
   rawBody?: string;

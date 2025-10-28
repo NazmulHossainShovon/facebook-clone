@@ -53,19 +53,17 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
           </select>
         </div>
 
-        {selectedChartType === 'violin' &&
-          numericColumns.length > 0 &&
-          setSelectedNumericColumn && (
-            <div className="md:col-span-7">
-              <ViolinPlotOptions
-                numericColumns={numericColumns}
-                selectedNumericColumn={selectedNumericColumn || ''}
-                setSelectedNumericColumn={setSelectedNumericColumn}
-                xAxisTitle={xAxisTitle}
-                setXAxisTitle={setXAxisTitle}
-              />
-            </div>
-          )}
+        {selectedChartType === 'violin' && setSelectedNumericColumn && (
+          <div className="md:col-span-7">
+            <ViolinPlotOptions
+              numericColumns={numericColumns}
+              selectedNumericColumn={selectedNumericColumn || ''}
+              setSelectedNumericColumn={setSelectedNumericColumn}
+              xAxisTitle={xAxisTitle}
+              setXAxisTitle={setXAxisTitle}
+            />
+          </div>
+        )}
 
         {(selectedChartType === 'funnel' ||
           selectedChartType === 'histogram2dcontour') &&

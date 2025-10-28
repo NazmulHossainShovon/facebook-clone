@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Papa from 'papaparse'; // npm install papaparse for robust CSV parsing
 import useViolinPlot from '../../hooks/charts/useViolinPlot';
 
 import ChartTypeSelector from './ChartTypeSelector';
@@ -27,30 +28,118 @@ import {
   createLine3DChart,
 } from 'utils/charts/chartHelpers1';
 
-// Simple CSV parser (copied from useSheetData hook to avoid importing it)
-const parseCSV = (csvText: string) => {
-  const lines = csvText.trim().split('\n');
-  if (lines.length < 2) return [];
+// Helper: Convert column letter (A, B, ..., AA) to 0-indexed number
+const colLetterToNumber = (letter: string): number => {
+  let num = 0;
+  for (let i = 0; i < letter.length; i++) {
+    num = num * 26 + (letter.charCodeAt(i) - 'A'.charCodeAt(0) + 1);
+  }
+  return num - 1; // 0-indexed (A=0, B=1, ..., Z=25, AA=26)
+};
 
-  const headers = lines[0]
-    .split(',')
-    .map(header => header.trim().replace(/^"|"$/g, ''));
-  const result: any[] = [];
+const googleApiKey = 'AIzaSyCIrfb-dVFQDVwPHIBJKMcSnvfTPkhjT34';
 
-  for (let i = 1; i < lines.length; i++) {
-    const currentLine = lines[i].split(',');
-    const obj: any = {};
+// Helper: Extract sheet ID from Google Sheets URL
+const extractSheetId = (url: string): string | null => {
+  const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return match ? match[1] : null;
+};
 
-    for (let j = 0; j < headers.length; j++) {
-      // Remove quotes from beginning and end if they exist
-      const value = currentLine[j]?.trim().replace(/^"|"$/g, '') || '';
-      obj[headers[j]] = value;
-    }
-
-    result.push(obj);
+// Helper: Parse range like "A1:B3" to { startCol, startRow, endCol, endRow } (1-indexed rows, 0-indexed cols)
+const parseRange = (range: string) => {
+  const [start, end] = range.split(':');
+  if (!start || !end) {
+    throw new Error('Invalid range format. Expected: A1:B3');
   }
 
-  return result;
+  // Parse start (e.g., A1 -> col='A', row=1)
+  const startMatch = start.match(/^([A-Z]+)(\d+)$/);
+  if (!startMatch) throw new Error('Invalid start cell in range');
+  const startCol = colLetterToNumber(startMatch[1]);
+  const startRow = parseInt(startMatch[2], 10);
+
+  // Parse end (e.g., B3 -> col='B', row=3)
+  const endMatch = end.match(/^([A-Z]+)(\d+)$/);
+  if (!endMatch) throw new Error('Invalid end cell in range');
+  const endCol = colLetterToNumber(endMatch[1]);
+  const endRow = parseInt(endMatch[2], 10);
+
+  if (startRow > endRow || startCol > endCol) {
+    throw new Error('Start must precede end in range');
+  }
+
+  return { startCol, startRow, endCol, endRow };
+};
+
+// Helper function to convert Excel column letters to index (A=0, B=1, etc.)
+const getColumnIndex = (column: string): number => {
+  let result = 0;
+  for (let i = 0; i < column.length; i++) {
+    result *= 26;
+    result += column.charCodeAt(i) - 'A'.charCodeAt(0) + 1;
+  }
+  return result - 1;
+};
+
+/**
+ * Fetches values from a specified range in a Google Sheet (published as CSV)
+ * and returns a 1D array of cell values (row-major order: left-to-right, top-to-bottom).
+ * Preserves original types: numbers as Number, text as string, empties as ''.
+ *
+ * @param {string} sheetUrl - Full Google Sheets URL (e.g., 'https://docs.google.com/spreadsheets/d/1abc123xyz/edit')
+ * @param {string} range - A1-style range (e.g., 'A1:A4', 'A1:C1', 'A1:B3')
+ * @returns {Promise<(string | number)[]>} - 1D array of cell values preserving types
+ * @throws Error on invalid URL, range, fetch failure, or out-of-bounds range
+ */
+const getSheetRangeValues = async (sheetUrl, range, apiKey) => {
+  const sheetId = extractSheetId(sheetUrl);
+  if (!sheetId) {
+    throw new Error(
+      'Invalid Google Sheets URL. Expected format: https://docs.google.com/spreadsheets/d/{ID}/edit'
+    );
+  }
+  if (!apiKey) {
+    throw new Error('API key is required for Google Sheets API access');
+  }
+  if (!range) {
+    throw new Error('Range is required (e.g., "A1:B3")');
+  }
+
+  // Construct API URL (uses first sheet by default; append !SheetName to range for specific tabs)
+  const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}?key=${apiKey}`;
+
+  try {
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `API fetch failed: ${response.status} ${response.statusText} - ${errorText}`
+      );
+    }
+    const responseData = await response.json();
+
+    // Extract 2D values (assumes ROWS majorDimension; API defaults to this for A1 ranges)
+    const values2D = responseData.values || [];
+    if (!Array.isArray(values2D)) {
+      throw new Error('Invalid API response: expected 2D array');
+    }
+
+    // Flatten and type-preserve (API returns strings; detect numbers)
+    const toValue = cell => {
+      if (cell === null || cell === undefined) return '';
+      const str = String(cell).trim();
+      const num = Number(str);
+      // If it parses to number and stringifies back to original (no leading zeros loss, etc.)
+      return !isNaN(num) && String(num) === str ? num : str;
+    };
+
+    const values = values2D.flat().map(toValue);
+
+    return values;
+  } catch (error) {
+    console.error('Error fetching/parsing sheet via API:', error);
+    throw error;
+  }
 };
 
 const SheetData = () => {
@@ -65,13 +154,6 @@ const SheetData = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [PlotComponent, setPlotComponent] = useState<any>(null);
-
-  // Initialize with a sample URL
-  useEffect(() => {
-    setSheetUrl(
-      'https://docs.google.com/spreadsheets/d/1Z4M4UY6dykUeLG5-Cf4vQWfDaLE1numAFXgePSrPkDs/export?format=csv&gid=0&range=A1%3AD4'
-    );
-  }, []);
 
   // Dynamically import Plot component to avoid SSR issues
   useEffect(() => {
@@ -107,19 +189,112 @@ const SheetData = () => {
       setLoading(true);
       setError(null);
 
-      // For Google Sheets, we can fetch as CSV or JSON
-      // Using CSV format here and converting to JSON
-      const response = await fetch(sheetUrl);
+      // Check if the sheet URL is a Google Sheets URL
+      if (sheetUrl.includes('docs.google.com/spreadsheets')) {
+        // Use the new getSheetRangeValues function for Google Sheets
+        if (
+          selectedNumericColumn &&
+          selectedNumericColumn.trim() &&
+          selectedNumericColumn.match(/^[A-Z]+\d*:[A-Z]+\d*$/)
+        ) {
+          // If a valid range is provided, use getSheetRangeValues
+          const values = await getSheetRangeValues(
+            sheetUrl,
+            selectedNumericColumn,
+            googleApiKey
+          );
+          console.log(values);
+          // Convert the 1D array of values to the required format for setData
+          // Parse the range to determine if it's a single column or single row
+          const [start, end] = selectedNumericColumn.split(':');
+          const startCol = start.match(/[A-Z]+/)?.[0];
+          const startRow = parseInt(start.match(/\d+/)?.[0] || '1');
+          const endCol = end.match(/[A-Z]+/)?.[0];
+          const endRow = parseInt(end.match(/\d+/)?.[0] || '1');
 
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch data: ${response.status} ${response.statusText}`
-        );
+          let parsedData: any[] = [];
+
+          // Check if it's a single column (same column letter, different rows)
+          if (startCol === endCol && startRow !== endRow) {
+            // Single column - create an array with one object containing an array of values
+            const colName = startCol || 'Column';
+            parsedData = [{ [colName]: values }]; // Format: [{ 'A': [val1, val2, val3...] }]
+          }
+          // Check if it's a single row (same row number, different columns)
+          else if (startRow === endRow && startCol !== endCol) {
+            // Single row - create an object with column names as keys and values
+            const row: any = {};
+            for (let i = 0; i < values.length; i++) {
+              const colName = String.fromCharCode('A'.charCodeAt(0) + i);
+              row[colName] = values[i];
+            }
+            parsedData = [row]; // Format: [{ 'A': val1, 'B': val2, 'C': val3... }]
+          } else {
+            // Multiple rows and columns - format as multiple objects with generic property names
+            const colCount = endCol
+              ? colLetterToNumber(endCol) - colLetterToNumber(startCol!) + 1
+              : 1;
+            const rowCount = endRow - startRow + 1;
+
+            for (let r = 0; r < rowCount; r++) {
+              const row: any = {};
+              for (let c = 0; c < colCount; c++) {
+                const colName = String.fromCharCode('A'.charCodeAt(0) + c);
+                const index = r * colCount + c;
+                row[colName] = values[index];
+              }
+              parsedData.push(row);
+            }
+          }
+
+          setData(parsedData);
+        } else {
+          // If no range is specified, proceed with the current approach
+          // Extract the spreadsheet ID from the URL
+          const sheetIdMatch = sheetUrl.match(
+            /spreadsheets\/d\/([a-zA-Z0-9-_]+)/
+          );
+          if (!sheetIdMatch) {
+            throw new Error(
+              'Invalid Google Sheets URL. Could not extract sheet ID.'
+            );
+          }
+
+          const sheetId = sheetIdMatch[1];
+
+          // Construct the proper Google Sheets CSV export URL
+          const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+
+          const response = await fetch(csvUrl);
+
+          if (!response.ok) {
+            throw new Error(
+              `Failed to fetch data: ${response.status} ${response.statusText}`
+            );
+          }
+
+          const csvText = await response.text();
+          let parsedData = parseCSV(csvText);
+
+          setData(parsedData);
+        }
+      } else {
+        // For other types of sheet URLs (e.g., direct CSV files)
+        let fetchUrl = sheetUrl;
+
+        const response = await fetch(fetchUrl);
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch data: ${response.status} ${response.statusText}`
+          );
+        }
+
+        const csvText = await response.text();
+        let parsedData = parseCSV(csvText);
+
+        setData(parsedData);
       }
-
-      const csvText = await response.text();
-      const parsedData = parseCSV(csvText);
-      setData(parsedData);
     } catch (err) {
       console.error('Error fetching sheet data:', err);
       setError(
@@ -128,6 +303,32 @@ const SheetData = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Simple CSV parser (copied from useSheetData hook to avoid importing it)
+  const parseCSV = (csvText: string) => {
+    const lines = csvText.trim().split('\n');
+    if (lines.length < 2) return [];
+
+    const headers = lines[0]
+      .split(',')
+      .map(header => header.trim().replace(/^"|"$/g, ''));
+    const result: any[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const currentLine = lines[i].split(',');
+      const obj: any = {};
+
+      for (let j = 0; j < headers.length; j++) {
+        // Remove quotes from beginning and end if they exist
+        const value = currentLine[j]?.trim().replace(/^"|"$/g, '') || '';
+        obj[headers[j]] = value;
+      }
+
+      result.push(obj);
+    }
+
+    return result;
   };
 
   // Prepare chart data based on selected chart type
