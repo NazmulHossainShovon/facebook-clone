@@ -108,7 +108,9 @@ export const createFunnelChart = (
   numericColumns: string[],
   chartType: string,
   selectedNumericColumn?: string,
-  selectedNonNumericColumn?: string
+  selectedNonNumericColumn?: string,
+  oneDArray1?: any[],
+  originalData?: any[] // Additional parameter for the original data state
 ): { chartData: any[]; layout: any } => {
   if (numericColumns.length >= 1) {
     // Determine which columns to use based on user selection or defaults
@@ -117,15 +119,41 @@ export const createFunnelChart = (
         ? selectedNumericColumn
         : numericColumns[0];
 
-    // Extract labels and values from the data
-    const labels = data.map(row => row[selectedNonNumericColumn!]);
-    const values = data.map(row => row[selectedNumericColumn!]);
+    let yValues: any[];
+    let xValues: any[];
+
+    if (oneDArray1 && oneDArray1.length > 0) {
+      // Use oneDArray1 for y values and corresponding values from data for x values
+      // Since data and oneDArray1 are of same length as mentioned
+      yValues = oneDArray1;
+      xValues = data.map(row => {
+        // Use selected numeric column if provided and exists in data
+        if (
+          selectedNumericColumn &&
+          row.hasOwnProperty(selectedNumericColumn)
+        ) {
+          return row[selectedNumericColumn];
+        }
+        // Otherwise use the first numeric column
+        else if (numericColumns.length > 0) {
+          return row[numericColumns[0]];
+        }
+        // Fallback to a default value
+        else {
+          return 1;
+        }
+      });
+    } else {
+      // Extract labels and values from the data
+      yValues = data.map(row => row[selectedNonNumericColumn!]);
+      xValues = data.map(row => row[selectedNumericColumn!]);
+    }
 
     const chartData = [
       {
         type: chartType as any,
-        y: labels,
-        x: values,
+        y: oneDArray1,
+        x: originalData,
         textinfo: 'value+percent previous',
         textposition: 'inside',
         marker: {
@@ -152,14 +180,18 @@ export const createFunnelChart = (
     return { chartData, layout };
   } else {
     // No numeric columns, fallback to a simple chart
-    const labels: string[] = data.map((row, i) => `Row ${i + 1}`);
-    const values: number[] = data.map(() => 1); // Equal distribution
+    const yValues: string[] =
+      oneDArray1 && oneDArray1.length > 0
+        ? oneDArray1
+        : data.map((row, i) => `Row ${i + 1}`);
+    // Since data and oneDArray1 are of same length according to your requirement
+    const xValues: number[] = data.map(() => 1); // Equal distribution
 
     const chartData = [
       {
         type: chartType as any,
-        y: labels,
-        x: values,
+        y: yValues,
+        x: xValues,
         textinfo: 'value+percent previous',
         textposition: 'inside',
         marker: {

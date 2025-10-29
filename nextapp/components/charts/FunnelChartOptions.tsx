@@ -20,7 +20,7 @@ const FunnelChartOptions: React.FC<FunnelChartOptionsProps> = ({
       <div className="space-y-3">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select X-axis Column:
+            Select X-axis Range:
           </label>
           <input
             type="text"
@@ -33,7 +33,7 @@ const FunnelChartOptions: React.FC<FunnelChartOptionsProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select Y-axis Column:
+            Select Y-axis Range:
           </label>
           <input
             type="text"

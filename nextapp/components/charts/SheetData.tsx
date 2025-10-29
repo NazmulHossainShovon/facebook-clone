@@ -20,17 +20,17 @@ import {
   createFunnelChart,
   createHistogram,
   createViolinPlot,
-} from 'utils/charts/chartHelpers2';
+} from '../../utils/charts/chartHelpers2';
 import {
   createGenericChart,
   createHistogram2DContour,
   createLine3DChart,
-} from 'utils/charts/chartHelpers1';
+} from '../../utils/charts/chartHelpers1';
 import {
   fetchSheetDataByType,
   parseCSV,
   combineFunnelData,
-} from 'utils/charts/chartHelpers3';
+} from '../../utils/charts/chartHelpers3';
 
 const SheetData = () => {
   const [selectedChartType, setSelectedChartType] = useState<string>('bar');
@@ -169,7 +169,9 @@ const SheetData = () => {
           [selectedNumericColumn], // numeric columns
           selectedChartType,
           selectedNumericColumn,
-          selectedNonNumericColumn
+          selectedNonNumericColumn,
+          oneDArray1,
+          data  // Pass original data state as additional parameter
         );
       } else {
         return createFunnelChart(
@@ -178,7 +180,9 @@ const SheetData = () => {
           numericColumns,
           selectedChartType,
           selectedNumericColumn,
-          selectedNonNumericColumn
+          selectedNonNumericColumn,
+          oneDArray1,
+          data  // Pass original data state as additional parameter (same as the second parameter in this case)
         );
       }
     } else if (selectedChartType === 'line3d') {
@@ -211,7 +215,6 @@ const SheetData = () => {
   }
 
   const { chartData, layout } = prepareChartData();
-  console.log(data, oneDArray1);
 
   return (
     <div className="p-4">
