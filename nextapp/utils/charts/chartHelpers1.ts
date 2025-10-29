@@ -197,54 +197,21 @@ export const createGenericChart = (
 // Helper function to create 2D histogram contour chart
 export const createHistogram2DContour = (
   headers: string[],
-  data: SheetRow[],
+  data: any[],
   numericColumns: string[],
   selectedNumericColumn?: string,
-  selectedNonNumericColumn?: string
+  selectedNonNumericColumn?: string,
+  oneDArray1?: any[] // Additional parameter for oneDArray1
 ): { chartData: any[]; layout: any } => {
   // If specific columns are selected, use them; otherwise default to the first available
   let xCol: string;
   let yCol: string;
-  
-  if (selectedNumericColumn && numericColumns.includes(selectedNumericColumn)) {
-    // If a numeric column is selected, we need to determine the y column
-    if (selectedNonNumericColumn && headers.includes(selectedNonNumericColumn)) {
-      // Use selected non-numeric column as y-axis if available
-      xCol = selectedNumericColumn;
-      yCol = selectedNonNumericColumn;
-    } else {
-      // If no non-numeric column is selected, use the next available numeric column
-      const availableNumericCols = numericColumns.filter(col => col !== selectedNumericColumn);
-      if (availableNumericCols.length > 0) {
-        xCol = selectedNumericColumn;
-        yCol = availableNumericCols[0];
-      } else {
-        // Use the same column if no other numeric column is available
-        xCol = selectedNumericColumn;
-        yCol = selectedNumericColumn;
-      }
-    }
-  } else if (numericColumns.length >= 2) {
-    // Use the first two numeric columns if no specific selection is made
-    xCol = numericColumns[0];
-    yCol = numericColumns[1];
-  } else if (numericColumns.length === 1) {
-    // Use the same column for both x and y if only one numeric column is available
-    xCol = numericColumns[0];
-    yCol = numericColumns[0];
-  } else {
-    // No numeric data fallback
-    return createNonNumericChart(data);
-  }
-
-  // Extract the values for the selected columns
-  const x: number[] = data.map(row => parseFloat(row[xCol]) || 0);
-  const y: number[] = data.map(row => parseFloat(row[yCol]) || 0);
+  console.log(data, oneDArray1);
 
   const chartData = [
     {
-      x: x,
-      y: y,
+      x: data,
+      y: oneDArray1,
       type: 'histogram2dcontour',
       colorscale: 'Blues', // Optional: Color scheme (e.g., 'Viridis', 'Hot')
       contours: {
@@ -265,11 +232,7 @@ export const createHistogram2DContour = (
     },
   ];
 
-  const layout = createLayout(
-    `2D Histogram Contour: ${xCol} vs ${yCol}`,
-    xCol,
-    yCol
-  );
+  const layout = createLayout(`2D Histogram Contour`, 'X axis', 'Y axis');
 
   return { chartData, layout };
 };

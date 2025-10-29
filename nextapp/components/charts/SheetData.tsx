@@ -193,7 +193,8 @@ const SheetData = () => {
         data,
         numericColumns,
         selectedNumericColumn,
-        selectedNonNumericColumn
+        selectedNonNumericColumn,
+        oneDArray1
       );
     } else {
       // For other chart types, create a generic chart based on available data

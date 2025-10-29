@@ -67,7 +67,10 @@ export const parseCSV = (csvText: string): any[] => {
  * @param selectedNumericColumn - The selected numeric column range
  * @returns Promise resolving to the sheet values
  */
-export const fetchRangeData = async (sheetUrl: string, selectedNumericColumn: string) => {
+export const fetchRangeData = async (
+  sheetUrl: string,
+  selectedNumericColumn: string
+) => {
   return await getSheetRangeValues(sheetUrl, selectedNumericColumn);
 };
 
@@ -86,7 +89,9 @@ export const fetchCsvData = async (sheetUrl: string) => {
   const response = await fetch(csvUrl);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch data: ${response.status} ${response.statusText}`
+    );
   }
 
   const csvText = await response.text();
@@ -107,7 +112,7 @@ export const fetchFunnelData = async (
 ) => {
   const [numericValues, nonNumericValues] = await Promise.all([
     fetchRangeData(sheetUrl, selectedNumericColumn),
-    fetchRangeData(sheetUrl, selectedNonNumericColumn)
+    fetchRangeData(sheetUrl, selectedNonNumericColumn),
   ]);
 
   return { data: numericValues, oneDArray1: nonNumericValues };
@@ -129,25 +134,29 @@ export const combineFunnelData = (
 ): any[] => {
   const combinedData = [];
   const maxLength = Math.max(data.length, oneDArray1.length);
-  
+
   for (let i = 0; i < maxLength; i++) {
     const obj: any = {};
-    
+
     if (data[i] && typeof data[i] === 'object' && data[i][0]) {
       obj[selectedNumericColumn] = data[i][0];
     } else if (data[i] !== undefined) {
       obj[selectedNumericColumn] = data[i];
     }
-    
-    if (oneDArray1[i] && typeof oneDArray1[i] === 'object' && oneDArray1[i][0]) {
+
+    if (
+      oneDArray1[i] &&
+      typeof oneDArray1[i] === 'object' &&
+      oneDArray1[i][0]
+    ) {
       obj[selectedNonNumericColumn] = oneDArray1[i][0];
     } else if (oneDArray1[i] !== undefined) {
       obj[selectedNonNumericColumn] = oneDArray1[i];
     }
-    
+
     combinedData.push(obj);
   }
-  
+
   return combinedData;
 };
 
@@ -166,7 +175,10 @@ export const fetchSheetDataByType = async (
   selectedNonNumericColumn: string
 ) => {
   // Special handling for funnel charts
-  if (selectedChartType === 'funnel') {
+  if (
+    selectedChartType === 'funnel' ||
+    selectedChartType === 'histogram2dcontour'
+  ) {
     // Check if both selected columns are valid ranges
     if (
       isValidRange(selectedNumericColumn) &&
