@@ -26,7 +26,11 @@ import {
   createHistogram2DContour,
   createLine3DChart,
 } from 'utils/charts/chartHelpers1';
-import { getSheetRangeValues } from 'lib/actions/getSheetRangeValues';
+import {
+  fetchSheetDataByType,
+  parseCSV,
+  combineFunnelData,
+} from 'utils/charts/chartHelpers3';
 
 const SheetData = () => {
   const [selectedChartType, setSelectedChartType] = useState<string>('bar');
@@ -76,119 +80,17 @@ const SheetData = () => {
       setLoading(true);
       setError(null);
 
-      // Special handling for funnel charts
-      if (selectedChartType === 'funnel') {
-        // Check if both selected columns are valid ranges
-        if (
-          selectedNumericColumn &&
-          selectedNumericColumn.trim() &&
-          selectedNumericColumn.match(/^[A-Z]+\d*:[A-Z]+\d*$/) &&
-          selectedNonNumericColumn &&
-          selectedNonNumericColumn.trim() &&
-          selectedNonNumericColumn.match(/^[A-Z]+\d*:[A-Z]+\d*$/)
-        ) {
-          // Call getSheetRangeValues twice for funnel chart
-          const [numericValues, nonNumericValues] = await Promise.all([
-            getSheetRangeValues(sheetUrl, selectedNumericColumn),
-            getSheetRangeValues(sheetUrl, selectedNonNumericColumn),
-          ]);
+      // Fetch data based on chart type
+      const { data: fetchedData, oneDArray1: fetchedOneDArray1 } =
+        await fetchSheetDataByType(
+          sheetUrl,
+          selectedChartType,
+          selectedNumericColumn,
+          selectedNonNumericColumn
+        );
 
-          setData(numericValues);
-          setOneDArray1(nonNumericValues);
-        } else {
-          // If ranges are not valid, fallback to original approach
-          // Extract the spreadsheet ID from the URL
-          const sheetIdMatch = sheetUrl.match(
-            /spreadsheets\/d\/([a-zA-Z0-9-_]+)/
-          );
-          if (!sheetIdMatch) {
-            throw new Error(
-              'Invalid Google Sheets URL. Could not extract sheet ID.'
-            );
-          }
-
-          const sheetId = sheetIdMatch[1];
-
-          // Construct the proper Google Sheets CSV export URL
-          const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-
-          const response = await fetch(csvUrl);
-
-          if (!response.ok) {
-            throw new Error(
-              `Failed to fetch data: ${response.status} ${response.statusText}`
-            );
-          }
-
-          const csvText = await response.text();
-          let parsedData = parseCSV(csvText);
-
-          setData(parsedData);
-        }
-      } else {
-        // Check if the sheet URL is a Google Sheets URL
-        if (sheetUrl.includes('docs.google.com/spreadsheets')) {
-          // Use the new getSheetRangeValues server action for Google Sheets
-          if (
-            selectedNumericColumn &&
-            selectedNumericColumn.trim() &&
-            selectedNumericColumn.match(/^[A-Z]+\d*:[A-Z]+\d*$/)
-          ) {
-            // If a valid range is provided, use getSheetRangeValues server action
-            const values = await getSheetRangeValues(
-              sheetUrl,
-              selectedNumericColumn
-            );
-
-            setData(values);
-          } else {
-            // If no range is specified, proceed with the current approach
-            // Extract the spreadsheet ID from the URL
-            const sheetIdMatch = sheetUrl.match(
-              /spreadsheets\/d\/([a-zA-Z0-9-_]+)/
-            );
-            if (!sheetIdMatch) {
-              throw new Error(
-                'Invalid Google Sheets URL. Could not extract sheet ID.'
-              );
-            }
-
-            const sheetId = sheetIdMatch[1];
-
-            // Construct the proper Google Sheets CSV export URL
-            const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-
-            const response = await fetch(csvUrl);
-
-            if (!response.ok) {
-              throw new Error(
-                `Failed to fetch data: ${response.status} ${response.statusText}`
-              );
-            }
-
-            const csvText = await response.text();
-            let parsedData = parseCSV(csvText);
-
-            setData(parsedData);
-          }
-        } else {
-          // For other types of sheet URLs (e.g., direct CSV files)
-          let fetchUrl = sheetUrl;
-
-          const response = await fetch(fetchUrl);
-
-          if (!response.ok) {
-            throw new Error(
-              `Failed to fetch data: ${response.status} ${response.statusText}`
-            );
-          }
-
-          const csvText = await response.text();
-          let parsedData = parseCSV(csvText);
-
-          setData(parsedData);
-        }
-      }
+      setData(fetchedData);
+      setOneDArray1(fetchedOneDArray1);
     } catch (err) {
       console.error('Error fetching sheet data:', err);
       setError(
@@ -197,32 +99,6 @@ const SheetData = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Simple CSV parser (copied from useSheetData hook to avoid importing it)
-  const parseCSV = (csvText: string) => {
-    const lines = csvText.trim().split('\n');
-    if (lines.length < 2) return [];
-
-    const headers = lines[0]
-      .split(',')
-      .map(header => header.trim().replace(/^"|"$/g, ''));
-    const result: any[] = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const currentLine = lines[i].split(',');
-      const obj: any = {};
-
-      for (let j = 0; j < headers.length; j++) {
-        // Remove quotes from beginning and end if they exist
-        const value = currentLine[j]?.trim().replace(/^"|"$/g, '') || '';
-        obj[headers[j]] = value;
-      }
-
-      result.push(obj);
-    }
-
-    return result;
   };
 
   // Prepare chart data based on selected chart type
@@ -279,29 +155,13 @@ const SheetData = () => {
     } else if (['funnel', 'funnelarea'].includes(selectedChartType)) {
       // For funnel charts, if we have the special oneDArray1 data from range values, use it
       if (selectedChartType === 'funnel' && oneDArray1.length > 0) {
-        // Create a combined array for funnel chart from both data sets
-        const combinedData = [];
-        const maxLength = Math.max(data.length, oneDArray1.length);
-        for (let i = 0; i < maxLength; i++) {
-          const obj: any = {};
-          if (data[i] && typeof data[i] === 'object' && data[i][0]) {
-            obj[selectedNumericColumn] = data[i][0];
-          } else if (data[i] !== undefined) {
-            obj[selectedNumericColumn] = data[i];
-          }
-
-          if (
-            oneDArray1[i] &&
-            typeof oneDArray1[i] === 'object' &&
-            oneDArray1[i][0]
-          ) {
-            obj[selectedNonNumericColumn] = oneDArray1[i][0];
-          } else if (oneDArray1[i] !== undefined) {
-            obj[selectedNonNumericColumn] = oneDArray1[i];
-          }
-
-          combinedData.push(obj);
-        }
+        // Use the helper function to combine funnel data
+        const combinedData = combineFunnelData(
+          data,
+          oneDArray1,
+          selectedNumericColumn,
+          selectedNonNumericColumn
+        );
         const funnelHeaders = [selectedNumericColumn, selectedNonNumericColumn];
         return createFunnelChart(
           funnelHeaders,
