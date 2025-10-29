@@ -22,36 +22,26 @@ const FunnelChartOptions: React.FC<FunnelChartOptionsProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Select X-axis Column:
           </label>
-          <select
+          <input
+            type="text"
             value={selectedNumericColumn || ''}
             onChange={e => setSelectedNumericColumn(e.target.value)}
+            list="allHeadersX"
             className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          >
-            {allHeaders.map((col, index) => (
-              <option key={index} value={col}>
-                {col}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Select Y-axis Column:
           </label>
-          <select
+          <input
+            type="text"
             value={selectedNonNumericColumn || ''}
-            onChange={e =>
-              setSelectedNonNumericColumn(e.target.value)
-            }
+            onChange={e => setSelectedNonNumericColumn(e.target.value)}
+            list="allHeadersY"
             className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          >
-            {allHeaders.map((col, index) => (
-              <option key={index} value={col}>
-                {col}
-              </option>
-            ))}
-          </select>
+          />
         </div>
       </div>
     </div>

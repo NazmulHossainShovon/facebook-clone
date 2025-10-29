@@ -37,6 +37,7 @@ const SheetData = () => {
   const [xAxisTitle, setXAxisTitle] = useState<string>('');
   const [sheetUrl, setSheetUrl] = useState<string>('');
   const [data, setData] = useState<any[]>([]);
+  const [oneDArray1, setOneDArray1] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [PlotComponent, setPlotComponent] = useState<any>(null);
@@ -75,23 +76,27 @@ const SheetData = () => {
       setLoading(true);
       setError(null);
 
-      // Check if the sheet URL is a Google Sheets URL
-      if (sheetUrl.includes('docs.google.com/spreadsheets')) {
-        // Use the new getSheetRangeValues server action for Google Sheets
+      // Special handling for funnel charts
+      if (selectedChartType === 'funnel') {
+        // Check if both selected columns are valid ranges
         if (
           selectedNumericColumn &&
           selectedNumericColumn.trim() &&
-          selectedNumericColumn.match(/^[A-Z]+\d*:[A-Z]+\d*$/)
+          selectedNumericColumn.match(/^[A-Z]+\d*:[A-Z]+\d*$/) &&
+          selectedNonNumericColumn &&
+          selectedNonNumericColumn.trim() &&
+          selectedNonNumericColumn.match(/^[A-Z]+\d*:[A-Z]+\d*$/)
         ) {
-          // If a valid range is provided, use getSheetRangeValues server action
-          const values = await getSheetRangeValues(
-            sheetUrl,
-            selectedNumericColumn
-          );
+          // Call getSheetRangeValues twice for funnel chart
+          const [numericValues, nonNumericValues] = await Promise.all([
+            getSheetRangeValues(sheetUrl, selectedNumericColumn),
+            getSheetRangeValues(sheetUrl, selectedNonNumericColumn),
+          ]);
 
-          setData(values);
+          setData(numericValues);
+          setOneDArray1(nonNumericValues);
         } else {
-          // If no range is specified, proceed with the current approach
+          // If ranges are not valid, fallback to original approach
           // Extract the spreadsheet ID from the URL
           const sheetIdMatch = sheetUrl.match(
             /spreadsheets\/d\/([a-zA-Z0-9-_]+)/
@@ -121,21 +126,68 @@ const SheetData = () => {
           setData(parsedData);
         }
       } else {
-        // For other types of sheet URLs (e.g., direct CSV files)
-        let fetchUrl = sheetUrl;
+        // Check if the sheet URL is a Google Sheets URL
+        if (sheetUrl.includes('docs.google.com/spreadsheets')) {
+          // Use the new getSheetRangeValues server action for Google Sheets
+          if (
+            selectedNumericColumn &&
+            selectedNumericColumn.trim() &&
+            selectedNumericColumn.match(/^[A-Z]+\d*:[A-Z]+\d*$/)
+          ) {
+            // If a valid range is provided, use getSheetRangeValues server action
+            const values = await getSheetRangeValues(
+              sheetUrl,
+              selectedNumericColumn
+            );
 
-        const response = await fetch(fetchUrl);
+            setData(values);
+          } else {
+            // If no range is specified, proceed with the current approach
+            // Extract the spreadsheet ID from the URL
+            const sheetIdMatch = sheetUrl.match(
+              /spreadsheets\/d\/([a-zA-Z0-9-_]+)/
+            );
+            if (!sheetIdMatch) {
+              throw new Error(
+                'Invalid Google Sheets URL. Could not extract sheet ID.'
+              );
+            }
 
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch data: ${response.status} ${response.statusText}`
-          );
+            const sheetId = sheetIdMatch[1];
+
+            // Construct the proper Google Sheets CSV export URL
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+
+            const response = await fetch(csvUrl);
+
+            if (!response.ok) {
+              throw new Error(
+                `Failed to fetch data: ${response.status} ${response.statusText}`
+              );
+            }
+
+            const csvText = await response.text();
+            let parsedData = parseCSV(csvText);
+
+            setData(parsedData);
+          }
+        } else {
+          // For other types of sheet URLs (e.g., direct CSV files)
+          let fetchUrl = sheetUrl;
+
+          const response = await fetch(fetchUrl);
+
+          if (!response.ok) {
+            throw new Error(
+              `Failed to fetch data: ${response.status} ${response.statusText}`
+            );
+          }
+
+          const csvText = await response.text();
+          let parsedData = parseCSV(csvText);
+
+          setData(parsedData);
         }
-
-        const csvText = await response.text();
-        let parsedData = parseCSV(csvText);
-
-        setData(parsedData);
       }
     } catch (err) {
       console.error('Error fetching sheet data:', err);
@@ -225,14 +277,50 @@ const SheetData = () => {
           : numericColumns;
       return createViolinPlot(headers, data, columnsToUse, xAxisTitle);
     } else if (['funnel', 'funnelarea'].includes(selectedChartType)) {
-      return createFunnelChart(
-        headers,
-        data,
-        numericColumns,
-        selectedChartType,
-        selectedNumericColumn,
-        selectedNonNumericColumn
-      );
+      // For funnel charts, if we have the special oneDArray1 data from range values, use it
+      if (selectedChartType === 'funnel' && oneDArray1.length > 0) {
+        // Create a combined array for funnel chart from both data sets
+        const combinedData = [];
+        const maxLength = Math.max(data.length, oneDArray1.length);
+        for (let i = 0; i < maxLength; i++) {
+          const obj: any = {};
+          if (data[i] && typeof data[i] === 'object' && data[i][0]) {
+            obj[selectedNumericColumn] = data[i][0];
+          } else if (data[i] !== undefined) {
+            obj[selectedNumericColumn] = data[i];
+          }
+
+          if (
+            oneDArray1[i] &&
+            typeof oneDArray1[i] === 'object' &&
+            oneDArray1[i][0]
+          ) {
+            obj[selectedNonNumericColumn] = oneDArray1[i][0];
+          } else if (oneDArray1[i] !== undefined) {
+            obj[selectedNonNumericColumn] = oneDArray1[i];
+          }
+
+          combinedData.push(obj);
+        }
+        const funnelHeaders = [selectedNumericColumn, selectedNonNumericColumn];
+        return createFunnelChart(
+          funnelHeaders,
+          combinedData,
+          [selectedNumericColumn], // numeric columns
+          selectedChartType,
+          selectedNumericColumn,
+          selectedNonNumericColumn
+        );
+      } else {
+        return createFunnelChart(
+          headers,
+          data,
+          numericColumns,
+          selectedChartType,
+          selectedNumericColumn,
+          selectedNonNumericColumn
+        );
+      }
     } else if (selectedChartType === 'line3d') {
       return createLine3DChart(headers, data, numericColumns);
     } else if (selectedChartType === 'histogram2dcontour') {
@@ -263,6 +351,7 @@ const SheetData = () => {
   }
 
   const { chartData, layout } = prepareChartData();
+  console.log(data, oneDArray1);
 
   return (
     <div className="p-4">
