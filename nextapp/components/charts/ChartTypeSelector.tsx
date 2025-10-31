@@ -3,6 +3,7 @@
 import React from 'react';
 import ViolinPlotOptions from './ViolinPlotOptions';
 import FunnelChartOptions from './FunnelChartOptions';
+import ContourChartOptions from './ContourChartOptions';
 import { ChartTypeOption } from '../../constants/charts/chartTypes';
 
 interface ChartTypeSelectorProps {
@@ -77,6 +78,14 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
               setSelectedNonNumericColumn={setSelectedNonNumericColumn}
             />
           )}
+
+        {selectedChartType === 'contour' && setSelectedNumericColumn && (
+          <ContourChartOptions
+            numericColumns={numericColumns}
+            selectedNumericColumn={selectedNumericColumn}
+            setSelectedNumericColumn={setSelectedNumericColumn}
+          />
+        )}
       </div>
     </div>
   );

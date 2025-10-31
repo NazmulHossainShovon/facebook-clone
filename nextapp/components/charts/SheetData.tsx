@@ -25,6 +25,7 @@ import {
   createGenericChart,
   createHistogram2DContour,
   createLine3DChart,
+  createContourChart,
 } from '../../utils/charts/chartHelpers1';
 import {
   fetchSheetDataByType,
@@ -187,6 +188,13 @@ const SheetData = () => {
       }
     } else if (selectedChartType === 'line3d') {
       return createLine3DChart(headers, data, numericColumns);
+    } else if (selectedChartType === 'contour') {
+      return createContourChart(
+        headers,
+        data,
+        numericColumns,
+        selectedNumericColumn
+      );
     } else if (selectedChartType === 'histogram2dcontour') {
       return createHistogram2DContour(
         headers,
