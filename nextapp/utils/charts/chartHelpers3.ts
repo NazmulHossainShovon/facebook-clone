@@ -1,4 +1,4 @@
-import { getSheetRangeValues } from 'lib/actions/getSheetRangeValues';
+import { getSheetRangeValues, getSheetRangeValues2D } from 'lib/actions/getSheetRangeValues';
 
 /**
  * Validates if a column string is in the format of a Google Sheets range (e.g., A1:B5)
@@ -160,6 +160,13 @@ export const combineFunnelData = (
   return combinedData;
 };
 
+// Define the result type for sheet data fetching
+export type SheetDataResult = {
+  data: any[];
+  oneDArray1?: any[];
+  twoDArray1?: any[][];
+};
+
 /**
  * Fetches sheet data based on the chart type and column selections
  * @param sheetUrl - The URL of the sheet to fetch
@@ -173,9 +180,22 @@ export const fetchSheetDataByType = async (
   selectedChartType: string,
   selectedNumericColumn: string,
   selectedNonNumericColumn: string
-) => {
+): Promise<SheetDataResult> => {
+  // Special handling for contour chart
+  if (selectedChartType === 'contour') {
+    // Check if the selected column is a valid range
+    if (isValidRange(selectedNumericColumn)) {
+      // Call getSheetRangeValues2D for contour chart to get 2D data
+      const values2D = await getSheetRangeValues2D(sheetUrl, selectedNumericColumn);
+      return { data: values2D.flat(), twoDArray1: values2D }; // Flatten data for compatibility, keep 2D array
+    } else {
+      // If range is not valid, fallback to original approach
+      const csvData = await fetchCsvData(sheetUrl);
+      return { data: csvData, twoDArray1: [] };
+    }
+  }
   // Special handling for funnel charts
-  if (
+  else if (
     selectedChartType === 'funnel' ||
     selectedChartType === 'histogram2dcontour'
   ) {

@@ -29,7 +29,6 @@ import {
 } from '../../utils/charts/chartHelpers1';
 import {
   fetchSheetDataByType,
-  parseCSV,
   combineFunnelData,
 } from '../../utils/charts/chartHelpers3';
 
@@ -43,6 +42,7 @@ const SheetData = () => {
   const [sheetUrl, setSheetUrl] = useState<string>('');
   const [data, setData] = useState<any[]>([]);
   const [oneDArray1, setOneDArray1] = useState<any[]>([]);
+  const [twoDArray1, setTwoDArray1] = useState<any[][]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [PlotComponent, setPlotComponent] = useState<any>(null);
@@ -82,16 +82,16 @@ const SheetData = () => {
       setError(null);
 
       // Fetch data based on chart type
-      const { data: fetchedData, oneDArray1: fetchedOneDArray1 } =
-        await fetchSheetDataByType(
-          sheetUrl,
-          selectedChartType,
-          selectedNumericColumn,
-          selectedNonNumericColumn
-        );
+      const result = await fetchSheetDataByType(
+        sheetUrl,
+        selectedChartType,
+        selectedNumericColumn,
+        selectedNonNumericColumn
+      );
 
-      setData(fetchedData);
-      setOneDArray1(fetchedOneDArray1);
+      setData(result.data);
+      setOneDArray1(result.oneDArray1 || []);
+      setTwoDArray1(result.twoDArray1 || []);
     } catch (err) {
       console.error('Error fetching sheet data:', err);
       setError(
@@ -172,7 +172,7 @@ const SheetData = () => {
           selectedNumericColumn,
           selectedNonNumericColumn,
           oneDArray1,
-          data  // Pass original data state as additional parameter
+          data // Pass original data state as additional parameter
         );
       } else {
         return createFunnelChart(
@@ -183,7 +183,7 @@ const SheetData = () => {
           selectedNumericColumn,
           selectedNonNumericColumn,
           oneDArray1,
-          data  // Pass original data state as additional parameter (same as the second parameter in this case)
+          data // Pass original data state as additional parameter (same as the second parameter in this case)
         );
       }
     } else if (selectedChartType === 'line3d') {
@@ -193,7 +193,8 @@ const SheetData = () => {
         headers,
         data,
         numericColumns,
-        selectedNumericColumn
+        selectedNumericColumn,
+        twoDArray1
       );
     } else if (selectedChartType === 'histogram2dcontour') {
       return createHistogram2DContour(
