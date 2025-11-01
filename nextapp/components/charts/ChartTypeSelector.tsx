@@ -7,6 +7,7 @@ import ContourChartOptions from './ContourChartOptions';
 import HeatmapChartOptions from './HeatmapChartOptions';
 import Scatter3DChartOptions from './Scatter3DChartOptions';
 import SurfaceChartOptions from './SurfaceChartOptions';
+import Mesh3DChartOptions from './Mesh3DChartOptions';
 import { ChartTypeOption } from '../../constants/charts/chartTypes';
 
 interface ChartTypeSelectorProps {
@@ -22,6 +23,12 @@ interface ChartTypeSelectorProps {
   setSelectedNonNumericColumn?: (value: string) => void;
   range3?: string;
   setRange3?: (value: string) => void;
+  range4?: string;
+  setRange4?: (value: string) => void;
+  range5?: string;
+  setRange5?: (value: string) => void;
+  range6?: string;
+  setRange6?: (value: string) => void;
   xAxisTitle?: string;
   setXAxisTitle?: (value: string) => void;
 }
@@ -39,6 +46,12 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
   setSelectedNonNumericColumn,
   range3,
   setRange3,
+  range4,
+  setRange4,
+  range5,
+  setRange5,
+  range6,
+  setRange6,
   xAxisTitle,
   setXAxisTitle,
 }) => {
@@ -130,6 +143,30 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
             setSelectedNonNumericColumn={setSelectedNonNumericColumn}
             range3={range3 || ''}
             setRange3={setRange3}
+          />
+        )}
+
+        {selectedChartType === 'mesh3d' && 
+          setSelectedNumericColumn && 
+          setSelectedNonNumericColumn && 
+          setRange3 && 
+          setRange4 && 
+          setRange5 && 
+          setRange6 && (
+          <Mesh3DChartOptions
+            allHeaders={allHeaders}
+            selectedNumericColumn={selectedNumericColumn || ''}
+            setSelectedNumericColumn={setSelectedNumericColumn}
+            selectedNonNumericColumn={selectedNonNumericColumn || ''}
+            setSelectedNonNumericColumn={setSelectedNonNumericColumn}
+            range3={range3 || ''}
+            setRange3={setRange3}
+            range4={range4 || ''}
+            setRange4={setRange4}
+            range5={range5 || ''}
+            setRange5={setRange5}
+            range6={range6 || ''}
+            setRange6={setRange6}
           />
         )}
       </div>

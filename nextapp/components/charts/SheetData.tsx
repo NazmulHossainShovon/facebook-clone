@@ -30,6 +30,7 @@ import { createScatter3DChart } from '../../utils/charts/createScatter3DChart';
 import { createContourChart } from '../../utils/charts/createContourChart';
 import { createHeatmapChart } from '../../utils/charts/createHeatmapChart';
 import { createSurfaceChart } from '../../utils/charts/createSurfaceChart';
+import { createMesh3DChart } from '../../utils/charts/createMesh3DChart';
 import { combineFunnelData } from '../../utils/charts/chartHelpers3';
 import { fetchSheetDataByType } from 'utils/charts/fetchSheetDataByType';
 
@@ -40,11 +41,17 @@ const SheetData = () => {
   const [selectedNonNumericColumn, setSelectedNonNumericColumn] =
     useState<string>('');
   const [range3, setRange3] = useState<string>('');
+  const [range4, setRange4] = useState<string>('');
+  const [range5, setRange5] = useState<string>('');
+  const [range6, setRange6] = useState<string>('');
   const [xAxisTitle, setXAxisTitle] = useState<string>('');
   const [sheetUrl, setSheetUrl] = useState<string>('');
   const [data, setData] = useState<any[]>([]);
   const [oneDArray1, setOneDArray1] = useState<any[]>([]);
   const [oneDArray2, setOneDArray2] = useState<any[]>([]);
+  const [oneDArray3, setOneDArray3] = useState<any[]>([]);
+  const [oneDArray4, setOneDArray4] = useState<any[]>([]);
+  const [oneDArray5, setOneDArray5] = useState<any[]>([]);
   const [twoDArray1, setTwoDArray1] = useState<any[][]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,12 +97,18 @@ const SheetData = () => {
         selectedChartType,
         selectedNumericColumn,
         selectedNonNumericColumn,
-        range3
+        range3,
+        range4,
+        range5,
+        range6
       );
 
       setData(result.data);
       setOneDArray1(result.oneDArray1 || []);
       setOneDArray2(result.oneDArray2 || []);
+      setOneDArray3(result.oneDArray3 || []);
+      setOneDArray4(result.oneDArray4 || []);
+      setOneDArray5(result.oneDArray5 || []);
       setTwoDArray1(result.twoDArray1 || []);
     } catch (err) {
       console.error('Error fetching sheet data:', err);
@@ -224,6 +237,15 @@ const SheetData = () => {
     } else if (selectedChartType === 'surface') {
       // For surface chart, we use the data arrays (x: data, y: oneDArray1, z: twoDArray1)
       return createSurfaceChart(data, oneDArray1, twoDArray1);
+    } else if (selectedChartType === 'mesh3d') {
+      return createMesh3DChart(
+        data,
+        oneDArray1,
+        oneDArray2,
+        oneDArray3,
+        oneDArray4,
+        oneDArray5
+      );
     } else {
       // For other chart types, create a generic chart based on available data
       return createGenericChart(
@@ -271,6 +293,12 @@ const SheetData = () => {
         setSelectedNonNumericColumn={setSelectedNonNumericColumn}
         range3={range3}
         setRange3={setRange3}
+        range4={range4}
+        setRange4={setRange4}
+        range5={range5}
+        setRange5={setRange5}
+        range6={range6}
+        setRange6={setRange6}
         xAxisTitle={xAxisTitle}
         setXAxisTitle={setXAxisTitle}
       />
