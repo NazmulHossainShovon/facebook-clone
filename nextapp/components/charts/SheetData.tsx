@@ -92,7 +92,7 @@ const SheetData = () => {
         selectedChartType,
         selectedNumericColumn,
         selectedNonNumericColumn,
-        selectedChartType === 'scatter3d' ? range3 : undefined
+        range3
       );
 
       setData(result.data);

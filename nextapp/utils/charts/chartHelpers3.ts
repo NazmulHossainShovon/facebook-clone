@@ -193,15 +193,16 @@ export const fetchSheetDataByType = async (
     if (
       isValidRange(selectedNumericColumn) &&
       isValidRange(selectedNonNumericColumn) &&
-      range3 && isValidRange(range3)
+      range3 &&
+      isValidRange(range3)
     ) {
       // Call fetchRangeData 3 times with the x, y, and z column ranges
       const [xValues, yValues, zValues] = await Promise.all([
         fetchRangeData(sheetUrl, selectedNumericColumn),
         fetchRangeData(sheetUrl, selectedNonNumericColumn),
-        fetchRangeData(sheetUrl, range3)
+        fetchRangeData(sheetUrl, range3),
       ]);
-      
+
       return { data: xValues, oneDArray1: yValues, oneDArray2: zValues };
     } else {
       // If ranges are not valid, fallback to original approach
@@ -215,15 +216,16 @@ export const fetchSheetDataByType = async (
     if (
       isValidRange(selectedNumericColumn) &&
       isValidRange(selectedNonNumericColumn) &&
-      range3 && isValidRange(range3)
+      range3 &&
+      isValidRange(range3)
     ) {
       // Call fetchRangeData for x and y axes, and getSheetRangeValues2D for z (surface)
       const [xValues, yValues, zValues2D] = await Promise.all([
         fetchRangeData(sheetUrl, selectedNumericColumn),
         fetchRangeData(sheetUrl, selectedNonNumericColumn),
-        getSheetRangeValues2D(sheetUrl, range3)
+        getSheetRangeValues2D(sheetUrl, range3),
       ]);
-      
+
       return { data: xValues, oneDArray1: yValues, twoDArray1: zValues2D };
     } else {
       // If ranges are not valid, fallback to original approach
