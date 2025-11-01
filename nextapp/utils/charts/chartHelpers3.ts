@@ -209,6 +209,28 @@ export const fetchSheetDataByType = async (
       return { data: csvData, oneDArray1: [], oneDArray2: [] };
     }
   }
+  // Special handling for surface chart
+  else if (selectedChartType === 'surface') {
+    // For surface chart, we need x, y ranges and a 2D range for z (surface heights)
+    if (
+      isValidRange(selectedNumericColumn) &&
+      isValidRange(selectedNonNumericColumn) &&
+      range3 && isValidRange(range3)
+    ) {
+      // Call fetchRangeData for x and y axes, and getSheetRangeValues2D for z (surface)
+      const [xValues, yValues, zValues2D] = await Promise.all([
+        fetchRangeData(sheetUrl, selectedNumericColumn),
+        fetchRangeData(sheetUrl, selectedNonNumericColumn),
+        getSheetRangeValues2D(sheetUrl, range3)
+      ]);
+      
+      return { data: xValues, oneDArray1: yValues, twoDArray1: zValues2D };
+    } else {
+      // If ranges are not valid, fallback to original approach
+      const csvData = await fetchCsvData(sheetUrl);
+      return { data: csvData, oneDArray1: [], twoDArray1: [] };
+    }
+  }
   // Special handling for contour chart
   else if (selectedChartType === 'contour' || selectedChartType === 'heatmap') {
     // Check if the selected column is a valid range

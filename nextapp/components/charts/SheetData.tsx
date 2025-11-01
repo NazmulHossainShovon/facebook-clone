@@ -29,6 +29,7 @@ import {
 import { createScatter3DChart } from '../../utils/charts/createScatter3DChart';
 import { createContourChart } from '../../utils/charts/createContourChart';
 import { createHeatmapChart } from '../../utils/charts/createHeatmapChart';
+import { createSurfaceChart } from '../../utils/charts/createSurfaceChart';
 import {
   fetchSheetDataByType,
   combineFunnelData,
@@ -222,6 +223,9 @@ const SheetData = () => {
     } else if (selectedChartType === 'scatter3d') {
       // For scatter3d, we use the data arrays directly (x: data, y: oneDArray1, z: oneDArray2)
       return createScatter3DChart(data, oneDArray1, oneDArray2);
+    } else if (selectedChartType === 'surface') {
+      // For surface chart, we use the data arrays (x: data, y: oneDArray1, z: twoDArray1)
+      return createSurfaceChart(data, oneDArray1, twoDArray1);
     } else {
       // For other chart types, create a generic chart based on available data
       return createGenericChart(

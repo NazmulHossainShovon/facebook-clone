@@ -6,6 +6,7 @@ import FunnelChartOptions from './FunnelChartOptions';
 import ContourChartOptions from './ContourChartOptions';
 import HeatmapChartOptions from './HeatmapChartOptions';
 import Scatter3DChartOptions from './Scatter3DChartOptions';
+import SurfaceChartOptions from './SurfaceChartOptions';
 import { ChartTypeOption } from '../../constants/charts/chartTypes';
 
 interface ChartTypeSelectorProps {
@@ -107,6 +108,21 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
           setSelectedNonNumericColumn && 
           setRange3 && (
           <Scatter3DChartOptions
+            allHeaders={allHeaders}
+            selectedNumericColumn={selectedNumericColumn || ''}
+            setSelectedNumericColumn={setSelectedNumericColumn}
+            selectedNonNumericColumn={selectedNonNumericColumn || ''}
+            setSelectedNonNumericColumn={setSelectedNonNumericColumn}
+            range3={range3 || ''}
+            setRange3={setRange3}
+          />
+        )}
+
+        {selectedChartType === 'surface' && 
+          setSelectedNumericColumn && 
+          setSelectedNonNumericColumn && 
+          setRange3 && (
+          <SurfaceChartOptions
             allHeaders={allHeaders}
             selectedNumericColumn={selectedNumericColumn || ''}
             setSelectedNumericColumn={setSelectedNumericColumn}
