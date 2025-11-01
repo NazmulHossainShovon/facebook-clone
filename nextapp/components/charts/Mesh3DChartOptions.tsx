@@ -31,89 +31,95 @@ const Mesh3DChartOptions: React.FC<Mesh3DChartOptionsProps> = ({
   setRange6,
 }) => {
   return (
-    <div className="md:col-span-7 grid grid-cols-1 md:grid-cols-6 gap-3">
-      {/* X coordinates input */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          X Coordinates
-        </label>
-        <input
-          type="text"
-          value={selectedNumericColumn}
-          onChange={e => setSelectedNumericColumn(e.target.value)}
-          placeholder="Enter X coordinates range"
-          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
+    <div className="md:col-span-7">
+      {/* First row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+        {/* X coordinates input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            X Coordinates
+          </label>
+          <input
+            type="text"
+            value={selectedNumericColumn}
+            onChange={e => setSelectedNumericColumn(e.target.value)}
+            placeholder="Enter X coordinates range"
+            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        {/* Y coordinates input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Y Coordinates
+          </label>
+          <input
+            type="text"
+            value={selectedNonNumericColumn}
+            onChange={e => setSelectedNonNumericColumn(e.target.value)}
+            placeholder="Enter Y coordinates range"
+            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        {/* Z coordinates input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Z Coordinates
+          </label>
+          <input
+            type="text"
+            value={range3}
+            onChange={e => setRange3(e.target.value)}
+            placeholder="Enter Z coordinates range"
+            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
       </div>
 
-      {/* Y coordinates input */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Y Coordinates
-        </label>
-        <input
-          type="text"
-          value={selectedNonNumericColumn}
-          onChange={e => setSelectedNonNumericColumn(e.target.value)}
-          placeholder="Enter Y coordinates range"
-          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
+      {/* Second row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {/* i indices input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            i Indices
+          </label>
+          <input
+            type="text"
+            value={range4}
+            onChange={e => setRange4(e.target.value)}
+            placeholder="Enter i indices range"
+            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-      {/* Z coordinates input */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Z Coordinates
-        </label>
-        <input
-          type="text"
-          value={range3}
-          onChange={e => setRange3(e.target.value)}
-          placeholder="Enter Z coordinates range"
-          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
+        {/* j indices input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            j Indices
+          </label>
+          <input
+            type="text"
+            value={range5}
+            onChange={e => setRange5(e.target.value)}
+            placeholder="Enter j indices range"
+            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-      {/* i indices input */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          i Indices
-        </label>
-        <input
-          type="text"
-          value={range4}
-          onChange={e => setRange4(e.target.value)}
-          placeholder="Enter i indices range"
-          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-
-      {/* j indices input */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          j Indices
-        </label>
-        <input
-          type="text"
-          value={range5}
-          onChange={e => setRange5(e.target.value)}
-          placeholder="Enter j indices range"
-          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-
-      {/* k indices input */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          k Indices
-        </label>
-        <input
-          type="text"
-          value={range6}
-          onChange={e => setRange6(e.target.value)}
-          placeholder="Enter k indices range"
-          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
+        {/* k indices input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            k Indices
+          </label>
+          <input
+            type="text"
+            value={range6}
+            onChange={e => setRange6(e.target.value)}
+            placeholder="Enter k indices range"
+            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
       </div>
     </div>
   );
