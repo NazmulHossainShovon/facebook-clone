@@ -5,6 +5,7 @@ import { Providers } from './providers';
 import { ChatProvider } from './lib/chat-store';
 import Footer from 'components/Footer';
 import { Toaster } from '../components/ui/toaster';
+import RootNav from 'components/RootNav';
 
 export const metadata: Metadata = {
   title: 'appq.online - Your All-in-One SaaS Platform',
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className="font-sans min-h-screen flex flex-col">
         <Providers>
           <ChatProvider>
+            <RootNav />
             <div className="flex-grow">{children}</div>
             <Footer />
             <Toaster />
