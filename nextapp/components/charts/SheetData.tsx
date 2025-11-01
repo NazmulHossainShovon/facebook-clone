@@ -30,10 +30,8 @@ import { createScatter3DChart } from '../../utils/charts/createScatter3DChart';
 import { createContourChart } from '../../utils/charts/createContourChart';
 import { createHeatmapChart } from '../../utils/charts/createHeatmapChart';
 import { createSurfaceChart } from '../../utils/charts/createSurfaceChart';
-import {
-  fetchSheetDataByType,
-  combineFunnelData,
-} from '../../utils/charts/chartHelpers3';
+import { combineFunnelData } from '../../utils/charts/chartHelpers3';
+import { fetchSheetDataByType } from 'utils/charts/fetchSheetDataByType';
 
 const SheetData = () => {
   const [selectedChartType, setSelectedChartType] = useState<string>('bar');
