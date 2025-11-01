@@ -25,10 +25,10 @@ import {
   createGenericChart,
   createHistogram2DContour,
   createLine3DChart,
-  createContourChart,
-  createHeatmapChart,
-  createScatter3DChart,
 } from '../../utils/charts/chartHelpers1';
+import { createScatter3DChart } from '../../utils/charts/createScatter3DChart';
+import { createContourChart } from '../../utils/charts/createContourChart';
+import { createHeatmapChart } from '../../utils/charts/createHeatmapChart';
 import {
   fetchSheetDataByType,
   combineFunnelData,
