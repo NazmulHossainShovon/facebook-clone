@@ -6,6 +6,48 @@ const extractSheetId = (url: string): string | null => {
   return match ? match[1] : null;
 };
 
+// Helper: Extract sheet GID (sheet tab ID) from Google Sheets URL
+const extractSheetGid = (url: string): string | null => {
+  // Look for gid parameter in query string or fragment
+  const gidMatch = url.match(/[?&]gid=(\d+)/);
+  return gidMatch ? gidMatch[1] : null;
+};
+
+// Cache to store spreadsheet metadata to avoid duplicate API calls
+const spreadsheetMetadataCache = new Map<string, any>();
+
+// Helper: Get sheet name by GID from Google Sheets metadata
+async function getSheetNameByGid(sheetId: string, gid: string, apiKey: string): Promise<string | null> {
+  // Check if we already have the metadata cached
+  const cacheKey = `${sheetId}_${apiKey}`;
+  let metadata = spreadsheetMetadataCache.get(cacheKey);
+  
+  if (!metadata) {
+    const metadataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?key=${apiKey}`;
+    
+    try {
+      const response = await fetch(metadataUrl);
+      if (!response.ok) {
+        console.error('Failed to fetch spreadsheet metadata:', response.status, response.statusText);
+        return null;
+      }
+      
+      metadata = await response.json();
+      // Cache the metadata for future use
+      spreadsheetMetadataCache.set(cacheKey, metadata);
+    } catch (error) {
+      console.error('Error fetching sheet metadata:', error);
+      return null;
+    }
+  }
+  
+  const sheets = metadata.sheets || [];
+  
+  // Find the sheet with the matching GID
+  const sheet = sheets.find((s: any) => s.properties?.sheetId === parseInt(gid));
+  return sheet?.properties?.title || null;
+}
+
 export async function getSheetRangeValues(
   sheetUrl: string,
   range: string
@@ -27,8 +69,21 @@ export async function getSheetRangeValues(
     throw new Error('Range is required (e.g., "A1:B3")');
   }
 
+  // Extract GID if it exists in the URL
+  const gid = extractSheetGid(sheetUrl);
+  
+  // If GID exists, construct the range with the sheet name
+  let fullRange = range;
+  if (gid) {
+    // We need to get the sheet name from the GID by fetching the spreadsheet metadata
+    const sheetName = await getSheetNameByGid(sheetId, gid, googleApiKey);
+    if (sheetName) {
+      fullRange = `${sheetName}!${range}`;
+    }
+  }
+
   // Construct API URL (uses first sheet by default; append !SheetName to range for specific tabs)
-  const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}?key=${googleApiKey}`;
+  const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(fullRange)}?key=${googleApiKey}`;
 
   try {
     const response = await fetch(apiUrl);
@@ -85,8 +140,21 @@ export async function getSheetRangeValues2D(
     throw new Error('Range is required (e.g., "A1:B3")');
   }
 
+  // Extract GID if it exists in the URL
+  const gid = extractSheetGid(sheetUrl);
+  
+  // If GID exists, construct the range with the sheet name
+  let fullRange = range;
+  if (gid) {
+    // We need to get the sheet name from the GID by fetching the spreadsheet metadata
+    const sheetName = await getSheetNameByGid(sheetId, gid, googleApiKey);
+    if (sheetName) {
+      fullRange = `${sheetName}!${range}`;
+    }
+  }
+
   // Construct API URL (uses first sheet by default; append !SheetName to range for specific tabs)
-  const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}?key=${googleApiKey}`;
+  const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(fullRange)}?key=${googleApiKey}`;
 
   try {
     const response = await fetch(apiUrl);
