@@ -27,6 +27,7 @@ import {
   createLine3DChart,
   createContourChart,
   createHeatmapChart,
+  createScatter3DChart,
 } from '../../utils/charts/chartHelpers1';
 import {
   fetchSheetDataByType,
@@ -39,10 +40,12 @@ const SheetData = () => {
     useState<string>('');
   const [selectedNonNumericColumn, setSelectedNonNumericColumn] =
     useState<string>('');
+  const [range3, setRange3] = useState<string>('');
   const [xAxisTitle, setXAxisTitle] = useState<string>('');
   const [sheetUrl, setSheetUrl] = useState<string>('');
   const [data, setData] = useState<any[]>([]);
   const [oneDArray1, setOneDArray1] = useState<any[]>([]);
+  const [oneDArray2, setOneDArray2] = useState<any[]>([]);
   const [twoDArray1, setTwoDArray1] = useState<any[][]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,11 +90,13 @@ const SheetData = () => {
         sheetUrl,
         selectedChartType,
         selectedNumericColumn,
-        selectedNonNumericColumn
+        selectedNonNumericColumn,
+        selectedChartType === 'scatter3d' ? range3 : undefined
       );
 
       setData(result.data);
       setOneDArray1(result.oneDArray1 || []);
+      setOneDArray2(result.oneDArray2 || []);
       setTwoDArray1(result.twoDArray1 || []);
     } catch (err) {
       console.error('Error fetching sheet data:', err);
@@ -214,6 +219,9 @@ const SheetData = () => {
         selectedNonNumericColumn,
         oneDArray1
       );
+    } else if (selectedChartType === 'scatter3d') {
+      // For scatter3d, we use the data arrays directly (x: data, y: oneDArray1, z: oneDArray2)
+      return createScatter3DChart(data, oneDArray1, oneDArray2);
     } else {
       // For other chart types, create a generic chart based on available data
       return createGenericChart(
@@ -259,6 +267,8 @@ const SheetData = () => {
         setSelectedNumericColumn={setSelectedNumericColumn}
         selectedNonNumericColumn={selectedNonNumericColumn}
         setSelectedNonNumericColumn={setSelectedNonNumericColumn}
+        range3={range3}
+        setRange3={setRange3}
         xAxisTitle={xAxisTitle}
         setXAxisTitle={setXAxisTitle}
       />

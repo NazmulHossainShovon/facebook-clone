@@ -106,13 +106,96 @@ export const createLine3DChart = (
   }
 };
 
+// Helper function to create scatter3d chart
+export const createScatter3DChart = (
+  data: any[],
+  oneDArray1: any[],
+  oneDArray2: any[]
+): { chartData: any[]; layout: any } => {
+  // Process x, y, z data arrays 
+  const xValues: number[] = data.map(item => {
+    if (typeof item === 'object' && item !== null) {
+      const values = Object.values(item);
+      return values.length > 0 ? parseFloat(String(values[0]) || '0') : 0;
+    }
+    return parseFloat(String(item) || '0');
+  }).filter(val => !isNaN(val));
+  
+  const yValues: number[] = oneDArray1.map(item => {
+    if (typeof item === 'object' && item !== null) {
+      const values = Object.values(item);
+      return values.length > 0 ? parseFloat(String(values[0]) || '0') : 0;
+    }
+    return parseFloat(String(item) || '0');
+  }).filter(val => !isNaN(val));
+  
+  const zValues: number[] = oneDArray2.map(item => {
+    if (typeof item === 'object' && item !== null) {
+      const values = Object.values(item);
+      return values.length > 0 ? parseFloat(String(values[0]) || '0') : 0;
+    }
+    return parseFloat(String(item) || '0');
+  }).filter(val => !isNaN(val));
+
+  // Find the minimum length to ensure all arrays have the same size
+  const minLength = Math.min(xValues.length, yValues.length, zValues.length);
+  
+  // Truncate arrays to the same length
+  const truncatedX = xValues.slice(0, minLength);
+  const truncatedY = yValues.slice(0, minLength);
+  const truncatedZ = zValues.slice(0, minLength);
+
+  const chartData = [
+    {
+      x: truncatedX,
+      y: truncatedY,
+      z: truncatedZ,
+      type: 'scatter3d',
+      mode: 'markers',
+      marker: { 
+        size: 5,
+        color: '#3b82f6',
+        opacity: 0.8
+      },
+    },
+  ];
+
+  const layout = {
+    title: '3D Scatter Plot',
+    scene: {
+      xaxis: { title: 'X-axis' },
+      yaxis: { title: 'Y-axis' },
+      zaxis: { title: 'Z-axis' },
+    },
+    margin: { l: 60, r: 30, b: 60, t: 70, pad: 4 },
+  };
+
+  return { chartData, layout };
+};
+
 // Helper function to create generic chart for other chart types
 export const createGenericChart = (
   headers: string[],
   data: SheetRow[],
   numericColumns: string[],
-  selectedChartType: string
+  selectedChartType: string,
+  selectedXColumn?: string,
+  selectedYColumn?: string,
+  selectedZColumn?: string
 ): { chartData: any[]; layout: any } => {
+  // Handle scatter3d as a special case
+  if (
+    selectedChartType === 'scatter3d' &&
+    selectedXColumn &&
+    selectedYColumn &&
+    selectedZColumn
+  ) {
+    // For scatter3d, we now directly create the chart using the data arrays
+    // The actual data arrays will be passed in SheetData.tsx when scatter3d is selected
+    // This conditional will be bypassed in favour of direct implementation in SheetData.tsx
+    // This is kept for backward compatibility with function signature
+  }
+
   if (numericColumns.length === 1) {
     const numericCol = numericColumns[0];
     const nonNumericCols = headers.filter(h => !numericColumns.includes(h));
@@ -205,8 +288,8 @@ export const createContourChart = (
   // If a 2D array is provided (from range values), use it directly for the contour plot
   if (twoDArray1 && twoDArray1.length > 0) {
     // Convert all values to numbers
-    const zValues: number[][] = twoDArray1.map(row => 
-      row.map(val => typeof val === 'number' ? val : parseFloat(val) || 0)
+    const zValues: number[][] = twoDArray1.map(row =>
+      row.map(val => (typeof val === 'number' ? val : parseFloat(val) || 0))
     );
 
     const chartData = [
@@ -232,7 +315,11 @@ export const createContourChart = (
       },
     ];
 
-    const layout = createLayout(`Contour Plot (from range)`, 'X axis', 'Y axis');
+    const layout = createLayout(
+      `Contour Plot (from range)`,
+      'X axis',
+      'Y axis'
+    );
 
     return { chartData, layout };
   }
@@ -314,13 +401,17 @@ export const createHeatmapChart = (
   // If a 2D array is provided (from range values), use it directly for the heatmap
   if (twoDArray1 && twoDArray1.length > 0) {
     // Convert all values to numbers
-    const zValues: number[][] = twoDArray1.map(row => 
-      row.map(val => typeof val === 'number' ? val : parseFloat(val) || 0)
+    const zValues: number[][] = twoDArray1.map(row =>
+      row.map(val => (typeof val === 'number' ? val : parseFloat(val) || 0))
     );
 
     // Create sample x and y labels based on the dimensions of the 2D array
-    const xLabels = Array(twoDArray1[0]?.length || 0).fill(0).map((_, i) => `Column ${i + 1}`);
-    const yLabels = Array(twoDArray1.length).fill(0).map((_, i) => `Row ${i + 1}`);
+    const xLabels = Array(twoDArray1[0]?.length || 0)
+      .fill(0)
+      .map((_, i) => `Column ${i + 1}`);
+    const yLabels = Array(twoDArray1.length)
+      .fill(0)
+      .map((_, i) => `Row ${i + 1}`);
 
     const chartData = [
       {
@@ -377,8 +468,12 @@ export const createHeatmapChart = (
   }
 
   // Create sample x and y labels based on the dimensions of the 2D array
-  const xLabels = Array(zValues[0]?.length || 0).fill(0).map((_, i) => `Column ${i + 1}`);
-  const yLabels = Array(zValues.length).fill(0).map((_, i) => `Row ${i + 1}`);
+  const xLabels = Array(zValues[0]?.length || 0)
+    .fill(0)
+    .map((_, i) => `Column ${i + 1}`);
+  const yLabels = Array(zValues.length)
+    .fill(0)
+    .map((_, i) => `Row ${i + 1}`);
 
   const chartData = [
     {

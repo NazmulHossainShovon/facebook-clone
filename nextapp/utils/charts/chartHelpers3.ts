@@ -167,6 +167,7 @@ export const combineFunnelData = (
 export type SheetDataResult = {
   data: any[];
   oneDArray1?: any[];
+  oneDArray2?: any[];
   twoDArray1?: any[][];
 };
 
@@ -176,16 +177,40 @@ export type SheetDataResult = {
  * @param selectedChartType - The type of chart being created
  * @param selectedNumericColumn - The selected numeric column
  * @param selectedNonNumericColumn - The selected non-numeric column
+ * @param range3 - Optional third column for 3D charts (like scatter3d)
  * @returns Promise resolving to the appropriate data structure
  */
 export const fetchSheetDataByType = async (
   sheetUrl: string,
   selectedChartType: string,
   selectedNumericColumn: string,
-  selectedNonNumericColumn: string
+  selectedNonNumericColumn: string,
+  range3?: string
 ): Promise<SheetDataResult> => {
+  // Special handling for scatter3d chart
+  if (selectedChartType === 'scatter3d') {
+    // For scatter3d, we need three ranges for x, y, z axes
+    if (
+      isValidRange(selectedNumericColumn) &&
+      isValidRange(selectedNonNumericColumn) &&
+      range3 && isValidRange(range3)
+    ) {
+      // Call fetchRangeData 3 times with the x, y, and z column ranges
+      const [xValues, yValues, zValues] = await Promise.all([
+        fetchRangeData(sheetUrl, selectedNumericColumn),
+        fetchRangeData(sheetUrl, selectedNonNumericColumn),
+        fetchRangeData(sheetUrl, range3)
+      ]);
+      
+      return { data: xValues, oneDArray1: yValues, oneDArray2: zValues };
+    } else {
+      // If ranges are not valid, fallback to original approach
+      const csvData = await fetchCsvData(sheetUrl);
+      return { data: csvData, oneDArray1: [], oneDArray2: [] };
+    }
+  }
   // Special handling for contour chart
-  if (selectedChartType === 'contour' || selectedChartType === 'heatmap') {
+  else if (selectedChartType === 'contour' || selectedChartType === 'heatmap') {
     // Check if the selected column is a valid range
     if (isValidRange(selectedNumericColumn)) {
       // Call getSheetRangeValues2D for contour chart to get 2D data

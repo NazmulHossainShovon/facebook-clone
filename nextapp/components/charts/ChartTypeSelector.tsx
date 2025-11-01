@@ -5,6 +5,7 @@ import ViolinPlotOptions from './ViolinPlotOptions';
 import FunnelChartOptions from './FunnelChartOptions';
 import ContourChartOptions from './ContourChartOptions';
 import HeatmapChartOptions from './HeatmapChartOptions';
+import Scatter3DChartOptions from './Scatter3DChartOptions';
 import { ChartTypeOption } from '../../constants/charts/chartTypes';
 
 interface ChartTypeSelectorProps {
@@ -18,6 +19,8 @@ interface ChartTypeSelectorProps {
   setSelectedNumericColumn?: (value: string) => void;
   selectedNonNumericColumn?: string;
   setSelectedNonNumericColumn?: (value: string) => void;
+  range3?: string;
+  setRange3?: (value: string) => void;
   xAxisTitle?: string;
   setXAxisTitle?: (value: string) => void;
 }
@@ -33,6 +36,8 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
   setSelectedNumericColumn,
   selectedNonNumericColumn,
   setSelectedNonNumericColumn,
+  range3,
+  setRange3,
   xAxisTitle,
   setXAxisTitle,
 }) => {
@@ -94,6 +99,21 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
             numericColumns={numericColumns}
             selectedNumericColumn={selectedNumericColumn}
             setSelectedNumericColumn={setSelectedNumericColumn}
+          />
+        )}
+
+        {selectedChartType === 'scatter3d' && 
+          setSelectedNumericColumn && 
+          setSelectedNonNumericColumn && 
+          setRange3 && (
+          <Scatter3DChartOptions
+            allHeaders={allHeaders}
+            selectedNumericColumn={selectedNumericColumn || ''}
+            setSelectedNumericColumn={setSelectedNumericColumn}
+            selectedNonNumericColumn={selectedNonNumericColumn || ''}
+            setSelectedNonNumericColumn={setSelectedNonNumericColumn}
+            range3={range3 || ''}
+            setRange3={setRange3}
           />
         )}
       </div>
