@@ -26,6 +26,7 @@ import {
   createHistogram2DContour,
   createLine3DChart,
   createContourChart,
+  createHeatmapChart,
 } from '../../utils/charts/chartHelpers1';
 import {
   fetchSheetDataByType,
@@ -190,6 +191,14 @@ const SheetData = () => {
       return createLine3DChart(headers, data, numericColumns);
     } else if (selectedChartType === 'contour') {
       return createContourChart(
+        headers,
+        data,
+        numericColumns,
+        selectedNumericColumn,
+        twoDArray1
+      );
+    } else if (selectedChartType === 'heatmap') {
+      return createHeatmapChart(
         headers,
         data,
         numericColumns,

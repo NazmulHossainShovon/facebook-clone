@@ -4,6 +4,7 @@ import React from 'react';
 import ViolinPlotOptions from './ViolinPlotOptions';
 import FunnelChartOptions from './FunnelChartOptions';
 import ContourChartOptions from './ContourChartOptions';
+import HeatmapChartOptions from './HeatmapChartOptions';
 import { ChartTypeOption } from '../../constants/charts/chartTypes';
 
 interface ChartTypeSelectorProps {
@@ -26,6 +27,7 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
   setSelectedChartType,
   chartTypes,
   numericColumns = [],
+  nonNumericColumns = [],
   allHeaders = [],
   selectedNumericColumn,
   setSelectedNumericColumn,
@@ -81,6 +83,14 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
 
         {selectedChartType === 'contour' && setSelectedNumericColumn && (
           <ContourChartOptions
+            numericColumns={numericColumns}
+            selectedNumericColumn={selectedNumericColumn}
+            setSelectedNumericColumn={setSelectedNumericColumn}
+          />
+        )}
+        
+        {selectedChartType === 'heatmap' && setSelectedNumericColumn && (
+          <HeatmapChartOptions
             numericColumns={numericColumns}
             selectedNumericColumn={selectedNumericColumn}
             setSelectedNumericColumn={setSelectedNumericColumn}

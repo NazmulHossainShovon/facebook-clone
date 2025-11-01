@@ -1,12 +1,12 @@
 import React from 'react';
 
-interface ContourChartOptionsProps {
+interface HeatmapChartOptionsProps {
   numericColumns: string[];
   selectedNumericColumn?: string;
   setSelectedNumericColumn: (value: string) => void;
 }
 
-const ContourChartOptions: React.FC<ContourChartOptionsProps> = ({
+const HeatmapChartOptions: React.FC<HeatmapChartOptionsProps> = ({
   numericColumns,
   selectedNumericColumn,
   setSelectedNumericColumn,
@@ -28,4 +28,4 @@ const ContourChartOptions: React.FC<ContourChartOptionsProps> = ({
   );
 };
 
-export default ContourChartOptions;
+export default HeatmapChartOptions;

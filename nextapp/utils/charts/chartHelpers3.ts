@@ -1,4 +1,7 @@
-import { getSheetRangeValues, getSheetRangeValues2D } from 'lib/actions/getSheetRangeValues';
+import {
+  getSheetRangeValues,
+  getSheetRangeValues2D,
+} from 'lib/actions/getSheetRangeValues';
 
 /**
  * Validates if a column string is in the format of a Google Sheets range (e.g., A1:B5)
@@ -182,11 +185,14 @@ export const fetchSheetDataByType = async (
   selectedNonNumericColumn: string
 ): Promise<SheetDataResult> => {
   // Special handling for contour chart
-  if (selectedChartType === 'contour') {
+  if (selectedChartType === 'contour' || selectedChartType === 'heatmap') {
     // Check if the selected column is a valid range
     if (isValidRange(selectedNumericColumn)) {
       // Call getSheetRangeValues2D for contour chart to get 2D data
-      const values2D = await getSheetRangeValues2D(sheetUrl, selectedNumericColumn);
+      const values2D = await getSheetRangeValues2D(
+        sheetUrl,
+        selectedNumericColumn
+      );
       return { data: values2D.flat(), twoDArray1: values2D }; // Flatten data for compatibility, keep 2D array
     } else {
       // If range is not valid, fallback to original approach
