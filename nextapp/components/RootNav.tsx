@@ -5,6 +5,7 @@ import { useContext } from 'react';
 import { usePathname } from 'next/navigation';
 import { Store } from '../app/lib/store';
 import Logout from './Logout';
+import DubNav from './dub/DubNav';
 
 export default function RootNav() {
   const {
@@ -30,37 +31,7 @@ export default function RootNav() {
         </li>
         
         {isDubRoute ? (
-          // Dub-specific navigation
-          <>
-            {userInfo?.name ? (
-              <>
-                <li>
-                  <Logout />
-                </li>
-                <li>
-                  <Link href="/dub/account" className="text-white hover:text-gray-300">
-                    Account
-                  </Link>
-                </li>
-              </>
-            ) : (
-              <li>
-                <Link href="/login" className="text-white hover:text-gray-300">
-                  Login
-                </Link>
-              </li>
-            )}
-            <li>
-              <Link href="/dub" className="text-white hover:text-gray-300">
-                Intro
-              </Link>
-            </li>
-            <li>
-              <Link href="/dub/pricing" className="text-white hover:text-gray-300">
-                Pricing
-              </Link>
-            </li>
-          </>
+          <DubNav />
         ) : (
           // Default navigation
           <>
