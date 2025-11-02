@@ -34,31 +34,19 @@ export const createHistogram = (
 // Helper function to create box plot
 export const createBoxPlot = (
   headers: string[],
-  data: SheetRow[],
+  data: any[],
   numericColumns: string[]
 ): { chartData: any[]; layout: any } => {
-  if (numericColumns.length >= 1) {
-    const numericCol = numericColumns[0];
-    const values: number[] = data.map(row => parseFloat(row[numericCol]) || 0);
+  const chartData = [
+    {
+      y: data,
+      type: 'box',
+    },
+  ];
 
-    const chartData = [
-      {
-        y: values,
-        type: 'box',
-      },
-    ];
+  const layout = createLayout(`Box Plot`, 'Value', 'Count');
 
-    const layout = createLayout(
-      `Box Plot: ${numericCol}`,
-      undefined,
-      numericCol
-    );
-
-    return { chartData, layout };
-  } else {
-    // No numeric data fallback
-    return createNonNumericChart(data);
-  }
+  return { chartData, layout };
 };
 
 // Helper function to create violin plot
