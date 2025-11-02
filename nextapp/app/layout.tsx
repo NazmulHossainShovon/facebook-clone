@@ -23,7 +23,7 @@ export default function RootLayout({
         <Providers>
           <ChatProvider>
             <RootNav />
-            <div className="flex-grow">{children}</div>
+            <div className="flex-grow pt-14">{children}</div>
             <Footer />
             <Toaster />
           </ChatProvider>

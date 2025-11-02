@@ -1,4 +1,3 @@
-import RootNav from 'components/RootNav';
 import Link from 'next/link';
 
 export default function Home() {
