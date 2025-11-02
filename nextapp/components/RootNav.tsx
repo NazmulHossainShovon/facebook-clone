@@ -47,14 +47,6 @@ export default function RootNav() {
               <Logout />
             </li>
           )}
-          <li>
-            <Link
-              href="/terms-and-conditions"
-              className="text-white hover:text-gray-300"
-            >
-              Terms
-            </Link>
-          </li>
         </>
       </ul>
     </nav>
