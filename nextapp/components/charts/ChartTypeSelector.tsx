@@ -8,57 +8,35 @@ import HeatmapChartOptions from './HeatmapChartOptions';
 import Scatter3DChartOptions from './Scatter3DChartOptions';
 import SurfaceChartOptions from './SurfaceChartOptions';
 import Mesh3DChartOptions from './Mesh3DChartOptions';
-import { ChartTypeOption } from '../../constants/charts/chartTypes';
+import { ChartConfig } from './types/ChartConfig';
 
 interface ChartTypeSelectorProps {
-  selectedChartType: string;
-  setSelectedChartType: (value: string) => void;
-  chartTypes: ChartTypeOption[];
-  numericColumns?: string[];
-  nonNumericColumns?: string[]; // Added this prop
-  allHeaders?: string[]; // Added this prop to show all headers as options
-  selectedNumericColumn?: string;
-  setSelectedNumericColumn?: (value: string) => void;
-  selectedNonNumericColumn?: string;
-  setSelectedNonNumericColumn?: (value: string) => void;
-  range3?: string;
-  setRange3?: (value: string) => void;
-  range4?: string;
-  setRange4?: (value: string) => void;
-  range5?: string;
-  setRange5?: (value: string) => void;
-  range6?: string;
-  setRange6?: (value: string) => void;
-  xAxisTitle?: string;
-  setXAxisTitle?: (value: string) => void;
-  showContours?: boolean;
-  setShowContours?: (value: boolean) => void;
+  config: ChartConfig;
 }
 
-const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
-  selectedChartType,
-  setSelectedChartType,
-  chartTypes,
-  numericColumns = [],
-  nonNumericColumns = [],
-  allHeaders = [],
-  selectedNumericColumn,
-  setSelectedNumericColumn,
-  selectedNonNumericColumn,
-  setSelectedNonNumericColumn,
-  range3,
-  setRange3,
-  range4,
-  setRange4,
-  range5,
-  setRange5,
-  range6,
-  setRange6,
-  xAxisTitle,
-  setXAxisTitle,
-  showContours,
-  setShowContours,
-}) => {
+const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({ config }) => {
+  const {
+    selection: { selectedChartType, setSelectedChartType },
+    columns: {
+      selectedNumericColumn,
+      setSelectedNumericColumn,
+      selectedNonNumericColumn,
+      setSelectedNonNumericColumn,
+    },
+    ranges: {
+      range3,
+      setRange3,
+      range4,
+      setRange4,
+      range5,
+      setRange5,
+      range6,
+      setRange6,
+    },
+    options: { xAxisTitle, setXAxisTitle, showContours, setShowContours },
+    data: { numericColumns, nonNumericColumns, allHeaders },
+    chartTypes,
+  } = config;
   return (
     <div className="mb-4 space-y-3">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
@@ -111,7 +89,7 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
             setSelectedNumericColumn={setSelectedNumericColumn}
           />
         )}
-        
+
         {selectedChartType === 'heatmap' && setSelectedNumericColumn && (
           <HeatmapChartOptions
             numericColumns={numericColumns}
@@ -120,61 +98,61 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
           />
         )}
 
-        {selectedChartType === 'scatter3d' && 
-          setSelectedNumericColumn && 
-          setSelectedNonNumericColumn && 
+        {selectedChartType === 'scatter3d' &&
+          setSelectedNumericColumn &&
+          setSelectedNonNumericColumn &&
           setRange3 && (
-          <Scatter3DChartOptions
-            allHeaders={allHeaders}
-            selectedNumericColumn={selectedNumericColumn || ''}
-            setSelectedNumericColumn={setSelectedNumericColumn}
-            selectedNonNumericColumn={selectedNonNumericColumn || ''}
-            setSelectedNonNumericColumn={setSelectedNonNumericColumn}
-            range3={range3 || ''}
-            setRange3={setRange3}
-          />
-        )}
+            <Scatter3DChartOptions
+              allHeaders={allHeaders}
+              selectedNumericColumn={selectedNumericColumn || ''}
+              setSelectedNumericColumn={setSelectedNumericColumn}
+              selectedNonNumericColumn={selectedNonNumericColumn || ''}
+              setSelectedNonNumericColumn={setSelectedNonNumericColumn}
+              range3={range3 || ''}
+              setRange3={setRange3}
+            />
+          )}
 
-        {selectedChartType === 'surface' && 
-          setSelectedNumericColumn && 
-          setSelectedNonNumericColumn && 
+        {selectedChartType === 'surface' &&
+          setSelectedNumericColumn &&
+          setSelectedNonNumericColumn &&
           setRange3 && (
-          <SurfaceChartOptions
-            allHeaders={allHeaders}
-            selectedNumericColumn={selectedNumericColumn || ''}
-            setSelectedNumericColumn={setSelectedNumericColumn}
-            selectedNonNumericColumn={selectedNonNumericColumn || ''}
-            setSelectedNonNumericColumn={setSelectedNonNumericColumn}
-            range3={range3 || ''}
-            setRange3={setRange3}
-            showContours={showContours}
-            setShowContours={setShowContours}
-          />
-        )}
+            <SurfaceChartOptions
+              allHeaders={allHeaders}
+              selectedNumericColumn={selectedNumericColumn || ''}
+              setSelectedNumericColumn={setSelectedNumericColumn}
+              selectedNonNumericColumn={selectedNonNumericColumn || ''}
+              setSelectedNonNumericColumn={setSelectedNonNumericColumn}
+              range3={range3 || ''}
+              setRange3={setRange3}
+              showContours={showContours}
+              setShowContours={setShowContours}
+            />
+          )}
 
-        {selectedChartType === 'mesh3d' && 
-          setSelectedNumericColumn && 
-          setSelectedNonNumericColumn && 
-          setRange3 && 
-          setRange4 && 
-          setRange5 && 
+        {selectedChartType === 'mesh3d' &&
+          setSelectedNumericColumn &&
+          setSelectedNonNumericColumn &&
+          setRange3 &&
+          setRange4 &&
+          setRange5 &&
           setRange6 && (
-          <Mesh3DChartOptions
-            allHeaders={allHeaders}
-            selectedNumericColumn={selectedNumericColumn || ''}
-            setSelectedNumericColumn={setSelectedNumericColumn}
-            selectedNonNumericColumn={selectedNonNumericColumn || ''}
-            setSelectedNonNumericColumn={setSelectedNonNumericColumn}
-            range3={range3 || ''}
-            setRange3={setRange3}
-            range4={range4 || ''}
-            setRange4={setRange4}
-            range5={range5 || ''}
-            setRange5={setRange5}
-            range6={range6 || ''}
-            setRange6={setRange6}
-          />
-        )}
+            <Mesh3DChartOptions
+              allHeaders={allHeaders}
+              selectedNumericColumn={selectedNumericColumn || ''}
+              setSelectedNumericColumn={setSelectedNumericColumn}
+              selectedNonNumericColumn={selectedNonNumericColumn || ''}
+              setSelectedNonNumericColumn={setSelectedNonNumericColumn}
+              range3={range3 || ''}
+              setRange3={setRange3}
+              range4={range4 || ''}
+              setRange4={setRange4}
+              range5={range5 || ''}
+              setRange5={setRange5}
+              range6={range6 || ''}
+              setRange6={setRange6}
+            />
+          )}
       </div>
     </div>
   );

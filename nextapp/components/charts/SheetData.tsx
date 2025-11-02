@@ -268,6 +268,42 @@ const SheetData = () => {
 
   const { chartData, layout } = prepareChartData();
 
+  // Configuration object for ChartTypeSelector
+  const chartTypeSelectorConfig = {
+    selection: {
+      selectedChartType,
+      setSelectedChartType,
+    },
+    columns: {
+      selectedNumericColumn,
+      setSelectedNumericColumn,
+      selectedNonNumericColumn,
+      setSelectedNonNumericColumn,
+    },
+    ranges: {
+      range3,
+      setRange3,
+      range4,
+      setRange4,
+      range5,
+      setRange5,
+      range6,
+      setRange6,
+    },
+    options: {
+      xAxisTitle,
+      setXAxisTitle,
+      showContours,
+      setShowContours,
+    },
+    data: {
+      numericColumns,
+      nonNumericColumns,
+      allHeaders,
+    },
+    chartTypes,
+  };
+
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Sheet Data Chart Generator</h2>
@@ -281,30 +317,7 @@ const SheetData = () => {
       />
 
       {/* Chart type selector */}
-      <ChartTypeSelector
-        selectedChartType={selectedChartType}
-        setSelectedChartType={setSelectedChartType}
-        chartTypes={chartTypes}
-        numericColumns={numericColumns}
-        nonNumericColumns={nonNumericColumns}
-        allHeaders={allHeaders}
-        selectedNumericColumn={selectedNumericColumn}
-        setSelectedNumericColumn={setSelectedNumericColumn}
-        selectedNonNumericColumn={selectedNonNumericColumn}
-        setSelectedNonNumericColumn={setSelectedNonNumericColumn}
-        range3={range3}
-        setRange3={setRange3}
-        range4={range4}
-        setRange4={setRange4}
-        range5={range5}
-        setRange5={setRange5}
-        range6={range6}
-        setRange6={setRange6}
-        xAxisTitle={xAxisTitle}
-        setXAxisTitle={setXAxisTitle}
-        showContours={showContours}
-        setShowContours={setShowContours}
-      />
+      <ChartTypeSelector config={chartTypeSelectorConfig} />
 
       {/* Display the chart if we have chart data and Plot component is loaded */}
       {chartData.length > 0 && PlotComponent && (
