@@ -116,6 +116,7 @@ export default function Signup() {
                 type="password"
                 placeholder="Password"
                 className="text-base w-full"
+                autoComplete="new-password"
               />
               {errors?.password?.message && (
                 <FormErrorMessage message={errors.password.message} />
