@@ -45,6 +45,7 @@ const SheetData = () => {
   const [range5, setRange5] = useState<string>('');
   const [range6, setRange6] = useState<string>('');
   const [xAxisTitle, setXAxisTitle] = useState<string>('');
+  const [showContours, setShowContours] = useState<boolean>(false);
   const [sheetUrl, setSheetUrl] = useState<string>('');
   const [data, setData] = useState<any[]>([]);
   const [oneDArray1, setOneDArray1] = useState<any[]>([]);
@@ -236,7 +237,7 @@ const SheetData = () => {
       return createScatter3DChart(data, oneDArray1, oneDArray2);
     } else if (selectedChartType === 'surface') {
       // For surface chart, we use the data arrays (x: data, y: oneDArray1, z: twoDArray1)
-      return createSurfaceChart(data, oneDArray1, twoDArray1);
+      return createSurfaceChart(data, oneDArray1, twoDArray1, showContours);
     } else if (selectedChartType === 'mesh3d') {
       return createMesh3DChart(
         data,
@@ -301,6 +302,8 @@ const SheetData = () => {
         setRange6={setRange6}
         xAxisTitle={xAxisTitle}
         setXAxisTitle={setXAxisTitle}
+        showContours={showContours}
+        setShowContours={setShowContours}
       />
 
       {/* Display the chart if we have chart data and Plot component is loaded */}

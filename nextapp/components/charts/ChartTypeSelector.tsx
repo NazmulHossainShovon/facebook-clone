@@ -31,6 +31,8 @@ interface ChartTypeSelectorProps {
   setRange6?: (value: string) => void;
   xAxisTitle?: string;
   setXAxisTitle?: (value: string) => void;
+  showContours?: boolean;
+  setShowContours?: (value: boolean) => void;
 }
 
 const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
@@ -54,6 +56,8 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
   setRange6,
   xAxisTitle,
   setXAxisTitle,
+  showContours,
+  setShowContours,
 }) => {
   return (
     <div className="mb-4 space-y-3">
@@ -143,6 +147,8 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
             setSelectedNonNumericColumn={setSelectedNonNumericColumn}
             range3={range3 || ''}
             setRange3={setRange3}
+            showContours={showContours}
+            setShowContours={setShowContours}
           />
         )}
 
