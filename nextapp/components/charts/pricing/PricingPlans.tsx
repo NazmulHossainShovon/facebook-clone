@@ -5,7 +5,7 @@ import { Store } from '../../../app/lib/store';
 import PricingCard from './PricingCard';
 
 interface PricingPlansProps {
-  onUpgrade: () => void;
+  onUpgrade?: () => void;
 }
 
 export default function PricingPlans({ onUpgrade }: PricingPlansProps) {

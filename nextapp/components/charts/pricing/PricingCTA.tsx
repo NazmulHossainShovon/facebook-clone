@@ -5,7 +5,7 @@ import { Store } from '../../../app/lib/store';
 import Link from 'next/link';
 
 interface PricingCTAProps {
-  onUpgrade: () => void;
+  onUpgrade?: () => void;
 }
 
 export default function PricingCTA({ onUpgrade }: PricingCTAProps) {
@@ -19,7 +19,8 @@ export default function PricingCTA({ onUpgrade }: PricingCTAProps) {
         Ready to Create Unlimited Charts?
       </h2>
       <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-        Join thousands of users who have upgraded to unlimited chart generation. Start creating professional visualizations today.
+        Join thousands of users who have upgraded to unlimited chart generation.
+        Start creating professional visualizations today.
       </p>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Link
@@ -28,21 +29,6 @@ export default function PricingCTA({ onUpgrade }: PricingCTAProps) {
         >
           Try Free First
         </Link>
-        {userInfo?.name ? (
-          <button
-            onClick={onUpgrade}
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Upgrade Now - $100
-          </button>
-        ) : (
-          <Link
-            href="/signup"
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Sign Up & Upgrade
-          </Link>
-        )}
       </div>
     </div>
   );
