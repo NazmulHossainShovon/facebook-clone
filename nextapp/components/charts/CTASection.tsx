@@ -13,19 +13,20 @@ const CTASection = () => {
           Ready to Transform Your Data?
         </h2>
         <p className="text-xl text-slate-200 mb-8 leading-relaxed">
-          Stop limiting yourself to basic charts. Create professional, interactive 
-          visualizations that tell your data&apos;s story like never before.
+          Stop limiting yourself to basic charts. Create professional,
+          interactive visualizations that tell your data&apos;s story like never
+          before.
         </p>
         <Link href="/charts/chart-app">
-          <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white px-12 py-4 text-xl font-semibold rounded-xl shadow-xl transform hover:scale-105 transition-all duration-200">
+          <Button
+            size="lg"
+            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white px-12 py-4 text-xl font-semibold rounded-xl shadow-xl transform hover:scale-105 transition-all duration-200"
+          >
             Start Creating Now
           </Button>
         </Link>
-        <p className="text-slate-300 mt-4 text-sm">
-          No signup required • Works with any Google Sheet • Free to use
-        </p>
       </div>
-      
+
       {/* Background decorations */}
       <div className="absolute top-10 left-10 w-32 h-32 bg-cyan-400/10 rounded-full blur-2xl"></div>
       <div className="absolute bottom-10 right-10 w-40 h-40 bg-purple-400/10 rounded-full blur-2xl"></div>

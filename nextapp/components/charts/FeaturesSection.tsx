@@ -6,34 +6,36 @@ import FeatureCard from './FeatureCard';
 const features = [
   {
     title: 'Direct Google Sheets Integration',
-    description: 'Simply paste your Google Sheets link and instantly access your data',
-    icon: '🔗'
+    description:
+      'Simply paste your Google Sheets link and instantly access your data',
+    icon: '🔗',
   },
   {
     title: 'Custom Cell Ranges',
     description: 'Select specific data ranges for precise chart generation',
-    icon: '📋'
+    icon: '📋',
   },
   {
     title: 'Advanced Chart Types',
-    description: 'Access 60+ chart types not available in Google Sheets',
-    icon: '📈'
+    description: 'Access 7+ chart types not available in Google Sheets',
+    icon: '📈',
   },
   {
     title: 'Full Customization',
     description: 'Customize colors, labels, styling, and interactive features',
-    icon: '🎨'
+    icon: '🎨',
   },
   {
     title: 'High-Performance Rendering',
-    description: 'WebGL-powered charts for smooth performance with large datasets',
-    icon: '⚡'
+    description:
+      'WebGL-powered charts for smooth performance with large datasets',
+    icon: '⚡',
   },
   {
     title: 'Export & Share',
-    description: 'Download charts in multiple formats or share interactive versions',
-    icon: '💾'
-  }
+    description: 'Download charts in png format',
+    icon: '💾',
+  },
 ];
 
 const FeaturesSection = () => {
@@ -45,11 +47,12 @@ const FeaturesSection = () => {
             Why Choose Our Chart Platform?
           </h2>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            Create professional-grade visualizations with features and chart types 
-            that traditional spreadsheet applications simply can&apos;t provide.
+            Create professional-grade visualizations with features and chart
+            types that traditional spreadsheet applications simply can&apos;t
+            provide.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <FeatureCard key={index} feature={feature} />

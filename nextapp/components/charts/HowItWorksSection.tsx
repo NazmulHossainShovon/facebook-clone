@@ -7,23 +7,26 @@ const steps = [
   {
     step: '1',
     title: 'Paste Google Sheet URL',
-    description: 'Copy and paste your Google Sheets link into our interface'
+    description: 'Copy and paste your Google Sheets link into our interface',
   },
   {
     step: '2',
     title: 'Select Chart Type',
-    description: 'Choose from 60+ advanced chart types across multiple categories'
+    description:
+      'Choose from 7+ advanced chart types across multiple categories',
   },
   {
     step: '3',
     title: 'Define Data Ranges',
-    description: 'Specify cell ranges for your data source and customize options'
+    description:
+      'Specify cell ranges for your data source and customize options',
   },
   {
     step: '4',
     title: 'Generate & Customize',
-    description: 'Create your chart and fine-tune styling and interactive features'
-  }
+    description:
+      'Create your chart and fine-tune styling and interactive features',
+  },
 ];
 
 const HowItWorksSection = () => {
@@ -35,13 +38,19 @@ const HowItWorksSection = () => {
             How It Works
           </h2>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            Get from spreadsheet to stunning visualization in just four simple steps.
+            Get from spreadsheet to stunning visualization in just four simple
+            steps.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
-            <HowItWorksStep key={index} step={step} index={index} isLast={index === steps.length - 1} />
+            <HowItWorksStep
+              key={index}
+              step={step}
+              index={index}
+              isLast={index === steps.length - 1}
+            />
           ))}
         </div>
       </div>

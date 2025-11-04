@@ -17,26 +17,30 @@ const HeroSection = () => {
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-slate-200 mb-12 max-w-4xl mx-auto leading-relaxed">
-            Transform your Google Sheets data into stunning 3D visualizations, statistical charts, 
-            and scientific plots that go far beyond what&apos;s possible in spreadsheets alone.
+            Transform your Google Sheets data into stunning 3D visualizations,
+            statistical charts, and scientific plots that go far beyond
+            what&apos;s possible in spreadsheets alone.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/charts/chart-app">
-              <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-xl transform hover:scale-105 transition-all duration-200">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-xl transform hover:scale-105 transition-all duration-200"
+              >
                 Start Creating Charts
               </Button>
             </Link>
-            <Button 
+            {/* <Button 
               variant="outline" 
               size="lg" 
               className="border-2 border-white/30 text-white hover:bg-white/10 px-8 py-4 text-lg font-semibold rounded-xl backdrop-blur-sm"
             >
               View Examples
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>
-      
+
       {/* Animated background elements */}
       <div className="absolute top-20 left-10 w-20 h-20 bg-cyan-400/20 rounded-full blur-xl animate-pulse"></div>
       <div className="absolute top-40 right-20 w-32 h-32 bg-purple-400/20 rounded-full blur-xl animate-pulse delay-1000"></div>
