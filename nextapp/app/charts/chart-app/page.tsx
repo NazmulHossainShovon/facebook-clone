@@ -1,11 +1,14 @@
 import SheetData from 'components/charts/SheetData';
+import ProtectedRoute from 'components/ProtectedRoute';
 import React from 'react';
 
 const ChartApp = () => {
   return (
-    <div>
-      <SheetData />
-    </div>
+    <ProtectedRoute>
+      <div>
+        <SheetData />
+      </div>
+    </ProtectedRoute>
   );
 };
 
