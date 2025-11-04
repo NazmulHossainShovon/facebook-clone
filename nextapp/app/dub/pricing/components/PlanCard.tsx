@@ -54,7 +54,7 @@ export default function PlanCard({
           ))}
         </ul>
 
-        <CheckoutButton />
+        <CheckoutButton priceId="pri_01k611462xk2zy6240fghhves7" appName="dub" />
       </div>
     </div>
   );

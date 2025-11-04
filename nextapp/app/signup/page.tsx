@@ -15,7 +15,6 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 import { uploadToS3 } from 'utils/uploadToS3';
-import RootNav from 'components/RootNav';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
@@ -73,7 +72,6 @@ export default function Signup() {
 
   return (
     <>
-      <RootNav />
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
           <div>
@@ -118,6 +116,7 @@ export default function Signup() {
                 type="password"
                 placeholder="Password"
                 className="text-base w-full"
+                autoComplete="new-password"
               />
               {errors?.password?.message && (
                 <FormErrorMessage message={errors.password.message} />

@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import useViolinPlot from '../../hooks/charts/useViolinPlot';
 
 import ChartTypeSelector from './ChartTypeSelector';
+import SheetUrlInput from './SheetUrlInput';
 import {
   detectNumericColumns,
   createSingleNumericChart,
@@ -11,176 +13,112 @@ import {
   createPieChart,
   createBubbleChart,
   createScatterLineAreaChart,
-  createHistogram,
+} from '../../utils/charts/chartHelpers';
+import { chartTypes } from '../../constants/charts/chartTypes';
+import {
   createBoxPlot,
-  createViolinPlot,
   createFunnelChart,
-  createLine3DChart,
+  createHistogram,
+  createViolinPlot,
+} from '../../utils/charts/chartHelpers2';
+import {
   createGenericChart,
-} from '../../utils/chartHelpers';
-
-export interface SheetRow {
-  [key: string]: string;
-}
-
-interface ChartTypeOption {
-  label: string;
-  value: string;
-  category: string;
-}
-
-// Define available chart types
-const chartTypes: ChartTypeOption[] = [
-  // Basic Charts
-  { label: 'Bar Chart', value: 'bar', category: 'Basic' },
-  { label: 'Pie Chart', value: 'pie', category: 'Basic' },
-  { label: 'Scatter Plot', value: 'scatter', category: 'Basic' },
-  { label: 'Line Chart', value: 'line', category: 'Basic' },
-  { label: 'Bubble Chart', value: 'bubble', category: 'Basic' },
-  { label: 'Area Chart', value: 'area', category: 'Basic' },
-  { label: 'Histogram', value: 'histogram', category: 'Basic' },
-  { label: 'Box Plot', value: 'box', category: 'Basic' },
-  { label: 'Violin Plot', value: 'violin', category: 'Basic' },
-  { label: 'Funnel Chart', value: 'funnel', category: 'Basic' },
-  { label: 'Waterfall Chart', value: 'waterfall', category: 'Basic' },
-
-  // Statistical Charts
-  { label: '2D Histogram', value: 'histogram2d', category: 'Statistical' },
-  { label: '2D Contour', value: 'histogram2dcontour', category: 'Statistical' },
-  { label: 'Contour Plot', value: 'contour', category: 'Statistical' },
-  { label: 'Heatmap', value: 'heatmap', category: 'Statistical' },
-  { label: 'Density Heatmap', value: 'densitymapbox', category: 'Statistical' },
-
-  // Financial Charts
-  { label: 'Candlestick Chart', value: 'candlestick', category: 'Financial' },
-  { label: 'OHLC Chart', value: 'ohlc', category: 'Financial' },
-
-  // Geographical Charts
-  { label: 'Scatter Geo', value: 'scattergeo', category: 'Geographical' },
-  { label: 'Choropleth Map', value: 'choropleth', category: 'Geographical' },
-  { label: 'Scatter Mapbox', value: 'scattermapbox', category: 'Geographical' },
-  {
-    label: 'Choropleth Mapbox',
-    value: 'choroplethmapbox',
-    category: 'Geographical',
-  },
-
-  // 3D Charts
-  { label: '3D Scatter', value: 'scatter3d', category: '3D' },
-  { label: '3D Surface', value: 'surface', category: '3D' },
-  { label: '3D Line', value: 'line3d', category: '3D' }, // Placeholder value that will be handled in the logic
-  { label: '3D Mesh', value: 'mesh3d', category: '3D' },
-  { label: '3D Contour', value: 'contour3d', category: '3D' },
-  { label: '3D Volume', value: 'volume', category: '3D' },
-  { label: '3D Isosurface', value: 'isosurface', category: '3D' },
-
-  // Specialty Charts
-  { label: 'Sunburst', value: 'sunburst', category: 'Specialty' },
-  { label: 'Treemap', value: 'treemap', category: 'Specialty' },
-  { label: 'Icicle', value: 'icicle', category: 'Specialty' },
-  { label: 'Sankey', value: 'sankey', category: 'Specialty' },
-  { label: 'Parallel Coordinates', value: 'parcoords', category: 'Specialty' },
-  { label: 'Parallel Categories', value: 'parcats', category: 'Specialty' },
-  { label: 'Table', value: 'table', category: 'Specialty' },
-  { label: 'Carpet', value: 'carpet', category: 'Specialty' },
-  { label: 'Scatter Carpet', value: 'scattercarpet', category: 'Specialty' },
-  { label: 'Funnel Area', value: 'funnelarea', category: 'Specialty' },
-  { label: 'Image', value: 'image', category: 'Specialty' },
-  { label: 'Gauge', value: 'indicator', category: 'Specialty' },
-
-  // WebGL Charts
-  { label: 'Scatter GL', value: 'scattergl', category: 'WebGL' },
-  { label: 'Heatmap GL', value: 'heatmapgl', category: 'WebGL' },
-  { label: 'Contour GL', value: 'contourgl', category: 'WebGL' },
-  { label: 'Point Cloud', value: 'pointcloud', category: 'WebGL' },
-];
+  createHistogram2DContour,
+  createLine3DChart,
+} from '../../utils/charts/chartHelpers1';
+import { createScatter3DChart } from '../../utils/charts/createScatter3DChart';
+import { createContourChart } from '../../utils/charts/createContourChart';
+import { createHeatmapChart } from '../../utils/charts/createHeatmapChart';
+import { createSurfaceChart } from '../../utils/charts/createSurfaceChart';
+import { createMesh3DChart } from '../../utils/charts/createMesh3DChart';
+import { combineFunnelData } from '../../utils/charts/chartHelpers3';
+import { fetchSheetDataByType } from 'utils/charts/fetchSheetDataByType';
 
 const SheetData = () => {
-  const [data, setData] = useState<SheetRow[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [selectedChartType, setSelectedChartType] = useState<string>('bar');
+  const [selectedNumericColumn, setSelectedNumericColumn] =
+    useState<string>('');
+  const [selectedNonNumericColumn, setSelectedNonNumericColumn] =
+    useState<string>('');
+  const [range3, setRange3] = useState<string>('');
+  const [range4, setRange4] = useState<string>('');
+  const [range5, setRange5] = useState<string>('');
+  const [range6, setRange6] = useState<string>('');
+  const [xAxisTitle, setXAxisTitle] = useState<string>('');
+  const [showContours, setShowContours] = useState<boolean>(false);
+  const [sheetUrl, setSheetUrl] = useState<string>('');
+  const [data, setData] = useState<any[]>([]);
+  const [oneDArray1, setOneDArray1] = useState<any[]>([]);
+  const [oneDArray2, setOneDArray2] = useState<any[]>([]);
+  const [oneDArray3, setOneDArray3] = useState<any[]>([]);
+  const [oneDArray4, setOneDArray4] = useState<any[]>([]);
+  const [oneDArray5, setOneDArray5] = useState<any[]>([]);
+  const [twoDArray1, setTwoDArray1] = useState<any[][]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [PlotComponent, setPlotComponent] = useState<any>(null);
-  const [selectedChartType, setSelectedChartType] = useState<string>('bar');
-  const [selectedNumericColumn, setSelectedNumericColumn] = useState<string>('');
 
-  // Sample Google Sheet URL - replace with your actual sheet
-  // For this to work, the sheet must be published to web
-  // To publish: File > Publish to Web > Select "Comma-separated values (.csv)" > Publish
-  // Fetch only A1:C4 range
-  const sheetUrl =
-    'https://docs.google.com/spreadsheets/d/1ltA9siijVSDkTE3fzB3UaWHO7dotBIrGH4R9wI_Qyqw/export?format=csv&gid=0&range=A1%3AC4';
-
+  // Dynamically import Plot component to avoid SSR issues
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // For Google Sheets, we can fetch as CSV or JSON
-        // Using CSV format here and converting to JSON
-        const response = await fetch(sheetUrl);
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch data: ${response.status} ${response.statusText}`
-          );
-        }
-
-        const csvText = await response.text();
-        const parsedData = parseCSV(csvText);
-        setData(parsedData);
-      } catch (err) {
-        console.error('Error fetching sheet data:', err);
-        setError(
-          err instanceof Error ? err.message : 'An unknown error occurred'
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Dynamically import Plot component to avoid SSR issues
     import('react-plotly.js').then(PlotModule => {
       setPlotComponent(() => PlotModule.default);
     });
-
-    fetchData();
   }, []);
 
-  // Calculate numeric columns based on current data
-  const numericColumns = data.length > 0 ? detectNumericColumns(Object.keys(data[0]), data[0]) : [];
+  // Calculate numeric and non-numeric columns based on current data
+  const allHeaders = data.length > 0 ? Object.keys(data[0]) : [];
+  const numericColumns =
+    data.length > 0 ? detectNumericColumns(allHeaders, data[0]) : [];
+  const nonNumericColumns = allHeaders.filter(
+    header => !numericColumns.includes(header)
+  );
 
-  // Set default selected numeric column when chart type is violin and data is loaded
-  useEffect(() => {
-    if (selectedChartType === 'violin' && numericColumns.length > 0 && !selectedNumericColumn) {
-      setSelectedNumericColumn(numericColumns[0]);
-    }
-  }, [selectedChartType, numericColumns, selectedNumericColumn]);
+  // Use custom hook for violin plot logic
+  useViolinPlot({
+    selectedChartType,
+    numericColumns,
+    selectedNumericColumn,
+    setSelectedNumericColumn,
+  });
 
-  // Simple CSV parser
-  const parseCSV = (csvText: string): SheetRow[] => {
-    const lines = csvText.trim().split('\n');
-    if (lines.length < 2) return [];
-
-    const headers = lines[0]
-      .split(',')
-      .map(header => header.trim().replace(/^"|"$/g, ''));
-    const result: SheetRow[] = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const currentLine = lines[i].split(',');
-      const obj: SheetRow = {};
-
-      for (let j = 0; j < headers.length; j++) {
-        // Remove quotes from beginning and end if they exist
-        const value = currentLine[j]?.trim().replace(/^"|"$/g, '') || '';
-        obj[headers[j]] = value;
-      }
-
-      result.push(obj);
+  // Function to fetch data from the sheet URL
+  const fetchSheetData = async () => {
+    if (!sheetUrl) {
+      setError('Please enter a valid sheet URL');
+      return;
     }
 
-    return result;
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch data based on chart type
+      const result = await fetchSheetDataByType(
+        sheetUrl,
+        selectedChartType,
+        selectedNumericColumn,
+        selectedNonNumericColumn,
+        range3,
+        range4,
+        range5,
+        range6
+      );
+
+      setData(result.data);
+      setOneDArray1(result.oneDArray1 || []);
+      setOneDArray2(result.oneDArray2 || []);
+      setOneDArray3(result.oneDArray3 || []);
+      setOneDArray4(result.oneDArray4 || []);
+      setOneDArray5(result.oneDArray5 || []);
+      setTwoDArray1(result.twoDArray1 || []);
+    } catch (err) {
+      console.error('Error fetching sheet data:', err);
+      setError(
+        err instanceof Error ? err.message : 'An unknown error occurred'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Prepare chart data based on selected chart type
@@ -188,7 +126,7 @@ const SheetData = () => {
     if (data.length === 0) return { chartData: [], layout: {} };
 
     const headers = Object.keys(data[0]);
-    if (headers.length < 2) return { chartData: [], layout: {} };
+    // if (headers.length < 2) return { chartData: [], layout: {} };
 
     // Try to detect numeric columns for charting
     const firstDataRow = data[0];
@@ -228,18 +166,87 @@ const SheetData = () => {
     } else if (selectedChartType === 'violin') {
       // If a specific numeric column is selected, use only that column
       // Otherwise, if there are numeric columns, default to the first one
-      const columnsToUse = selectedNumericColumn ? [selectedNumericColumn] : 
-                           numericColumns.length > 0 ? [numericColumns[0]] : numericColumns;
-      return createViolinPlot(headers, data, columnsToUse);
+      const columnsToUse = selectedNumericColumn
+        ? [selectedNumericColumn]
+        : numericColumns.length > 0
+          ? [numericColumns[0]]
+          : numericColumns;
+      return createViolinPlot(headers, data, columnsToUse, xAxisTitle);
     } else if (['funnel', 'funnelarea'].includes(selectedChartType)) {
-      return createFunnelChart(
+      // For funnel charts, if we have the special oneDArray1 data from range values, use it
+      if (selectedChartType === 'funnel' && oneDArray1.length > 0) {
+        // Use the helper function to combine funnel data
+        const combinedData = combineFunnelData(
+          data,
+          oneDArray1,
+          selectedNumericColumn,
+          selectedNonNumericColumn
+        );
+        const funnelHeaders = [selectedNumericColumn, selectedNonNumericColumn];
+        return createFunnelChart(
+          funnelHeaders,
+          combinedData,
+          [selectedNumericColumn], // numeric columns
+          selectedChartType,
+          selectedNumericColumn,
+          selectedNonNumericColumn,
+          oneDArray1,
+          data // Pass original data state as additional parameter
+        );
+      } else {
+        return createFunnelChart(
+          headers,
+          data,
+          numericColumns,
+          selectedChartType,
+          selectedNumericColumn,
+          selectedNonNumericColumn,
+          oneDArray1,
+          data // Pass original data state as additional parameter (same as the second parameter in this case)
+        );
+      }
+    } else if (selectedChartType === 'line3d') {
+      return createLine3DChart(headers, data, numericColumns);
+    } else if (selectedChartType === 'contour') {
+      return createContourChart(
         headers,
         data,
         numericColumns,
-        selectedChartType
+        selectedNumericColumn,
+        twoDArray1
       );
-    } else if (selectedChartType === 'line3d') {
-      return createLine3DChart(headers, data, numericColumns);
+    } else if (selectedChartType === 'heatmap') {
+      return createHeatmapChart(
+        headers,
+        data,
+        numericColumns,
+        selectedNumericColumn,
+        twoDArray1
+      );
+    } else if (selectedChartType === 'histogram2dcontour') {
+      return createHistogram2DContour(
+        headers,
+        data,
+        numericColumns,
+        selectedNumericColumn,
+        selectedNonNumericColumn,
+        oneDArray1
+      );
+    } else if (selectedChartType === 'scatter3d') {
+      // For scatter3d, we use the data arrays directly (x: data, y: oneDArray1, z: oneDArray2)
+      return createScatter3DChart(data, oneDArray1, oneDArray2);
+    } else if (selectedChartType === 'surface') {
+      // For surface chart, we use the data arrays (x: data, y: oneDArray1, z: twoDArray1)
+      return createSurfaceChart(data, oneDArray1, twoDArray1, showContours);
+    } else if (selectedChartType === 'mesh3d') {
+      return createMesh3DChart(
+        data,
+        oneDArray1,
+        oneDArray2,
+        oneDArray3,
+        oneDArray4,
+        oneDArray5
+      );
     } else {
       // For other chart types, create a generic chart based on available data
       return createGenericChart(
@@ -261,19 +268,56 @@ const SheetData = () => {
 
   const { chartData, layout } = prepareChartData();
 
+  // Configuration object for ChartTypeSelector
+  const chartTypeSelectorConfig = {
+    selection: {
+      selectedChartType,
+      setSelectedChartType,
+    },
+    columns: {
+      selectedNumericColumn,
+      setSelectedNumericColumn,
+      selectedNonNumericColumn,
+      setSelectedNonNumericColumn,
+    },
+    ranges: {
+      range3,
+      setRange3,
+      range4,
+      setRange4,
+      range5,
+      setRange5,
+      range6,
+      setRange6,
+    },
+    options: {
+      xAxisTitle,
+      setXAxisTitle,
+      showContours,
+      setShowContours,
+    },
+    data: {
+      numericColumns,
+      nonNumericColumns,
+      allHeaders,
+    },
+    chartTypes,
+  };
+
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Sheet Data (A1:C4)</h2>
+      <h2 className="text-xl font-bold mb-4">Sheet Data Chart Generator</h2>
+
+      {/* Input for sheet URL */}
+      <SheetUrlInput
+        sheetUrl={sheetUrl}
+        setSheetUrl={setSheetUrl}
+        loading={loading}
+        onFetchData={fetchSheetData}
+      />
 
       {/* Chart type selector */}
-      <ChartTypeSelector
-        selectedChartType={selectedChartType}
-        setSelectedChartType={setSelectedChartType}
-        chartTypes={chartTypes}
-        numericColumns={numericColumns}
-        selectedNumericColumn={selectedNumericColumn}
-        setSelectedNumericColumn={setSelectedNumericColumn}
-      />
+      <ChartTypeSelector config={chartTypeSelectorConfig} />
 
       {/* Display the chart if we have chart data and Plot component is loaded */}
       {chartData.length > 0 && PlotComponent && (
@@ -285,43 +329,6 @@ const SheetData = () => {
             style={{ width: '100%', height: '400px' }}
           />
         </div>
-      )}
-
-      {/* Display the table data as well */}
-      {data.length > 0 ? (
-        <table className="min-w-full border-collapse border border-gray-200">
-          <thead>
-            <tr className="bg-gray-100">
-              {Object.keys(data[0]).map((header, index) => (
-                <th
-                  key={index}
-                  className="border border-gray-300 px-4 py-2 text-left"
-                >
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, rowIndex) => (
-              <tr
-                key={rowIndex}
-                className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-              >
-                {Object.values(row).map((cell, cellIndex) => (
-                  <td
-                    key={cellIndex}
-                    className="border border-gray-300 px-4 py-2"
-                  >
-                    {cell}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No data available</p>
       )}
     </div>
   );
