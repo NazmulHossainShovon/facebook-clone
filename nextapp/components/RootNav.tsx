@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Store } from '../app/lib/store';
 import Logout from './Logout';
 import DubNav from './dub/DubNav';
+import ChartNav from './charts/ChartNav';
 
 export default function RootNav() {
   const {
@@ -15,6 +16,8 @@ export default function RootNav() {
 
   // Check if we're on a dub route
   const isDubRoute = pathname?.startsWith('/dub');
+  // Check if we're on a charts route
+  const isChartsRoute = pathname?.startsWith('/charts');
 
   return (
     <nav className="bg-black p-4 fixed top-0 left-0 right-0 z-50">
@@ -26,6 +29,7 @@ export default function RootNav() {
         </li>
 
         {isDubRoute ? <DubNav userInfo={userInfo} /> : null}
+        {isChartsRoute ? <ChartNav userInfo={userInfo} /> : null}
 
         {/* Default navigation for all routes */}
         <>
