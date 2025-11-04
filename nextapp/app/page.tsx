@@ -3,14 +3,14 @@ import { Users, Mic, BarChart3, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   const apps = [
-    {
-      name: 'Social',
-      description: 'Connect and share with friends',
-      href: '/social',
-      icon: Users,
-      gradient: 'from-blue-500 to-purple-600',
-      hoverGradient: 'from-blue-600 to-purple-700',
-    },
+    // {
+    //   name: 'Social',
+    //   description: 'Connect and share with friends',
+    //   href: '/social',
+    //   icon: Users,
+    //   gradient: 'from-blue-500 to-purple-600',
+    //   hoverGradient: 'from-blue-600 to-purple-700',
+    // },
     {
       name: 'Dubbing',
       description: 'AI-powered voice dubbing and translation',
@@ -38,13 +38,14 @@ export default function Home() {
             Choose Your App
           </h1>
           <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Discover our powerful suite of applications designed to enhance your productivity and creativity
+            Discover our powerful suite of applications designed to enhance your
+            productivity and creativity
           </p>
         </div>
 
         {/* Apps Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {apps.map((app) => {
+          {apps.map(app => {
             const Icon = app.icon;
             return (
               <Link
@@ -53,12 +54,16 @@ export default function Home() {
                 className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
               >
                 {/* Gradient Background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${app.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-                
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${app.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
+                />
+
                 {/* Card Content */}
                 <div className="relative p-8">
                   {/* Icon */}
-                  <div className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${app.gradient} group-hover:bg-gradient-to-br group-hover:${app.hoverGradient} transition-all duration-300 mb-6`}>
+                  <div
+                    className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${app.gradient} group-hover:bg-gradient-to-br group-hover:${app.hoverGradient} transition-all duration-300 mb-6`}
+                  >
                     <Icon className="w-8 h-8 text-white" />
                   </div>
 
@@ -78,7 +83,9 @@ export default function Home() {
                 </div>
 
                 {/* Hover Border Effect */}
-                <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${app.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none`} />
+                <div
+                  className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${app.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none`}
+                />
               </Link>
             );
           })}
@@ -87,8 +94,11 @@ export default function Home() {
         {/* Footer CTA */}
         <div className="text-center mt-16">
           <p className="text-slate-600 dark:text-slate-400">
-            Need help getting started? 
-            <a href="mailto:shovon2228@gmail.com" className="text-blue-600 dark:text-blue-400 font-medium ml-1 hover:underline">
+            Need help getting started?
+            <a
+              href="mailto:shovon2228@gmail.com"
+              className="text-blue-600 dark:text-blue-400 font-medium ml-1 hover:underline"
+            >
               Contact our support team
             </a>
           </p>
