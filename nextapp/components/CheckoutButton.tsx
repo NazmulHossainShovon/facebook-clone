@@ -3,11 +3,14 @@ import { useRouter } from 'next/navigation';
 import usePaddle from '../hooks/usePaddle';
 
 interface CheckoutButtonProps {
-  priceId: string;
-  appName: string;
+  priceId?: string;
+  appName?: string;
 }
 
-export default function CheckoutButton({ priceId, appName }: CheckoutButtonProps) {
+export default function CheckoutButton({
+  priceId = 'pri_01k611462xk2zy6240fghhves7',
+  appName = 'dub',
+}: CheckoutButtonProps) {
   const router = useRouter();
 
   // Define the event callback function to handle checkout completion
@@ -93,7 +96,7 @@ export default function CheckoutButton({ priceId, appName }: CheckoutButtonProps
   return (
     <button
       onClick={openCheckout}
-      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
     >
       Purchase Now
     </button>
