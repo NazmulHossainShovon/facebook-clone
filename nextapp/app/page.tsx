@@ -88,9 +88,9 @@ export default function Home() {
         <div className="text-center mt-16">
           <p className="text-slate-600 dark:text-slate-400">
             Need help getting started? 
-            <span className="text-blue-600 dark:text-blue-400 font-medium ml-1 hover:underline cursor-pointer">
+            <a href="mailto:shovon2228@gmail.com" className="text-blue-600 dark:text-blue-400 font-medium ml-1 hover:underline">
               Contact our support team
-            </span>
+            </a>
           </p>
         </div>
       </div>
