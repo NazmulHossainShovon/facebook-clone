@@ -3,13 +3,13 @@ import { useRouter } from 'next/navigation';
 import usePaddle from '../hooks/usePaddle';
 
 interface CheckoutButtonProps {
-  priceId: string;
-  appName: string;
+  priceId?: string;
+  appName?: string;
 }
 
 export default function CheckoutButton({
-  priceId,
-  appName,
+  priceId = 'pri_01k611462xk2zy6240fghhves7',
+  appName = 'dub',
 }: CheckoutButtonProps) {
   const router = useRouter();
 
