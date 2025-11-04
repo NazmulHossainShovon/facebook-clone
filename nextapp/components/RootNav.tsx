@@ -25,7 +25,7 @@ export default function RootNav() {
           </Link>
         </li>
 
-        {isDubRoute ? <DubNav /> : null}
+        {isDubRoute ? <DubNav userInfo={userInfo} /> : null}
 
         {/* Default navigation for all routes */}
         <>

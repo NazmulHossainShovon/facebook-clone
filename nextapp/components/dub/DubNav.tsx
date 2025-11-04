@@ -2,7 +2,15 @@
 
 import Link from 'next/link';
 
-export default function DubNav() {
+interface UserInfo {
+  name?: string;
+}
+
+interface DubNavProps {
+  userInfo?: UserInfo;
+}
+
+export default function DubNav({ userInfo }: DubNavProps) {
   return (
     <>
       <li>
@@ -15,11 +23,13 @@ export default function DubNav() {
           Pricing
         </Link>
       </li>
-      <li>
-        <Link href="/dub/account" className="text-white hover:text-gray-300">
-          Account
-        </Link>
-      </li>
+      {userInfo?.name && (
+        <li>
+          <Link href="/dub/account" className="text-white hover:text-gray-300">
+            Account
+          </Link>
+        </li>
+      )}
     </>
   );
 }
