@@ -2,17 +2,22 @@
 import { useRouter } from 'next/navigation';
 import usePaddle from '../hooks/usePaddle';
 
-export default function CheckoutButton() {
+interface CheckoutButtonProps {
+  priceId: string;
+  appName: string;
+}
+
+export default function CheckoutButton({ priceId, appName }: CheckoutButtonProps) {
   const router = useRouter();
 
   // Define the event callback function to handle checkout completion
   const handlePaddleEvent = (event: any) => {
     if (event?.name === 'checkout.completed') {
       console.log('Paddle checkout completed:', event);
-      
+
       // UI: redirect, show toast, etc.
       router.push('/thanks'); // Redirect to thank you page
-      
+
       // OPTIONAL (not authoritative): ping your backend to start verification/processing
       fetch('/api/paddle/client-notify', {
         method: 'POST',
@@ -68,7 +73,7 @@ export default function CheckoutButton() {
       paddle.Checkout.open({
         items: [
           {
-            priceId: 'pri_01k611462xk2zy6240fghhves7',
+            priceId: priceId,
             quantity: 1,
           },
         ],
@@ -77,6 +82,7 @@ export default function CheckoutButton() {
         },
         customData: {
           userId: userId,
+          appName: appName,
         },
       });
     } catch (error) {

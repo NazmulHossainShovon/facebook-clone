@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import CheckoutButton from 'components/CheckoutButton';
 
 interface Feature {
   text: string;
@@ -31,16 +32,16 @@ export default function PricingCard({
   isPremium = false,
 }: PricingCardProps) {
   const cardClasses = isPremium
-    ? "bg-gradient-to-br from-blue-600 to-purple-700 text-white border-2 border-blue-500"
-    : "bg-white border-2 border-gray-200";
+    ? 'bg-gradient-to-br from-blue-600 to-purple-700 text-white border-2 border-blue-500'
+    : 'bg-white border-2 border-gray-200';
 
-  const iconColor = isPremium ? "text-yellow-300" : "text-green-500";
-  const textColor = isPremium ? "text-white" : "text-gray-700";
+  const iconColor = isPremium ? 'text-yellow-300' : 'text-green-500';
+  const textColor = isPremium ? 'text-white' : 'text-gray-700';
 
   const CtaButton = () => {
     const buttonClasses = isPremium
-      ? "w-full bg-white text-blue-600 py-3 px-6 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-      : "w-full bg-gray-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-800 transition-colors";
+      ? 'w-full bg-white text-blue-600 py-3 px-6 rounded-lg font-semibold hover:bg-gray-100 transition-colors'
+      : 'w-full bg-gray-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-800 transition-colors';
 
     if (ctaLink) {
       return (
@@ -58,7 +59,9 @@ export default function PricingCard({
   };
 
   return (
-    <div className={`${cardClasses} rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow relative`}>
+    <div
+      className={`${cardClasses} rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow relative`}
+    >
       {/* Popular Badge */}
       {isPopular && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -72,31 +75,48 @@ export default function PricingCard({
         <h3 className="text-2xl font-bold mb-2">{title}</h3>
         <div className="text-4xl font-bold mb-2">
           {price}
-          <span className={`text-lg font-normal ${isPremium ? 'opacity-80' : 'text-gray-500'}`}>
+          <span
+            className={`text-lg font-normal ${isPremium ? 'opacity-80' : 'text-gray-500'}`}
+          >
             {priceSubtext}
           </span>
         </div>
-        <p className={isPremium ? 'opacity-80' : 'text-gray-600'}>{description}</p>
+        <p className={isPremium ? 'opacity-80' : 'text-gray-600'}>
+          {description}
+        </p>
       </div>
 
       <ul className="space-y-4 mb-8">
         {features.map((feature, index) => (
           <li key={index} className="flex items-center">
-            <svg className={`w-5 h-5 ${iconColor} mr-3`} fill="currentColor" viewBox="0 0 20 20">
+            <svg
+              className={`w-5 h-5 ${iconColor} mr-3`}
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
               <path
                 fillRule="evenodd"
                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                 clipRule="evenodd"
               />
             </svg>
-            <span className={`${textColor} ${feature.highlighted ? 'font-semibold' : ''}`}>
+            <span
+              className={`${textColor} ${feature.highlighted ? 'font-semibold' : ''}`}
+            >
               {feature.text}
             </span>
           </li>
         ))}
       </ul>
 
-      <CtaButton />
+      {isPremium ? (
+        <CheckoutButton
+          priceId="pri_01k9770ec4netjw3pz6m4zey9y"
+          appName="chart"
+        />
+      ) : (
+        <CtaButton />
+      )}
     </div>
   );
 }

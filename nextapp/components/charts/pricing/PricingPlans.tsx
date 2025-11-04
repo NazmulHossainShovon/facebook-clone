@@ -39,8 +39,8 @@ export default function PricingPlans({ onUpgrade }: PricingPlansProps) {
         priceSubtext="/forever"
         description="Perfect to get started"
         features={freePlanFeatures}
-        ctaText={!userInfo?.name ? "Get Started Free" : "Start Creating Charts"}
-        ctaLink={!userInfo?.name ? "/signup" : "/charts/chart-app"}
+        ctaText={!userInfo?.name ? 'Get Started Free' : 'Start Creating Charts'}
+        ctaLink="/charts/chart-app"
       />
 
       {/* Unlimited Plan */}
@@ -50,8 +50,8 @@ export default function PricingPlans({ onUpgrade }: PricingPlansProps) {
         priceSubtext="/lifetime"
         description="One-time payment, unlimited forever"
         features={unlimitedPlanFeatures}
-        ctaText={!userInfo?.name ? "Sign Up & Upgrade" : "Upgrade to Unlimited"}
-        ctaLink={!userInfo?.name ? "/signup" : undefined}
+        ctaText={!userInfo?.name ? 'Sign Up & Upgrade' : 'Upgrade to Unlimited'}
+        ctaLink={!userInfo?.name ? '/signup' : undefined}
         onCtaClick={userInfo?.name ? onUpgrade : undefined}
         isPopular={true}
         isPremium={true}
