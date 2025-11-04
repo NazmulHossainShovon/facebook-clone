@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Users, Mic, BarChart3, ArrowRight } from 'lucide-react';
+import { Mic, BarChart3, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   const apps = [
