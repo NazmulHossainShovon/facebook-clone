@@ -48,6 +48,13 @@ s3Router.get("/signed-url", isAuth, async (req, res) => {
         .send({ message: "Video duration is required for video uploads" });
     }
 
+    // Check if video duration is more than 5 minutes (300 seconds)
+    if (videoDurationNum > 300) {
+      return res.status(400).send({
+        message: "Video duration cannot be more than 5 minutes",
+      });
+    }
+
     // Get the current user
     // Cast request to any to access user property from auth middleware
     const reqWithUser = req as any;
