@@ -25,16 +25,16 @@ function SocialNav() {
   };
 
   const handleSearchQuery = () => {
-    router.push(`/search/${searchQuery}`);
+    router.push(`/social/search/${searchQuery}`);
   };
 
   return (
-    <div className="flex justify-between md:justify-start text-white items-center gap-5 ">
+    <div className="flex flex-col md:flex-row justify-between md:justify-start text-white md:items-center gap-5 ">
       {userInfo.name && (
         <>
           <Link href={'/social'}>Home</Link>
           <AvatarMenu />
-          <div className="hidden md:flex  flex-row ml-5 items-center gap-2">
+          <div className="flex flex-row ml-5 items-center gap-2">
             <Input
               placeholder="Search anything..."
               onChange={e => setSearchQuery(e.target.value)}
