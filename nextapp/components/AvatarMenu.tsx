@@ -37,9 +37,6 @@ export default function AvatarMenu() {
           'aria-labelledby': 'basic-button',
         }}
       >
-        <MenuItem onClick={() => handleLogout(dispatch, router)}>
-          Logout
-        </MenuItem>
         <MenuItem>
           <Link href={`/social/${state.userInfo.name}`}>Profile</Link>
         </MenuItem>

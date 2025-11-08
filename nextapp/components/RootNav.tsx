@@ -7,6 +7,7 @@ import { Store } from '../app/lib/store';
 import Logout from './Logout';
 import DubNav from './dub/DubNav';
 import ChartNav from './charts/ChartNav';
+import SocialNav from './SocialNav';
 
 export default function RootNav() {
   const {
@@ -19,6 +20,8 @@ export default function RootNav() {
   const isDubRoute = pathname?.startsWith('/dub');
   // Check if we're on a charts route
   const isChartsRoute = pathname?.startsWith('/charts');
+  // Check if we're on a social route
+  const isSocialRoute = pathname?.startsWith('/social');
 
   // Close drawer when route changes
   useEffect(() => {
@@ -30,10 +33,14 @@ export default function RootNav() {
     const handleClickOutside = (event: MouseEvent) => {
       const drawer = document.getElementById('mobile-drawer');
       const hamburger = document.getElementById('hamburger-button');
-      
-      if (isDrawerOpen && drawer && hamburger && 
-          !drawer.contains(event.target as Node) && 
-          !hamburger.contains(event.target as Node)) {
+
+      if (
+        isDrawerOpen &&
+        drawer &&
+        hamburger &&
+        !drawer.contains(event.target as Node) &&
+        !hamburger.contains(event.target as Node)
+      ) {
         setIsDrawerOpen(false);
       }
     };
@@ -49,24 +56,34 @@ export default function RootNav() {
   const NavigationLinks = () => (
     <>
       <li>
-        <Link href="/" className="text-white hover:text-gray-300 block py-2 md:py-0">
+        <Link
+          href="/"
+          className="text-white hover:text-gray-300 block py-2 md:py-0"
+        >
           All apps
         </Link>
       </li>
 
       {isDubRoute ? <DubNav userInfo={userInfo} /> : null}
       {isChartsRoute ? <ChartNav userInfo={userInfo} /> : null}
+      {isSocialRoute ? <SocialNav /> : null}
 
       {/* Default navigation for all routes */}
       {!userInfo?.name ? (
         <>
           <li>
-            <Link href="/signup" className="text-white hover:text-gray-300 block py-2 md:py-0">
+            <Link
+              href="/signup"
+              className="text-white hover:text-gray-300 block py-2 md:py-0"
+            >
               Sign Up
             </Link>
           </li>
           <li>
-            <Link href="/login" className="text-white hover:text-gray-300 block py-2 md:py-0">
+            <Link
+              href="/login"
+              className="text-white hover:text-gray-300 block py-2 md:py-0"
+            >
               Login
             </Link>
           </li>
@@ -83,7 +100,7 @@ export default function RootNav() {
     <>
       <nav className="bg-black p-4 fixed top-0 left-0 right-0 z-50">
         {/* Desktop Navigation */}
-        <ul className="hidden md:flex space-x-4">
+        <ul className="hidden md:flex space-x-4 items-center">
           <NavigationLinks />
         </ul>
 
@@ -95,11 +112,26 @@ export default function RootNav() {
             className="text-white hover:text-gray-300 focus:outline-none"
             aria-label="Toggle navigation menu"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               {isDrawerOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               )}
             </svg>
           </button>
@@ -114,7 +146,7 @@ export default function RootNav() {
       >
         {/* Backdrop */}
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-        
+
         {/* Drawer */}
         <div
           id="mobile-drawer"
