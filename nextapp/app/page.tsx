@@ -1,24 +1,8 @@
 import Link from 'next/link';
-import { Mic, BarChart3, ArrowRight } from 'lucide-react';
+import { BarChart3, Sword, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   const apps = [
-    // {
-    //   name: 'Social',
-    //   description: 'Connect and share with friends',
-    //   href: '/social',
-    //   icon: Users,
-    //   gradient: 'from-blue-500 to-purple-600',
-    //   hoverGradient: 'from-blue-600 to-purple-700',
-    // },
-    {
-      name: 'Dubbing',
-      description: 'AI-powered voice dubbing and translation',
-      href: '/dub',
-      icon: Mic,
-      gradient: 'from-green-500 to-teal-600',
-      hoverGradient: 'from-green-600 to-teal-700',
-    },
     {
       name: 'Charts',
       description: 'Create beautiful data visualizations',
@@ -26,6 +10,14 @@ export default function Home() {
       icon: BarChart3,
       gradient: 'from-orange-500 to-red-600',
       hoverGradient: 'from-orange-600 to-red-700',
+    },
+    {
+      name: 'DPS Comparator',
+      description: 'Compare the damage output of different Blox Fruits builds',
+      href: '/dps-comparator',
+      icon: Sword,
+      gradient: 'from-blue-600 to-indigo-700',
+      hoverGradient: 'from-blue-700 to-indigo-800',
     },
   ];
 
