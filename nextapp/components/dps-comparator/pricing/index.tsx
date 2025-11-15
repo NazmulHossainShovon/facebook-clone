@@ -11,15 +11,17 @@ export const PricingHeader = () => {
         Choose Your Plan
       </h1>
       <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-        Unlock the full potential of the DPS Comparator with our premium features.
-        Start with a free trial or get lifetime access today.
+        Unlock the full potential of the DPS Comparator with our premium
+        features. Start with a free trial or get lifetime access today.
       </p>
     </div>
   );
 };
 
 export const PricingPlans = () => {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>(
+    'annual'
+  );
 
   const plans = [
     {
@@ -30,11 +32,12 @@ export const PricingPlans = () => {
       features: [
         'Access to all paid plan features',
         'No feature limitations',
-        'Full functionality for 7 days'
+        'Full functionality for 7 days',
       ],
       cta: 'Start Free Trial',
       featured: false,
-      buttonStyle: 'bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50'
+      buttonStyle:
+        'bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50',
     },
     {
       name: 'Lifetime Access',
@@ -47,12 +50,12 @@ export const PricingPlans = () => {
         'Advanced calculations',
         'Priority support',
         'Early access to new features',
-        'Real-time updates'
+        'Real-time updates',
       ],
       cta: 'Get Lifetime Access',
       featured: true,
-      buttonStyle: 'bg-blue-600 text-white hover:bg-blue-700'
-    }
+      buttonStyle: 'bg-blue-600 text-white hover:bg-blue-700',
+    },
   ];
 
   return (
@@ -74,9 +77,13 @@ export const PricingPlans = () => {
                 </span>
               </div>
             )}
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              {plan.name}
+            </h2>
             <div className="mb-6">
-              <span className="text-4xl font-extrabold text-gray-900">{plan.price}</span>
+              <span className="text-4xl font-extrabold text-gray-900">
+                {plan.price}
+              </span>
               <span className="text-gray-600"> {plan.period}</span>
               <p className="text-gray-600 mt-2">{plan.description}</p>
             </div>
@@ -102,7 +109,7 @@ export const PricingPlans = () => {
             </ul>
             {plan.name === 'Lifetime Access' ? (
               <CheckoutButton
-                priceId="pri_01k9770ec4netjw3pz6m4zey9y"
+                priceId="pri_01ka34y7c65a1nzhzz6kn1ww35"
                 appName="dps-comparator"
               />
             ) : (
@@ -124,33 +131,45 @@ export const FAQSection = () => {
   const faqs = [
     {
       question: 'How long is the free trial?',
-      answer: 'The free trial gives you access to all premium features for 7 days at no cost.'
+      answer:
+        'The free trial gives you access to all premium features for 7 days at no cost.',
     },
     {
       question: 'What is lifetime access?',
-      answer: 'Lifetime access is a one-time payment that gives you unlimited access to all premium features forever.'
+      answer:
+        'Lifetime access is a one-time payment that gives you unlimited access to all premium features forever.',
     },
     {
       question: 'Can I upgrade after the free trial?',
-      answer: 'Yes, after your 7-day trial, you can choose to upgrade to the lifetime access plan.'
+      answer:
+        'Yes, after your 7-day trial, you can choose to upgrade to the lifetime access plan.',
     },
     {
       question: 'Is there a refund policy?',
-      answer: 'Due to the lifetime nature of the purchase, refunds are not available after the free trial period ends.'
+      answer:
+        'Due to the lifetime nature of the purchase, refunds are not available after the free trial period ends.',
     },
     {
       question: 'Do I need to create an account?',
-      answer: 'Yes, you need an account to access the premium features and to keep track of your builds.'
-    }
+      answer:
+        'Yes, you need an account to access the premium features and to keep track of your builds.',
+    },
   ];
 
   return (
     <div className="bg-white rounded-2xl p-8 shadow-lg max-w-4xl mx-auto mb-20">
-      <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Frequently Asked Questions</h2>
+      <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+        Frequently Asked Questions
+      </h2>
       <div className="space-y-6">
         {faqs.map((faq, index) => (
-          <div key={index} className="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
-            <h3 className="text-lg font-semibold text-gray-900">{faq.question}</h3>
+          <div
+            key={index}
+            className="border-b border-gray-200 pb-6 last:border-0 last:pb-0"
+          >
+            <h3 className="text-lg font-semibold text-gray-900">
+              {faq.question}
+            </h3>
             <p className="mt-2 text-gray-600">{faq.answer}</p>
           </div>
         ))}
@@ -162,9 +181,12 @@ export const FAQSection = () => {
 export const PricingCTA = () => {
   return (
     <div className="text-center">
-      <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to Optimize Your DPS?</h2>
+      <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        Ready to Optimize Your DPS?
+      </h2>
       <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-        Join thousands of players who use our DPS Comparator to enhance their Blox Fruits gameplay.
+        Join thousands of players who use our DPS Comparator to enhance their
+        Blox Fruits gameplay.
       </p>
       <div className="flex flex-col sm:flex-row justify-center gap-4">
         <Link
