@@ -1,5 +1,6 @@
 'use client';
 
+import ProtectedRoute from 'components/ProtectedRoute';
 import BuildForm from 'components/BuildForm';
 import ComparisonTable from 'components/ComparisonTable';
 import { calculateDPS } from 'lib/calculations';
@@ -50,55 +51,57 @@ export default function BloxFruitsComparatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto py-8 px-4 max-w-6xl">
-        <h1 className="text-3xl font-bold text-center mb-2">
-          Blox Fruits Build DPS Comparator
-        </h1>
-        <p className="text-center text-gray-600 mb-8">
-          Compare the damage output of different Blox Fruits builds
-        </p>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto py-8 px-4 max-w-6xl">
+          <h1 className="text-3xl font-bold text-center mb-2">
+            Blox Fruits Build DPS Comparator
+          </h1>
+          <p className="text-center text-gray-600 mb-8">
+            Compare the damage output of different Blox Fruits builds
+          </p>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <BuildForm
-            buildNumber={1}
-            onSubmit={setBuild1}
-            initialData={build1 || undefined}
-          />
-          <BuildForm
-            buildNumber={2}
-            onSubmit={setBuild2}
-            initialData={build2 || undefined}
-          />
-        </div>
-
-        <div className="flex flex-col sm:flex-row justify-center mt-6 space-y-2 sm:space-y-0 sm:space-x-4">
-          <button
-            className={`px-6 py-3 rounded-lg font-medium ${
-              build1 && build2
-                ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer shadow-md'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
-            onClick={handleCompare}
-            disabled={!build1 || !build2 || loading}
-          >
-            {loading ? 'Calculating DPS...' : 'Calculate DPS Comparison'}
-          </button>
-
-          <button
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 shadow-md"
-            onClick={handleReset}
-          >
-            Reset All
-          </button>
-        </div>
-
-        {comparison && (
-          <div className="mt-8 animate-fadeIn">
-            <ComparisonTable data={comparison} />
+          <div className="grid md:grid-cols-2 gap-8">
+            <BuildForm
+              buildNumber={1}
+              onSubmit={setBuild1}
+              initialData={build1 || undefined}
+            />
+            <BuildForm
+              buildNumber={2}
+              onSubmit={setBuild2}
+              initialData={build2 || undefined}
+            />
           </div>
-        )}
+
+          <div className="flex flex-col sm:flex-row justify-center mt-6 space-y-2 sm:space-y-0 sm:space-x-4">
+            <button
+              className={`px-6 py-3 rounded-lg font-medium ${
+                build1 && build2
+                  ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer shadow-md'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+              onClick={handleCompare}
+              disabled={!build1 || !build2 || loading}
+            >
+              {loading ? 'Calculating DPS...' : 'Calculate DPS Comparison'}
+            </button>
+
+            <button
+              className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 shadow-md"
+              onClick={handleReset}
+            >
+              Reset All
+            </button>
+          </div>
+
+          {comparison && (
+            <div className="mt-8 animate-fadeIn">
+              <ComparisonTable data={comparison} />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
