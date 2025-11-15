@@ -1,96 +1,157 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { BuildInput } from '../../types/build';
-import { calculateDPS } from '../../lib/calculations';
-import BuildForm from '../../components/BuildForm';
-import ComparisonTable from '../../components/ComparisonTable';
+import Link from 'next/link';
 
-export default function BloxFruitsComparatorPage() {
-  const [build1, setBuild1] = useState<BuildInput | null>(null);
-  const [build2, setBuild2] = useState<BuildInput | null>(null);
-  const [comparison, setComparison] = useState<{dps1: number; dps2: number; diff: number} | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Test the calculation function on component mount
-  useEffect(() => {
-    // Test sample calculation
-    const testBuild: BuildInput = { 
-      level: 1000, 
-      stats: {melee:25,defense:25,fruit:25,sword:25,gun:0}, 
-      equipped:{fruit:'Dragon',sword:'Tushita',accessories:[]} 
-    };
-    console.log('Test DPS:', calculateDPS(testBuild));
-  }, []);
-
-  const handleCompare = () => {
-    if (build1 && build2) {
-      setLoading(true);
-      
-      // Calculate DPS for both builds
-      const dps1 = calculateDPS(build1);
-      const dps2 = calculateDPS(build2);
-      
-      // Calculate percentage difference
-      const diff = dps2 !== 0 ? ((dps1 - dps2) / dps2 * 100) : 0;
-      
-      setComparison({ dps1, dps2, diff });
-      setLoading(false);
-    }
-  };
-
-  const handleReset = () => {
-    setBuild1(null);
-    setBuild2(null);
-    setComparison(null);
-  };
-
+export default function BloxFruitsDPSComparatorLanding() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto py-8 px-4 max-w-6xl">
-        <h1 className="text-3xl font-bold text-center mb-2">Blox Fruits Build DPS Comparator</h1>
-        <p className="text-center text-gray-600 mb-8">Compare the damage output of different Blox Fruits builds</p>
-        
-        <div className="grid md:grid-cols-2 gap-8">
-          <BuildForm 
-            buildNumber={1} 
-            onSubmit={setBuild1} 
-            initialData={build1 || undefined} 
-          />
-          <BuildForm 
-            buildNumber={2} 
-            onSubmit={setBuild2} 
-            initialData={build2 || undefined} 
-          />
+    <div className="min-h-screen" style={{ backgroundColor: '#f3f4f6' /* bf-sand */ }}>
+      {/* Header */}
+      <header className="py-4" style={{ backgroundColor: '#1e40af' /* bf-sea */ }}>
+        <div className="container mx-auto px-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-white">Blox Fruits DPS Comparator</h1>
+          <nav>
+            <ul className="flex space-x-4">
+              <li><Link href="/" className="text-white hover:text-[#f59e0b]" /* bf-fruit */>Home</Link></li>
+              <li><Link href="#" className="text-white hover:text-[#f59e0b]" /* bf-fruit */>About</Link></li>
+              <li><Link href="#" className="text-white hover:text-[#f59e0b]" /* bf-fruit */>Contact</Link></li>
+            </ul>
+          </nav>
         </div>
-        
-        <div className="flex flex-col sm:flex-row justify-center mt-6 space-y-2 sm:space-y-0 sm:space-x-4">
-          <button
-            className={`px-6 py-3 rounded-lg font-medium ${
-              build1 && build2 
-                ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer shadow-md' 
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
-            onClick={handleCompare}
-            disabled={!build1 || !build2 || loading}
+      </header>
+
+      {/* Hero Section */}
+      <section className="py-16" style={{
+        background: 'linear-gradient(to bottom, #1e40af 0%, #e0f2fe 100%)' /* bf-sea to bf-wave */
+      }}>
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">Blox Fruits DPS Comparator</h1>
+          <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
+            Compare the damage output of different Blox Fruits builds and optimize your gameplay
+          </p>
+          <Link
+            href="/dps-comparator/app"
+            className="inline-block font-bold py-3 px-8 rounded-full text-lg transition duration-300 shadow-lg"
+            style={{
+              backgroundColor: '#f59e0b', /* bf-fruit */
+              color: '#1e40af' /* bf-sea */
+            }}
           >
-            {loading ? 'Calculating DPS...' : 'Calculate DPS Comparison'}
-          </button>
-          
-          <button
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 shadow-md"
-            onClick={handleReset}
-          >
-            Reset All
-          </button>
+            Start Comparing Builds
+          </Link>
         </div>
-        
-        {comparison && (
-          <div className="mt-8 animate-fadeIn">
-            <ComparisonTable data={comparison} />
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12" style={{ color: '#1e40af' /* bf-sea */ }}>Power Up Your Blox Fruits Experience</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="rounded-lg shadow-md text-center p-6" style={{ backgroundColor: '#e0f2fe' /* bf-wave */ }}>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 m-auto" style={{ backgroundColor: '#f59e0b' /* bf-fruit */ }}>
+                <span className="text-2xl">📊</span>
+              </div>
+              <h3 className="text-xl font-bold mb-2" style={{ color: '#1e40af' /* bf-sea */ }}>Accurate Calculations</h3>
+              <p className="text-gray-700">
+                Our DPS calculator uses the latest game mechanics to provide precise damage calculations
+              </p>
+            </div>
+            <div className="rounded-lg shadow-md text-center p-6" style={{ backgroundColor: '#e0f2fe' /* bf-wave */ }}>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 m-auto" style={{ backgroundColor: '#dc2626' /* bf-treasure */ }}>
+                <span className="text-2xl">⚔️</span>
+              </div>
+              <h3 className="text-xl font-bold mb-2" style={{ color: '#1e40af' /* bf-sea */ }}>Build Optimization</h3>
+              <p className="text-gray-700">
+                Compare multiple builds to find the optimal setup for your playstyle
+              </p>
+            </div>
+            <div className="rounded-lg shadow-md text-center p-6" style={{ backgroundColor: '#e0f2fe' /* bf-wave */ }}>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 m-auto" style={{ backgroundColor: '#059669' /* bf-island */ }}>
+                <span className="text-2xl">🎮</span>
+              </div>
+              <h3 className="text-xl font-bold mb-2" style={{ color: '#1e40af' /* bf-sea */ }}>Game Updates</h3>
+              <p className="text-gray-700">
+                Regular updates to match new game patches and mechanics
+              </p>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-16" style={{ backgroundColor: '#e0f2fe' /* bf-wave */ }}>
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12" style={{ color: '#1e40af' /* bf-sea */ }}>How to Use the DPS Comparator</h2>
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col md:flex-row items-center mb-10">
+              <div className="md:w-1/3 mb-4 md:mb-0 flex justify-center">
+                <div className="w-24 h-24 rounded-full flex items-center justify-center text-4xl" style={{ backgroundColor: '#f59e0b' /* bf-fruit */ }}>
+                  1
+                </div>
+              </div>
+              <div className="md:w-2/3 text-center md:text-left">
+                <h3 className="text-xl font-bold mb-2" style={{ color: '#1e40af' /* bf-sea */ }}>Enter Your Build Details</h3>
+                <p className="text-gray-700">
+                  Input your character's level, stats, and equipped items for each build you want to compare
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col md:flex-row items-center mb-10">
+              <div className="md:w-1/3 mb-4 md:mb-0 flex justify-center">
+                <div className="w-24 h-24 rounded-full flex items-center justify-center text-4xl" style={{ backgroundColor: '#059669' /* bf-island */ }}>
+                  2
+                </div>
+              </div>
+              <div className="md:w-2/3 text-center md:text-left">
+                <h3 className="text-xl font-bold mb-2" style={{ color: '#1e40af' /* bf-sea */ }}>Calculate DPS</h3>
+                <p className="text-gray-700">
+                  Our algorithm calculates the DPS for each build based on your inputs
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col md:flex-row items-center">
+              <div className="md:w-1/3 mb-4 md:mb-0 flex justify-center">
+                <div className="w-24 h-24 rounded-full flex items-center justify-center text-4xl" style={{ backgroundColor: '#dc2626' /* bf-treasure */ }}>
+                  3
+                </div>
+              </div>
+              <div className="md:w-2/3 text-center md:text-left">
+                <h3 className="text-xl font-bold mb-2" style={{ color: '#1e40af' /* bf-sea */ }}>Analyze Results</h3>
+                <p className="text-gray-700">
+                  Compare the results to determine which build performs better for your needs
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16" style={{ backgroundColor: '#1e40af' /* bf-sea */ }}>
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">Ready to Optimize Your Builds?</h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto" style={{ color: '#e0f2fe' /* bf-wave */ }}>
+            Join thousands of Blox Fruits players who use our DPS comparator to enhance their gameplay
+          </p>
+          <Link
+            href="/dps-comparator/app"
+            className="inline-block font-bold py-3 px-8 rounded-full text-lg transition duration-300 shadow-lg"
+            style={{
+              backgroundColor: '#f59e0b', /* bf-fruit */
+              color: '#1e40af' /* bf-sea */
+            }}
+          >
+            Start Comparing Now
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-8">
+        <div className="container mx-auto px-4 text-center">
+          <p>© {new Date().getFullYear()} Blox Fruits DPS Comparator. This is an unofficial tool and is not affiliated with Blox Fruits or OP Games.</p>
+          <p className="mt-2 text-gray-400">For entertainment purposes only.</p>
+        </div>
+      </footer>
     </div>
   );
 }
