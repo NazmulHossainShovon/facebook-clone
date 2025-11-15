@@ -12,7 +12,7 @@ import FriendReqsMenu from './FriendReqsMenu';
 import { Drawer } from '@mui/material';
 import FriendList from './FriendList';
 
-function Navbar() {
+function SocialNav() {
   const {
     state: { userInfo },
   } = useContext(Store);
@@ -25,16 +25,16 @@ function Navbar() {
   };
 
   const handleSearchQuery = () => {
-    router.push(`/search/${searchQuery}`);
+    router.push(`/social/search/${searchQuery}`);
   };
 
   return (
-    <div className=" fixed top-0 left-0 z-50 w-full flex justify-between md:justify-start pl-5 items-center gap-5 bg-black  text-white h-[60px]">
-      {userInfo.name ? (
+    <div className="flex flex-col md:flex-row justify-between md:justify-start text-white md:items-center gap-5 ">
+      {userInfo.name && (
         <>
-          <Link href={'/'}>Home</Link>
+          <Link href={'/social'}>Home</Link>
           <AvatarMenu />
-          <div className="hidden md:flex  flex-row ml-5 items-center gap-2">
+          <div className="flex flex-row ml-5 items-center gap-2">
             <Input
               placeholder="Search anything..."
               onChange={e => setSearchQuery(e.target.value)}
@@ -46,7 +46,6 @@ function Navbar() {
           </div>
           <FriendReqsMenu />
           <FriendList />
-          <MenuIcon className=" xl:invisible" onClick={toggleDrawer(true)} />
           <Drawer open={open} onClose={toggleDrawer(false)}>
             <div className=" flex m-3 flex-row ml-5 items-center gap-2">
               <Input
@@ -60,14 +59,9 @@ function Navbar() {
             </div>
           </Drawer>
         </>
-      ) : (
-        <>
-          <Link href={'/signup'}>Signup</Link>
-          <Link href={'/login'}>Login</Link>
-        </>
       )}
     </div>
   );
 }
 
-export default Navbar;
+export default SocialNav;

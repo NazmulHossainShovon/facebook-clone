@@ -21,7 +21,7 @@ export default function Search() {
             <Link
               className="flex flex-row p-2 gap-2 border border-gray-200 "
               key={index}
-              href={`/${person.name}`}
+              href={`/social/${person.name}`}
             >
               <Avatar
                 src={`https://nazmul.sirv.com/facebook/${person.name}.png`}
