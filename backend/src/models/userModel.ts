@@ -25,6 +25,9 @@ export class User {
   // Paddle payment fields
   @prop({ default: 20 })
   public secondsLeft?: number;
+
+  @prop({ default: 50 })
+  public remainingChartsLimit?: number;
 }
 
 export const UserModel = getModelForClass(User);
