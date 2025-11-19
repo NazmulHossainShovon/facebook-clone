@@ -1,4 +1,5 @@
 import { modelOptions, prop, getModelForClass } from "@typegoose/typegoose";
+import { DEFAULT_SECONDS_LEFT, DEFAULT_CHARTS_LIMIT } from "../constants/userConstants";
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class User {
@@ -23,10 +24,10 @@ export class User {
   public friends!: string[];
 
   // Paddle payment fields
-  @prop({ default: 20 })
+  @prop({ default: DEFAULT_SECONDS_LEFT })
   public secondsLeft?: number;
 
-  @prop({ default: 50 })
+  @prop({ default: DEFAULT_CHARTS_LIMIT })
   public remainingChartsLimit?: number;
 }
 
