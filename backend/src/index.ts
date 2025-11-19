@@ -13,6 +13,7 @@ import { dubRouter } from "./routers/dubRouter";
 import paymentRouter from "./routers/paymentRouter";
 import { geminiRouter } from "./routers/geminiRouter";
 import timeOffRouter from "./routers/timeOffRouter";
+import { chartRouter } from "./routers/chartRouter";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { registerChatHandlers } from "./socketHandlers/chatHandler";
@@ -77,6 +78,7 @@ app.use("/api/dub", dubRouter);
 app.use("/api", paymentRouter);
 app.use("/api/gemini", geminiRouter);
 app.use("/api/time-off", timeOffRouter);
+app.use("/api/charts", chartRouter);
 
 // Separate route for Paddle webhook to avoid JSON parsing interference
 import { handlePaddleWebhook } from "./routers/paymentRouter";
