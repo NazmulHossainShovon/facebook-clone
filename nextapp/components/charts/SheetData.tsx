@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import useViolinPlot from '../../hooks/charts/useViolinPlot';
+import { checkChartLimit, useChartLimit } from 'utils/charts/chartLimitUtils';
 
 import ChartTypeSelector from './ChartTypeSelector';
 import SheetUrlInput from './SheetUrlInput';
@@ -92,6 +93,17 @@ const SheetData = () => {
       setLoading(true);
       setError(null);
 
+      // First, check if the user has remaining chart generation limit
+      const chartLimitResponse = await checkChartLimit();
+      if (!chartLimitResponse.canGenerate) {
+        setError(
+          chartLimitResponse.message ||
+            'Chart generation limit reached. Please upgrade your account to generate more charts.'
+        );
+        setLoading(false);
+        return; // Stop execution if no limit
+      }
+
       // Fetch data based on chart type
       const result = await fetchSheetDataByType(
         sheetUrl,
@@ -103,6 +115,9 @@ const SheetData = () => {
         range5,
         range6
       );
+
+      // If data fetching was successful, use one chart from the limit
+      await useChartLimit();
 
       setData(result.data);
       setOneDArray1(result.oneDArray1 || []);

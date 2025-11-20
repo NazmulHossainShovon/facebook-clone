@@ -1,0 +1,2 @@
+export const DEFAULT_SECONDS_LEFT = 20;
+export const DEFAULT_CHARTS_LIMIT = 50;

@@ -16,6 +16,7 @@ type User = {
   googleId?: string;
   authProvider?: string;
   secondsLeft?: number;
+  remainingChartsLimit?: number;
 };
 
 type People = {
