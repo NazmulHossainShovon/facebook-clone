@@ -111,7 +111,7 @@ export default function PricingCard({
 
       {isPremium ? (
         <CheckoutButton
-          priceId="pri_01k9770ec4netjw3pz6m4zey9y"
+          priceId="pri_01kaf9be5f7hdmw3ssy34fy1q0"
           appName="chart"
         />
       ) : (
