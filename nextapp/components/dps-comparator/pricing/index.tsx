@@ -109,7 +109,7 @@ export const PricingPlans = () => {
             </ul>
             {plan.name === 'Lifetime Access' ? (
               <CheckoutButton
-                priceId="pri_01ka34y7c65a1nzhzz6kn1ww35"
+                priceId="pri_01kaf98db9esez9zd60k822pzg"
                 appName="dps-comparator"
               />
             ) : (
