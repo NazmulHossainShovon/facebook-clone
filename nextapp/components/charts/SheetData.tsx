@@ -41,9 +41,9 @@ const SheetData = () => {
   const { toast } = useToast();
   const {
     state: { userInfo },
-    dispatch
+    dispatch,
   } = useContext(Store);
-  const [selectedChartType, setSelectedChartType] = useState<string>('bar');
+  const [selectedChartType, setSelectedChartType] = useState<string>('box');
   const [selectedNumericColumn, setSelectedNumericColumn] =
     useState<string>('');
   const [selectedNonNumericColumn, setSelectedNonNumericColumn] =
@@ -339,11 +339,21 @@ const SheetData = () => {
         sheetUrl={sheetUrl}
         setSheetUrl={setSheetUrl}
         loading={loading}
-        onFetchData={fetchSheetData}
       />
 
       {/* Chart type selector */}
       <ChartTypeSelector config={chartTypeSelectorConfig} />
+
+      {/* Generate Chart Button */}
+      <div className="mb-4">
+        <button
+          onClick={fetchSheetData}
+          disabled={loading}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50 mt-2"
+        >
+          {loading ? 'Loading...' : 'Generate Chart'}
+        </button>
+      </div>
 
       {/* Display the chart if we have chart data and Plot component is loaded */}
       {chartData.length > 0 && PlotComponent && (
