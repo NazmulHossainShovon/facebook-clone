@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import useViolinPlot from '../../hooks/charts/useViolinPlot';
 import { checkChartLimit, useChartLimit } from 'utils/charts/chartLimitUtils';
 
@@ -36,6 +37,7 @@ import { combineFunnelData } from '../../utils/charts/chartHelpers3';
 import { fetchSheetDataByType } from 'utils/charts/fetchSheetDataByType';
 
 const SheetData = () => {
+  const { toast } = useToast();
   const [selectedChartType, setSelectedChartType] = useState<string>('bar');
   const [selectedNumericColumn, setSelectedNumericColumn] =
     useState<string>('');
@@ -56,7 +58,6 @@ const SheetData = () => {
   const [oneDArray5, setOneDArray5] = useState<any[]>([]);
   const [twoDArray1, setTwoDArray1] = useState<any[][]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const [PlotComponent, setPlotComponent] = useState<any>(null);
 
   // Dynamically import Plot component to avoid SSR issues
@@ -85,21 +86,27 @@ const SheetData = () => {
   // Function to fetch data from the sheet URL
   const fetchSheetData = async () => {
     if (!sheetUrl) {
-      setError('Please enter a valid sheet URL');
+      toast({
+        title: 'Error',
+        description: 'Please enter a valid sheet URL',
+        variant: 'destructive',
+      });
       return;
     }
 
     try {
       setLoading(true);
-      setError(null);
 
       // First, check if the user has remaining chart generation limit
       const chartLimitResponse = await checkChartLimit();
       if (!chartLimitResponse.canGenerate) {
-        setError(
-          chartLimitResponse.message ||
-            'Chart generation limit reached. Please upgrade your account to generate more charts.'
-        );
+        toast({
+          title: 'Error',
+          description:
+            chartLimitResponse.message ||
+            'Chart generation limit reached. Please upgrade your account to generate more charts.',
+          variant: 'destructive',
+        });
         setLoading(false);
         return; // Stop execution if no limit
       }
@@ -128,9 +135,12 @@ const SheetData = () => {
       setTwoDArray1(result.twoDArray1 || []);
     } catch (err) {
       console.error('Error fetching sheet data:', err);
-      setError(
-        err instanceof Error ? err.message : 'An unknown error occurred'
-      );
+      toast({
+        title: 'Error',
+        description:
+          err instanceof Error ? err.message : 'An unknown error occurred',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -275,10 +285,6 @@ const SheetData = () => {
 
   if (loading) {
     return <div>Loading sheet data...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
   }
 
   const { chartData, layout } = prepareChartData();
