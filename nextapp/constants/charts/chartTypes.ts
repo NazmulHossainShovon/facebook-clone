@@ -55,3 +55,5 @@ export const chartTypes: ChartTypeOption[] = [
   // { label: 'Contour GL', value: 'contourgl', category: 'WebGL' },
   // { label: 'Point Cloud', value: 'pointcloud', category: 'WebGL' },
 ];
+
+export const maxChartsPerUser = 50;
