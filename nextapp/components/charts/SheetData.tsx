@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { Store } from 'app/lib/store';
 import useViolinPlot from '../../hooks/charts/useViolinPlot';
 import { checkChartLimit, useChartLimit } from 'utils/charts/chartLimitUtils';
 
@@ -38,6 +39,10 @@ import { fetchSheetDataByType } from 'utils/charts/fetchSheetDataByType';
 
 const SheetData = () => {
   const { toast } = useToast();
+  const {
+    state: { userInfo },
+    dispatch
+  } = useContext(Store);
   const [selectedChartType, setSelectedChartType] = useState<string>('bar');
   const [selectedNumericColumn, setSelectedNumericColumn] =
     useState<string>('');
@@ -124,7 +129,7 @@ const SheetData = () => {
       );
 
       // If data fetching was successful, use one chart from the limit
-      await useChartLimit();
+      await useChartLimit(dispatch, userInfo);
 
       setData(result.data);
       setOneDArray1(result.oneDArray1 || []);
