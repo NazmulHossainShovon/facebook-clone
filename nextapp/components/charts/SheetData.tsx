@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { Store } from 'app/lib/store';
 import useViolinPlot from '../../hooks/charts/useViolinPlot';
 import { checkChartLimit, useChartLimit } from 'utils/charts/chartLimitUtils';
 
@@ -15,6 +17,7 @@ import {
   createBubbleChart,
   createScatterLineAreaChart,
 } from '../../utils/charts/chartHelpers';
+import ChartHeightSelector from './ChartHeightSelector';
 import { chartTypes } from '../../constants/charts/chartTypes';
 import {
   createBoxPlot,
@@ -36,7 +39,12 @@ import { combineFunnelData } from '../../utils/charts/chartHelpers3';
 import { fetchSheetDataByType } from 'utils/charts/fetchSheetDataByType';
 
 const SheetData = () => {
-  const [selectedChartType, setSelectedChartType] = useState<string>('bar');
+  const { toast } = useToast();
+  const {
+    state: { userInfo },
+    dispatch,
+  } = useContext(Store);
+  const [selectedChartType, setSelectedChartType] = useState<string>('box');
   const [selectedNumericColumn, setSelectedNumericColumn] =
     useState<string>('');
   const [selectedNonNumericColumn, setSelectedNonNumericColumn] =
@@ -48,6 +56,7 @@ const SheetData = () => {
   const [xAxisTitle, setXAxisTitle] = useState<string>('');
   const [showContours, setShowContours] = useState<boolean>(false);
   const [sheetUrl, setSheetUrl] = useState<string>('');
+  const [chartHeight, setChartHeight] = useState<string>('400');
   const [data, setData] = useState<any[]>([]);
   const [oneDArray1, setOneDArray1] = useState<any[]>([]);
   const [oneDArray2, setOneDArray2] = useState<any[]>([]);
@@ -56,7 +65,6 @@ const SheetData = () => {
   const [oneDArray5, setOneDArray5] = useState<any[]>([]);
   const [twoDArray1, setTwoDArray1] = useState<any[][]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const [PlotComponent, setPlotComponent] = useState<any>(null);
 
   // Dynamically import Plot component to avoid SSR issues
@@ -85,21 +93,27 @@ const SheetData = () => {
   // Function to fetch data from the sheet URL
   const fetchSheetData = async () => {
     if (!sheetUrl) {
-      setError('Please enter a valid sheet URL');
+      toast({
+        title: 'Error',
+        description: 'Please enter a valid sheet URL',
+        variant: 'destructive',
+      });
       return;
     }
 
     try {
       setLoading(true);
-      setError(null);
 
       // First, check if the user has remaining chart generation limit
       const chartLimitResponse = await checkChartLimit();
       if (!chartLimitResponse.canGenerate) {
-        setError(
-          chartLimitResponse.message ||
-            'Chart generation limit reached. Please upgrade your account to generate more charts.'
-        );
+        toast({
+          title: 'Error',
+          description:
+            chartLimitResponse.message ||
+            'Chart generation limit reached. Please upgrade your account to generate more charts.',
+          variant: 'destructive',
+        });
         setLoading(false);
         return; // Stop execution if no limit
       }
@@ -117,7 +131,7 @@ const SheetData = () => {
       );
 
       // If data fetching was successful, use one chart from the limit
-      await useChartLimit();
+      await useChartLimit(dispatch, userInfo);
 
       setData(result.data);
       setOneDArray1(result.oneDArray1 || []);
@@ -128,9 +142,12 @@ const SheetData = () => {
       setTwoDArray1(result.twoDArray1 || []);
     } catch (err) {
       console.error('Error fetching sheet data:', err);
-      setError(
-        err instanceof Error ? err.message : 'An unknown error occurred'
-      );
+      toast({
+        title: 'Error',
+        description:
+          err instanceof Error ? err.message : 'An unknown error occurred',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -277,10 +294,6 @@ const SheetData = () => {
     return <div>Loading sheet data...</div>;
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
   const { chartData, layout } = prepareChartData();
 
   // Configuration object for ChartTypeSelector
@@ -328,11 +341,27 @@ const SheetData = () => {
         sheetUrl={sheetUrl}
         setSheetUrl={setSheetUrl}
         loading={loading}
-        onFetchData={fetchSheetData}
       />
 
       {/* Chart type selector */}
       <ChartTypeSelector config={chartTypeSelectorConfig} />
+
+      {/* Chart height selector */}
+      <ChartHeightSelector
+        chartHeight={chartHeight}
+        setChartHeight={setChartHeight}
+      />
+
+      {/* Generate Chart Button */}
+      <div className="mb-4">
+        <button
+          onClick={fetchSheetData}
+          disabled={loading}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50 mt-2"
+        >
+          {loading ? 'Loading...' : 'Generate Chart'}
+        </button>
+      </div>
 
       {/* Display the chart if we have chart data and Plot component is loaded */}
       {chartData.length > 0 && PlotComponent && (
@@ -341,7 +370,7 @@ const SheetData = () => {
             data={chartData}
             layout={layout}
             config={{ displayModeBar: true, responsive: true }}
-            style={{ width: '100%', height: '400px' }}
+            style={{ width: '100%', height: `${chartHeight}px` }}
           />
         </div>
       )}

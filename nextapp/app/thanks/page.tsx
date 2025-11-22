@@ -30,7 +30,7 @@ const ThanksPage = () => {
         dispatch({ type: 'sign-in', payload: response.data });
 
         // Navigate to home page
-        window.location.href = '/dub';
+        // window.location.href = '/dub';
       } else {
         // If no user info in localStorage, just navigate to home
         window.location.href = '/dub';

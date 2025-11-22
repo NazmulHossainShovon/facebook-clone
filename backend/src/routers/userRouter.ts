@@ -17,13 +17,16 @@ userRouter.post(
     }).lean<User>();
     if (user) {
       // Check if user uses Google auth
-      if (user.authProvider === 'google' && !user.password) {
+      if (user.authProvider === "google" && !user.password) {
         res.status(401).json({ message: "Please sign in with Google" });
         return;
       }
-      
+
       // Check password for local auth users
-      if (user.password && bcrypt.compareSync(req.body.password, user.password)) {
+      if (
+        user.password &&
+        bcrypt.compareSync(req.body.password, user.password)
+      ) {
         const { password, ...userExceptPassword } = user;
         res.json({
           user: userExceptPassword,
@@ -41,6 +44,8 @@ userRouter.get(
   isAuth,
   asyncHandler(async (req: Request, res: Response) => {
     const user = await UserModel.findOne({ name: req.query.userName });
+    console.log(user);
+
     res.json(user);
   })
 );
@@ -80,7 +85,7 @@ userRouter.post(
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password),
       profileImage: req.body.image,
-      authProvider: 'local',
+      authProvider: "local",
       receivedFriendReqs: [],
       sentFriendReqs: [],
       friends: [],
@@ -195,12 +200,18 @@ userRouter.get(
   asyncHandler(async (req: Request, res: Response) => {
     const user = req.user as any;
     if (user) {
-      const { password, ...userExceptPassword } = user.toObject ? user.toObject() : user;
+      const { password, ...userExceptPassword } = user.toObject
+        ? user.toObject()
+        : user;
       const token = generateToken(user);
-      
+
       // Redirect to frontend with token
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-      res.redirect(`${frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userExceptPassword))}`);
+      res.redirect(
+        `${frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(
+          JSON.stringify(userExceptPassword)
+        )}`
+      );
     } else {
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
       res.redirect(`${frontendUrl}/login?error=authentication_failed`);

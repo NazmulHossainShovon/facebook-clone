@@ -82,14 +82,13 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({ config }) => {
             />
           )}
 
-        {selectedChartType === 'contour' ||
-          (selectedChartType === 'box' && setSelectedNumericColumn && (
-            <ContourChartOptions
-              numericColumns={numericColumns}
-              selectedNumericColumn={selectedNumericColumn}
-              setSelectedNumericColumn={setSelectedNumericColumn}
-            />
-          ))}
+        {(selectedChartType === 'contour' || selectedChartType === 'box') && setSelectedNumericColumn && (
+          <ContourChartOptions
+            numericColumns={numericColumns}
+            selectedNumericColumn={selectedNumericColumn}
+            setSelectedNumericColumn={setSelectedNumericColumn}
+          />
+        )}
 
         {selectedChartType === 'heatmap' && setSelectedNumericColumn && (
           <HeatmapChartOptions

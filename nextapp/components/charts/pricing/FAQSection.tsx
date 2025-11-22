@@ -1,3 +1,5 @@
+import { maxChartsPerUser } from '../../../constants/charts/chartTypes';
+
 interface FAQItem {
   question: string;
   answer: string;
@@ -5,9 +7,8 @@ interface FAQItem {
 
 const faqs: FAQItem[] = [
   {
-    question: 'What happens after I reach the 20 chart limit on the free plan?',
-    answer:
-      "Once you've generated 20 charts, you'll need to upgrade to the unlimited plan to continue creating new charts. Your existing charts will remain accessible.",
+    question: `What happens after I reach the ${maxChartsPerUser} chart limit on the free plan?`,
+    answer: `Once you've generated ${maxChartsPerUser} charts, you'll need to upgrade to the unlimited plan to continue creating new charts. Your existing charts will remain accessible.`,
   },
   {
     question: 'Is the $100 payment really a one-time fee?',

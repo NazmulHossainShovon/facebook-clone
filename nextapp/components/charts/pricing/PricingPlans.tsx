@@ -3,6 +3,7 @@
 import { useContext } from 'react';
 import { Store } from '../../../app/lib/store';
 import PricingCard from './PricingCard';
+import { maxChartsPerUser } from 'constants/charts/chartTypes';
 
 interface PricingPlansProps {
   onUpgrade?: () => void;
@@ -14,7 +15,7 @@ export default function PricingPlans({ onUpgrade }: PricingPlansProps) {
   } = useContext(Store);
 
   const freePlanFeatures = [
-    { text: 'Generate up to 20 charts' },
+    { text: `Generate up to ${maxChartsPerUser} charts` },
     { text: 'All chart types available' },
     { text: 'Google Sheets integration' },
     { text: 'Download charts as images' },

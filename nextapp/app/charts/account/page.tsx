@@ -34,10 +34,10 @@ const AccountPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    Remaining Charts
+                    {remainingCharts === -1 ? 'Chart Limit' : 'Remaining Charts'}
                   </h3>
                   <p className="text-4xl font-bold text-green-600">
-                    {remainingCharts}
+                    {remainingCharts === -1 ? 'Unlimited' : remainingCharts}
                   </p>
                 </div>
                 <div className="bg-green-100 p-4 rounded-full">
