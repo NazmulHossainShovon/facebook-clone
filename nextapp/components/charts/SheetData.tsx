@@ -17,6 +17,7 @@ import {
   createBubbleChart,
   createScatterLineAreaChart,
 } from '../../utils/charts/chartHelpers';
+import ChartHeightSelector from './ChartHeightSelector';
 import { chartTypes } from '../../constants/charts/chartTypes';
 import {
   createBoxPlot,
@@ -55,6 +56,7 @@ const SheetData = () => {
   const [xAxisTitle, setXAxisTitle] = useState<string>('');
   const [showContours, setShowContours] = useState<boolean>(false);
   const [sheetUrl, setSheetUrl] = useState<string>('');
+  const [chartHeight, setChartHeight] = useState<string>('400');
   const [data, setData] = useState<any[]>([]);
   const [oneDArray1, setOneDArray1] = useState<any[]>([]);
   const [oneDArray2, setOneDArray2] = useState<any[]>([]);
@@ -344,6 +346,12 @@ const SheetData = () => {
       {/* Chart type selector */}
       <ChartTypeSelector config={chartTypeSelectorConfig} />
 
+      {/* Chart height selector */}
+      <ChartHeightSelector
+        chartHeight={chartHeight}
+        setChartHeight={setChartHeight}
+      />
+
       {/* Generate Chart Button */}
       <div className="mb-4">
         <button
@@ -362,7 +370,7 @@ const SheetData = () => {
             data={chartData}
             layout={layout}
             config={{ displayModeBar: true, responsive: true }}
-            style={{ width: '100%', height: '400px' }}
+            style={{ width: '100%', height: `${chartHeight}px` }}
           />
         </div>
       )}
