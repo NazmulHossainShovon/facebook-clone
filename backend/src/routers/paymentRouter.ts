@@ -189,7 +189,7 @@ async function handlePaymentSuccess(eventData: any) {
   if (user) {
     if (appName === "chart") {
       // For chart app, set remainingChartsLimit to infinity
-      user.remainingChartsLimit = Infinity;
+      user.remainingChartsLimit = -1;
       await user.save();
       console.log(
         `Set remaining charts limit to infinity for user ${user._id} (appName: ${appName})`
