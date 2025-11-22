@@ -12,7 +12,7 @@ export const isValidRange = (column: string): boolean => {
   if (!column) return false;
   const trimmed = column.trim();
   if (!trimmed) return false;
-  return /^[A-Z]+\d*:[A-Z]+\d*$/.test(trimmed);
+  return /^[A-Za-z]+\d*:[A-Za-z]+\d*$/.test(trimmed);
 };
 
 /**
