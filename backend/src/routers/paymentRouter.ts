@@ -180,17 +180,30 @@ async function handleSubscriptionCancellation(eventData: any) {
 // Handler for successful payments
 async function handlePaymentSuccess(eventData: any) {
   const customData = eventData.data.customData;
+  const appName = customData?.appName;
   const userId = customData?.userId;
 
-  // Find user by _id and add 15 minutes to their minutesLeft field
+  // Find user by _id and add appropriate benefits based on app name
   const user = await UserModel.findById(userId);
 
   if (user) {
-    user.secondsLeft = (user.secondsLeft || 0) + 15 * 60;
-    await user.save();
-    console.log(
-      `Added 15 seconds to user ${user._id}, new total: ${user.secondsLeft} seconds`
-    );
+    if (appName === "chart") {
+      // For chart app, set remainingChartsLimit to infinity
+      user.remainingChartsLimit = Infinity;
+      await user.save();
+      console.log(
+        `Set remaining charts limit to infinity for user ${user._id} (appName: ${appName})`
+      );
+    } else if (appName === "dub") {
+      // For dub app, add 15 minutes to their secondsLeft field
+      user.secondsLeft = (user.secondsLeft || 0) + 15 * 60;
+      await user.save();
+      console.log(
+        `Added 15 minutes to user ${user._id}, new total: ${user.secondsLeft} seconds (appName: ${appName})`
+      );
+    } else {
+      console.warn(`Unknown app name: ${appName} for user ${userId}`);
+    }
   } else {
     console.warn(`User not found for ID: ${userId}`);
   }
