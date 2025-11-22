@@ -20,11 +20,12 @@ const FunnelChartOptions: React.FC<FunnelChartOptionsProps> = ({
       <div className="space-y-3">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select X-axis Range:
+            Type X-axis Range:
           </label>
           <input
             type="text"
             value={selectedNumericColumn || ''}
+            placeholder="ex A1:B10"
             onChange={e => setSelectedNumericColumn(e.target.value)}
             list="allHeadersX"
             className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -33,11 +34,12 @@ const FunnelChartOptions: React.FC<FunnelChartOptionsProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select Y-axis Range:
+            Type Y-axis Range:
           </label>
           <input
             type="text"
             value={selectedNonNumericColumn || ''}
+            placeholder="ex A1:B10"
             onChange={e => setSelectedNonNumericColumn(e.target.value)}
             list="allHeadersY"
             className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"

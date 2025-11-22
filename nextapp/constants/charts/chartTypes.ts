@@ -11,7 +11,7 @@ export const chartTypes: ChartTypeOption[] = [
   { label: 'Funnel Chart', value: 'funnel', category: 'Basic' },
 
   // Statistical Charts
-  { label: '2D Histogram', value: 'histogram2d', category: 'Statistical' },
+  // { label: '2D Histogram', value: 'histogram2d', category: 'Statistical' },
   { label: '2D Contour', value: 'histogram2dcontour', category: 'Statistical' },
   { label: 'Contour Plot', value: 'contour', category: 'Statistical' },
   { label: 'Heatmap', value: 'heatmap', category: 'Statistical' },
