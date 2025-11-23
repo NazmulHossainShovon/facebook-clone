@@ -51,6 +51,7 @@ app.use(
       "http://localhost:3000",
       "https://facebook-clone-vooq.onrender.com",
       "https://www.appq.online",
+      "https://dub-app-eight.vercel.app",
     ],
   })
 );
