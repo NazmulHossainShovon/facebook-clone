@@ -5,9 +5,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { fruits, swords, accessories, fightingStyles } from '../lib/data';
 import { BuildInput } from '../types/build';
-import InputField from './ui/InputField';
-import SelectField from './ui/SelectField';
-import MultiSelect from './ui/MultiSelect';
+
+// Import the new sub-components
+import LevelInput from './dps-comparator/LevelInput';
+import StatsAllocation from './dps-comparator/StatsAllocation';
+import EquippedItems from './dps-comparator/EquippedItems';
+import MasterySection from './dps-comparator/MasterySection';
+import BuffsSection from './dps-comparator/BuffsSection';
+import FormActions from './dps-comparator/FormActions';
 
 // Define the validation schema using Zod
 const buildSchema = z
@@ -86,277 +91,40 @@ export default function BuildForm({ buildNumber, onSubmit, initialData }: BuildF
     },
   });
 
-  // Watch the stats values to calculate total
-  const stats = watch('stats');
-  const statsTotal = stats.melee + stats.defense + stats.fruit + stats.sword + stats.gun;
-
   const onSubmitHandler: SubmitHandler<BuildInput> = (data) => {
     onSubmit(data);
   };
 
   return (
-    <form 
-      onSubmit={handleSubmit(onSubmitHandler)} 
+    <form
+      onSubmit={handleSubmit(onSubmitHandler)}
       className="space-y-4 p-4 border rounded-lg bg-white shadow-sm"
     >
       <h2 className="text-xl font-bold text-center mb-4">
         Build {buildNumber}
       </h2>
-      
+
       {/* Level Input */}
-      <InputField
-        label="Level (1-2550)"
-        name="level"
-        register={register}
-        errors={errors}
-        type="number"
-        min={1}
-        max={2550}
-        placeholder="Enter character level"
-      />
+      <LevelInput register={register} errors={errors} />
 
       {/* Stats Section */}
-      <div className="border rounded-md p-4">
-        <h3 className="font-medium text-gray-700 mb-3">Stats Allocation (must sum to 100%)</h3>
-        
-        {/* Stats Total Indicator */}
-        <div className={`mb-2 text-sm ${statsTotal === 100 ? 'text-green-600' : 'text-red-600'}`}>
-          Total: {statsTotal}%
-          {statsTotal !== 100 && <span> (must be 100%)</span>}
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-          <InputField
-            label="Melee"
-            name="stats.melee"
-            register={register}
-            errors={errors}
-            type="number"
-            min={0}
-            max={100}
-            placeholder="%"
-          />
-          
-          <InputField
-            label="Defense"
-            name="stats.defense"
-            register={register}
-            errors={errors}
-            type="number"
-            min={0}
-            max={100}
-            placeholder="%"
-          />
-          
-          <InputField
-            label="Fruit"
-            name="stats.fruit"
-            register={register}
-            errors={errors}
-            type="number"
-            min={0}
-            max={100}
-            placeholder="%"
-          />
-          
-          <InputField
-            label="Sword"
-            name="stats.sword"
-            register={register}
-            errors={errors}
-            type="number"
-            min={0}
-            max={100}
-            placeholder="%"
-          />
-          
-          <InputField
-            label="Gun"
-            name="stats.gun"
-            register={register}
-            errors={errors}
-            type="number"
-            min={0}
-            max={100}
-            placeholder="%"
-          />
-        </div>
-        
-        {(errors.stats as any)?.sum && (
-          <p className="mt-1 text-sm text-red-600">
-            {(errors.stats as any).sum.message}
-          </p>
-        )}
-      </div>
+      <StatsAllocation register={register} errors={errors} watch={watch} />
 
       {/* Equipped Items */}
-      <div className="border rounded-md p-4">
-        <h3 className="font-medium text-gray-700 mb-3">Equipped Items</h3>
-
-        <SelectField
-          label="Fruit"
-          name="equipped.fruit"
-          register={register}
-          errors={errors}
-          options={Array.from(fruits)}
-          placeholder="Select a fruit"
-        />
-
-        <SelectField
-          label="Sword"
-          name="equipped.sword"
-          register={register}
-          errors={errors}
-          options={Array.from(swords)}
-          placeholder="Select a sword"
-        />
-
-        <SelectField
-          label="Fighting Style"
-          name="equipped.fightingStyle"
-          register={register}
-          errors={errors}
-          options={Array.from(fightingStyles)}
-          placeholder="Select a fighting style"
-        />
-
-        <MultiSelect
-          label="Accessories"
-          name="equipped.accessories"
-          register={register}
-          errors={errors}
-          options={Array.from(accessories)}
-          value={watch('equipped.accessories') || []}
-          onChange={(value) => setValue('equipped.accessories', value, { shouldValidate: true })}
-        />
-      </div>
+      <EquippedItems register={register} errors={errors} watch={watch} setValue={setValue} />
 
       {/* Mastery Section */}
-      <div className="border rounded-md p-4">
-        <h3 className="font-medium text-gray-700 mb-3">Mastery Levels</h3>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <InputField
-            label="Melee Mastery"
-            name="mastery.melee"
-            register={register}
-            errors={errors}
-            type="number"
-            min={0}
-            max={600}
-            placeholder="0-600"
-          />
-
-          <InputField
-            label="Fruit Mastery"
-            name="mastery.fruit"
-            register={register}
-            errors={errors}
-            type="number"
-            min={0}
-            max={600}
-            placeholder="0-600"
-          />
-
-          <InputField
-            label="Sword Mastery"
-            name="mastery.sword"
-            register={register}
-            errors={errors}
-            type="number"
-            min={0}
-            max={600}
-            placeholder="0-600"
-          />
-
-          <InputField
-            label="Gun Mastery"
-            name="mastery.gun"
-            register={register}
-            errors={errors}
-            type="number"
-            min={0}
-            max={600}
-            placeholder="0-600"
-          />
-        </div>
-      </div>
+      <MasterySection register={register} errors={errors} />
 
       {/* Buffs Section */}
-      <div className="border rounded-md p-4">
-        <h3 className="font-medium text-gray-700 mb-3">Buffs</h3>
+      <BuffsSection register={register} />
 
-        <div className="space-y-2">
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              {...register('buffs.awakening')}
-              className="rounded text-blue-600 focus:ring-blue-500"
-            />
-            <span className="text-gray-700">Awakening (Fruit)</span>
-          </label>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Race Multiplier
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              min="1"
-              max="3"
-              {...register('buffs.raceMultiplier', { valueAsNumber: true })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-            <p className="mt-1 text-xs text-gray-500">e.g., 1.3 for Race V4 transformation</p>
-          </div>
-
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              {...register('buffs.aura')}
-              className="rounded text-blue-600 focus:ring-blue-500"
-            />
-            <span className="text-gray-700">Aura (+3.4%)</span>
-          </label>
-        </div>
-      </div>
-
-      <div className="flex flex-col space-y-2">
-        <button
-          type="submit"
-          className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Save Build {buildNumber}
-        </button>
-        
-        <button
-          type="button"
-          className="w-full py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          onClick={() => {
-            // Pre-fill with sample data
-            setValue('level', buildNumber === 1 ? 2000 : 1800);
-            setValue('stats.melee', buildNumber === 1 ? 30 : 25);
-            setValue('stats.defense', buildNumber === 1 ? 20 : 25);
-            setValue('stats.fruit', buildNumber === 1 ? 25 : 30);
-            setValue('stats.sword', buildNumber === 1 ? 20 : 15);
-            setValue('stats.gun', buildNumber === 1 ? 5 : 5);
-            setValue('equipped.fruit', buildNumber === 1 ? 'Dragon' : 'Phoenix');
-            setValue('equipped.sword', buildNumber === 1 ? 'Yama' : 'Enma');
-            setValue('equipped.fightingStyle', buildNumber === 1 ? 'Dragon Talon' : 'Cat Feet');
-            setValue('equipped.accessories', buildNumber === 1 ? ['Hunter Cape', 'Swan Glasses'] : ['Leather Cap', 'Buster Call']);
-            setValue('mastery.melee', buildNumber === 1 ? 300 : 250);
-            setValue('mastery.fruit', buildNumber === 1 ? 400 : 350);
-            setValue('mastery.sword', buildNumber === 1 ? 500 : 450);
-            setValue('mastery.gun', buildNumber === 1 ? 200 : 150);
-            setValue('buffs.awakening', buildNumber === 1 ? true : false);
-            setValue('buffs.raceMultiplier', buildNumber === 1 ? 1.3 : 1.0);
-            setValue('buffs.aura', buildNumber === 1 ? true : false);
-          }}
-        >
-          Load Sample Build {buildNumber}
-        </button>
-      </div>
+      {/* Form Actions */}
+      <FormActions
+        buildNumber={buildNumber}
+        handleSubmit={handleSubmit(onSubmitHandler)}
+        setValue={setValue}
+      />
     </form>
   );
 }
