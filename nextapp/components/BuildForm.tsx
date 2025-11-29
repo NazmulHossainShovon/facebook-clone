@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { fruits, swords, accessories, fightingStyles } from '../lib/data';
 import { BuildInput } from '../types/build';
+import { defaultBuildValues } from '../constants/dps/build';
 
 // Import the new sub-components
 import LevelInput from './dps-comparator/LevelInput';
@@ -120,22 +121,7 @@ export default function BuildForm({
   } = useForm<BuildInput>({
     // Use type assertion to bypass the type mismatch
     resolver: zodResolver(buildSchema) as any,
-    defaultValues: initialData || {
-      level: 1000,
-      stats: {
-        melee: 25,
-        defense: 25,
-        fruit: 25,
-        sword: 25,
-        gun: 0,
-      },
-      equipped: {
-        fruit: 'None',
-        sword: 'None',
-        fightingStyle: 'None',
-        accessories: [],
-      },
-    },
+    defaultValues: initialData || defaultBuildValues,
   });
 
   const onSubmitHandler: SubmitHandler<BuildInput> = data => {
