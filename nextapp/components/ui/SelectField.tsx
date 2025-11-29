@@ -3,7 +3,7 @@ import { BuildInput } from '../../types/build';
 
 interface SelectFieldProps {
   label: string;
-  name: keyof BuildInput | `stats.${keyof BuildInput['stats']}` | `equipped.${keyof BuildInput['equipped']}`;
+  name: string;
   register: UseFormRegister<BuildInput>;
   errors: FieldErrors<BuildInput>;
   options: string[];
@@ -24,9 +24,9 @@ export default function SelectField({
         {label}
       </label>
       <select
-        {...register(name)}
+        {...register(name as any)}
         className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-          errors[name as keyof BuildInput] ? 'border-red-500' : 'border-gray-300'
+          (errors as any)[name as any] ? 'border-red-500' : 'border-gray-300'
         }`}
       >
         <option value="">{placeholder}</option>
@@ -36,9 +36,9 @@ export default function SelectField({
           </option>
         ))}
       </select>
-      {errors[name as keyof BuildInput] && (
+      {(errors as any)[name] && (
         <p className="mt-1 text-sm text-red-600">
-          {errors[name as keyof BuildInput]?.message?.toString()}
+          {(errors as any)[name]?.message?.toString()}
         </p>
       )}
     </div>

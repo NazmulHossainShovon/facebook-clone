@@ -3,7 +3,7 @@
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { fruits, swords, accessories } from '../lib/data';
+import { fruits, swords, accessories, fightingStyles } from '../lib/data';
 import { BuildInput } from '../types/build';
 import InputField from './ui/InputField';
 import SelectField from './ui/SelectField';
@@ -29,11 +29,23 @@ const buildSchema = z
         path: ['sum'], // path of error
       }
     ),
+    mastery: z.object({
+      melee: z.number().min(0).max(600, { message: 'Melee mastery must be between 0 and 600' }).optional(),
+      fruit: z.number().min(0).max(600, { message: 'Fruit mastery must be between 0 and 600' }).optional(),
+      sword: z.number().min(0).max(600, { message: 'Sword mastery must be between 0 and 600' }).optional(),
+      gun: z.number().min(0).max(600, { message: 'Gun mastery must be between 0 and 600' }).optional(),
+    }).optional(),
     equipped: z.object({
       fruit: z.enum([...fruits] as [string, ...string[]]),
       sword: z.enum([...swords] as [string, ...string[]]),
+      fightingStyle: z.enum([...fightingStyles] as [string, ...string[]]),
       accessories: z.array(z.enum([...accessories] as [string, ...string[]])).default([]),
     }),
+    buffs: z.object({
+      awakening: z.boolean().optional(),
+      raceMultiplier: z.number().min(1).max(3).optional(),
+      aura: z.boolean().optional(),
+    }).optional(),
   })
   .strict();
 
@@ -68,6 +80,7 @@ export default function BuildForm({ buildNumber, onSubmit, initialData }: BuildF
       equipped: {
         fruit: 'None',
         sword: 'None',
+        fightingStyle: 'None',
         accessories: [],
       },
     },
@@ -179,7 +192,7 @@ export default function BuildForm({ buildNumber, onSubmit, initialData }: BuildF
       {/* Equipped Items */}
       <div className="border rounded-md p-4">
         <h3 className="font-medium text-gray-700 mb-3">Equipped Items</h3>
-        
+
         <SelectField
           label="Fruit"
           name="equipped.fruit"
@@ -188,7 +201,7 @@ export default function BuildForm({ buildNumber, onSubmit, initialData }: BuildF
           options={Array.from(fruits)}
           placeholder="Select a fruit"
         />
-        
+
         <SelectField
           label="Sword"
           name="equipped.sword"
@@ -197,7 +210,16 @@ export default function BuildForm({ buildNumber, onSubmit, initialData }: BuildF
           options={Array.from(swords)}
           placeholder="Select a sword"
         />
-        
+
+        <SelectField
+          label="Fighting Style"
+          name="equipped.fightingStyle"
+          register={register}
+          errors={errors}
+          options={Array.from(fightingStyles)}
+          placeholder="Select a fighting style"
+        />
+
         <MultiSelect
           label="Accessories"
           name="equipped.accessories"
@@ -207,6 +229,97 @@ export default function BuildForm({ buildNumber, onSubmit, initialData }: BuildF
           value={watch('equipped.accessories') || []}
           onChange={(value) => setValue('equipped.accessories', value, { shouldValidate: true })}
         />
+      </div>
+
+      {/* Mastery Section */}
+      <div className="border rounded-md p-4">
+        <h3 className="font-medium text-gray-700 mb-3">Mastery Levels</h3>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <InputField
+            label="Melee Mastery"
+            name="mastery.melee"
+            register={register}
+            errors={errors}
+            type="number"
+            min={0}
+            max={600}
+            placeholder="0-600"
+          />
+
+          <InputField
+            label="Fruit Mastery"
+            name="mastery.fruit"
+            register={register}
+            errors={errors}
+            type="number"
+            min={0}
+            max={600}
+            placeholder="0-600"
+          />
+
+          <InputField
+            label="Sword Mastery"
+            name="mastery.sword"
+            register={register}
+            errors={errors}
+            type="number"
+            min={0}
+            max={600}
+            placeholder="0-600"
+          />
+
+          <InputField
+            label="Gun Mastery"
+            name="mastery.gun"
+            register={register}
+            errors={errors}
+            type="number"
+            min={0}
+            max={600}
+            placeholder="0-600"
+          />
+        </div>
+      </div>
+
+      {/* Buffs Section */}
+      <div className="border rounded-md p-4">
+        <h3 className="font-medium text-gray-700 mb-3">Buffs</h3>
+
+        <div className="space-y-2">
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              {...register('buffs.awakening')}
+              className="rounded text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-gray-700">Awakening (Fruit)</span>
+          </label>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Race Multiplier
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              min="1"
+              max="3"
+              {...register('buffs.raceMultiplier', { valueAsNumber: true })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">e.g., 1.3 for Race V4 transformation</p>
+          </div>
+
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              {...register('buffs.aura')}
+              className="rounded text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-gray-700">Aura (+3.4%)</span>
+          </label>
+        </div>
       </div>
 
       <div className="flex flex-col space-y-2">
@@ -230,7 +343,15 @@ export default function BuildForm({ buildNumber, onSubmit, initialData }: BuildF
             setValue('stats.gun', buildNumber === 1 ? 5 : 5);
             setValue('equipped.fruit', buildNumber === 1 ? 'Dragon' : 'Phoenix');
             setValue('equipped.sword', buildNumber === 1 ? 'Yama' : 'Enma');
+            setValue('equipped.fightingStyle', buildNumber === 1 ? 'Dragon Talon' : 'Cat Feet');
             setValue('equipped.accessories', buildNumber === 1 ? ['Hunter Cape', 'Swan Glasses'] : ['Leather Cap', 'Buster Call']);
+            setValue('mastery.melee', buildNumber === 1 ? 300 : 250);
+            setValue('mastery.fruit', buildNumber === 1 ? 400 : 350);
+            setValue('mastery.sword', buildNumber === 1 ? 500 : 450);
+            setValue('mastery.gun', buildNumber === 1 ? 200 : 150);
+            setValue('buffs.awakening', buildNumber === 1 ? true : false);
+            setValue('buffs.raceMultiplier', buildNumber === 1 ? 1.3 : 1.0);
+            setValue('buffs.aura', buildNumber === 1 ? true : false);
           }}
         >
           Load Sample Build {buildNumber}

@@ -23,7 +23,7 @@ export default function BloxFruitsComparatorPage() {
     const testBuild: BuildInput = {
       level: 1000,
       stats: { melee: 25, defense: 25, fruit: 25, sword: 25, gun: 0 },
-      equipped: { fruit: 'Dragon', sword: 'Tushita', accessories: [] },
+      equipped: { fruit: 'Dragon', sword: 'Tushita', fightingStyle: 'Defense', accessories: [] },
     };
     console.log('Test DPS:', calculateDPS(testBuild));
   }, []);
