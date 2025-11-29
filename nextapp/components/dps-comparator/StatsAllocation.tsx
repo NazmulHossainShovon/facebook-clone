@@ -33,6 +33,7 @@ export default function StatsAllocation({ register, errors, watch }: StatsAlloca
           min={0}
           max={100}
           placeholder="%"
+          registerOptions={{ valueAsNumber: true }}
         />
 
         <InputField
@@ -44,6 +45,7 @@ export default function StatsAllocation({ register, errors, watch }: StatsAlloca
           min={0}
           max={100}
           placeholder="%"
+          registerOptions={{ valueAsNumber: true }}
         />
 
         <InputField
@@ -55,6 +57,7 @@ export default function StatsAllocation({ register, errors, watch }: StatsAlloca
           min={0}
           max={100}
           placeholder="%"
+          registerOptions={{ valueAsNumber: true }}
         />
 
         <InputField
@@ -66,6 +69,7 @@ export default function StatsAllocation({ register, errors, watch }: StatsAlloca
           min={0}
           max={100}
           placeholder="%"
+          registerOptions={{ valueAsNumber: true }}
         />
 
         <InputField
@@ -77,6 +81,7 @@ export default function StatsAllocation({ register, errors, watch }: StatsAlloca
           min={0}
           max={100}
           placeholder="%"
+          registerOptions={{ valueAsNumber: true }}
         />
       </div>
 

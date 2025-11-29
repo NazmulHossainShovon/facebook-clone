@@ -11,18 +11,20 @@ interface InputFieldProps {
   min?: number;
   max?: number;
   step?: number;
+  registerOptions?: any;
 }
 
-export default function InputField({ 
-  label, 
-  name, 
-  register, 
-  errors, 
-  type = 'text', 
-  placeholder = '', 
+export default function InputField({
+  label,
+  name,
+  register,
+  errors,
+  type = 'text',
+  placeholder = '',
   min,
   max,
-  step 
+  step,
+  registerOptions = {},
 }: InputFieldProps) {
   return (
     <div className="mb-4">
@@ -35,7 +37,7 @@ export default function InputField({
         min={min}
         max={max}
         step={step}
-        {...register(name as any)}
+        {...register(name as any, registerOptions)}
         className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
           (errors as any)[name as any] ? 'border-red-500' : 'border-gray-300'
         }`}

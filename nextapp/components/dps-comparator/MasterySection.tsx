@@ -22,6 +22,7 @@ export default function MasterySection({ register, errors }: MasterySectionProps
           min={0}
           max={600}
           placeholder="0-600"
+          registerOptions={{ valueAsNumber: true }}
         />
 
         <InputField
@@ -33,6 +34,7 @@ export default function MasterySection({ register, errors }: MasterySectionProps
           min={0}
           max={600}
           placeholder="0-600"
+          registerOptions={{ valueAsNumber: true }}
         />
 
         <InputField
@@ -44,6 +46,7 @@ export default function MasterySection({ register, errors }: MasterySectionProps
           min={0}
           max={600}
           placeholder="0-600"
+          registerOptions={{ valueAsNumber: true }}
         />
 
         <InputField
@@ -55,6 +58,7 @@ export default function MasterySection({ register, errors }: MasterySectionProps
           min={0}
           max={600}
           placeholder="0-600"
+          registerOptions={{ valueAsNumber: true }}
         />
       </div>
     </div>

@@ -18,6 +18,7 @@ export default function LevelInput({ register, errors }: LevelInputProps) {
       min={1}
       max={2550}
       placeholder="Enter character level"
+      registerOptions={{ valueAsNumber: true }}
     />
   );
 }
