@@ -1,21 +1,44 @@
 import { BuildInput } from '../../types/build';
-import { UseFormSetValue } from 'react-hook-form';
+import { UseFormSetValue, UseFormWatch } from 'react-hook-form';
+import { useState, useEffect } from 'react';
 
 interface FormActionsProps {
   buildNumber: 1 | 2;
-  handleSubmit: () => void;
+  handleSubmit: (e?: React.BaseSyntheticEvent) => void;
+  isSaved: boolean;
   setValue: UseFormSetValue<BuildInput>;
+  watch: UseFormWatch<BuildInput>;
 }
 
-export default function FormActions({ buildNumber, handleSubmit, setValue }: FormActionsProps) {
+export default function FormActions({
+  buildNumber,
+  handleSubmit,
+  isSaved,
+  setValue,
+  watch,
+}: FormActionsProps) {
+  // Watch all form fields to detect changes
+  const watchedFields = watch();
+
+  const handleSaveClick = (e: React.BaseSyntheticEvent) => {
+    // handleSubmit will call onSubmitHandler which updates the saved state
+    handleSubmit(e);
+  };
+
   return (
     <div className="flex flex-col space-y-2">
       <button
         type="submit"
-        className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        onClick={handleSubmit}
+        className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+          isSaved
+            ? 'bg-green-600 hover:bg-green-700'
+            : 'bg-blue-600 hover:bg-blue-700'
+        } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+        onClick={handleSaveClick}
       >
-        Save Build {buildNumber}
+        {isSaved
+          ? `Save Build ${buildNumber} (Saved)`
+          : `Save Build ${buildNumber}`}
       </button>
 
       <button
@@ -31,8 +54,16 @@ export default function FormActions({ buildNumber, handleSubmit, setValue }: For
           setValue('stats.gun', buildNumber === 1 ? 5 : 5);
           setValue('equipped.fruit', buildNumber === 1 ? 'Dragon' : 'Phoenix');
           setValue('equipped.sword', buildNumber === 1 ? 'Yama' : 'Enma');
-          setValue('equipped.fightingStyle', buildNumber === 1 ? 'Dragon Talon' : 'Cat Feet');
-          setValue('equipped.accessories', buildNumber === 1 ? ['Hunter Cape', 'Swan Glasses'] : ['Leather Cap', 'Buster Call']);
+          setValue(
+            'equipped.fightingStyle',
+            buildNumber === 1 ? 'Dragon Talon' : 'Cat Feet'
+          );
+          setValue(
+            'equipped.accessories',
+            buildNumber === 1
+              ? ['Hunter Cape', 'Swan Glasses']
+              : ['Leather Cap', 'Buster Call']
+          );
           setValue('mastery.melee', buildNumber === 1 ? 300 : 250);
           setValue('mastery.fruit', buildNumber === 1 ? 400 : 350);
           setValue('mastery.sword', buildNumber === 1 ? 500 : 450);

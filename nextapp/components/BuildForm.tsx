@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { BuildInput } from '../types/build';
 import { defaultBuildValues } from '../constants/dps/build';
 import { buildSchema, BuildSchemaType } from '../types/dps-comparator';
+import { useState } from 'react';
 
 // Import the new sub-components
 import LevelInput from './dps-comparator/LevelInput';
@@ -28,6 +29,8 @@ export default function BuildForm({
   onSubmit,
   initialData,
 }: BuildFormProps) {
+  const [isSaved, setIsSaved] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -42,6 +45,7 @@ export default function BuildForm({
 
   const onSubmitHandler: SubmitHandler<BuildInput> = data => {
     onSubmit(data);
+    setIsSaved(true); // Set saved state when submission is successful
   };
 
   return (
@@ -77,7 +81,9 @@ export default function BuildForm({
       <FormActions
         buildNumber={buildNumber}
         handleSubmit={handleSubmit(onSubmitHandler)}
+        isSaved={isSaved}
         setValue={setValue}
+        watch={watch}
       />
     </form>
   );

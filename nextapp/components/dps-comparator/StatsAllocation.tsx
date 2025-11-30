@@ -23,7 +23,6 @@ export default function StatsAllocation({
   const statsTotal =
     stats?.melee + stats?.defense + stats?.fruit + stats?.sword + stats?.gun ||
     0;
-  console.log(errors);
 
   return (
     <div className="border rounded-md p-4">
