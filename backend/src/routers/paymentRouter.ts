@@ -194,6 +194,13 @@ async function handlePaymentSuccess(eventData: any) {
       console.log(
         `Set remaining charts limit to infinity for user ${user._id} (appName: ${appName})`
       );
+    } else if (appName === "dps-comparator") {
+      // For dps-comparator app, set remainingDpsCalcLimit to infinity
+      user.remainingDpsCalcLimit = -1;
+      await user.save();
+      console.log(
+        `Set remaining DPS calculation limit to infinity for user ${user._id} (appName: ${appName})`
+      );
     } else if (appName === "dub") {
       // For dub app, add 15 minutes to their secondsLeft field
       user.secondsLeft = (user.secondsLeft || 0) + 15 * 60;
