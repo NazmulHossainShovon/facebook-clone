@@ -8,40 +8,13 @@ export const buildSchema = z
       .number()
       .min(1, { message: 'Level must be at least 1' })
       .max(2550, { message: 'Level cannot exceed 2550' }),
-    stats: z
-      .object({
-        melee: z
-          .number()
-          .min(0)
-          .max(100, { message: 'Melee must be between 0 and 100' }),
-        defense: z
-          .number()
-          .min(0)
-          .max(100, { message: 'Defense must be between 0 and 100' }),
-        fruit: z
-          .number()
-          .min(0)
-          .max(100, { message: 'Fruit must be between 0 and 100' }),
-        sword: z
-          .number()
-          .min(0)
-          .max(100, { message: 'Sword must be between 0 and 100' }),
-        gun: z
-          .number()
-          .min(0)
-          .max(100, { message: 'Gun must be between 0 and 100' }),
-      })
-      .refine(
-        data => {
-          const total =
-            data.melee + data.defense + data.fruit + data.sword + data.gun;
-          return total === 100;
-        },
-        {
-          message: 'Stats must sum to 100%',
-          path: ['sum'], // path of error
-        }
-      ),
+    stats: z.object({
+      melee: z.number().min(1).max(3000), // realistic cap slightly above max
+      defense: z.number().min(1).max(3000),
+      sword: z.number().min(1).max(3000),
+      gun: z.number().min(1).max(3000),
+      fruit: z.number().min(1).max(3000),
+    }),
     mastery: z
       .object({
         melee: z
@@ -81,6 +54,25 @@ export const buildSchema = z
         aura: z.boolean().optional(),
       })
       .optional(),
+  })
+  .superRefine((data, ctx) => {
+    const totalStats =
+      data.stats.melee +
+      data.stats.defense +
+      data.stats.sword +
+      data.stats.gun +
+      data.stats.fruit;
+
+    const basePoints = (data.level - 1) * 3;
+    const maxAllowed = basePoints + 650; // generous buffer for accessories (Swan, Valk, etc.)
+
+    if (totalStats > maxAllowed) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Too many stat points! You have ${totalStats}, but at level ${data.level} you only get ~${basePoints} points (+650 from accessories max)`,
+        path: ['sum'], // highlights the entire stats section
+      });
+    }
   })
   .strict();
 

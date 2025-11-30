@@ -1,6 +1,11 @@
 import { BuildInput } from '../../types/build';
 import InputField from '../ui/InputField';
-import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue } from 'react-hook-form';
+import {
+  UseFormRegister,
+  FieldErrors,
+  UseFormWatch,
+  UseFormSetValue,
+} from 'react-hook-form';
 
 interface StatsAllocationProps {
   register: UseFormRegister<BuildInput>;
@@ -8,20 +13,24 @@ interface StatsAllocationProps {
   watch: UseFormWatch<BuildInput>;
 }
 
-export default function StatsAllocation({ register, errors, watch }: StatsAllocationProps) {
+export default function StatsAllocation({
+  register,
+  errors,
+  watch,
+}: StatsAllocationProps) {
   // Watch the stats values to calculate total
   const stats = watch('stats');
-  const statsTotal = stats?.melee + stats?.defense + stats?.fruit + stats?.sword + stats?.gun || 0;
+  const statsTotal =
+    stats?.melee + stats?.defense + stats?.fruit + stats?.sword + stats?.gun ||
+    0;
+  console.log(errors);
 
   return (
     <div className="border rounded-md p-4">
-      <h3 className="font-medium text-gray-700 mb-3">Stats Allocation (must sum to 100%)</h3>
+      <h3 className="font-medium text-gray-700 mb-3">Stats Allocation</h3>
 
       {/* Stats Total Indicator */}
-      <div className={`mb-2 text-sm ${statsTotal === 100 ? 'text-green-600' : 'text-red-600'}`}>
-        Total: {statsTotal}%
-        {statsTotal !== 100 && <span> (must be 100%)</span>}
-      </div>
+      <div className={`mb-2 text-sm `}>Total: {statsTotal}</div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
         <InputField
