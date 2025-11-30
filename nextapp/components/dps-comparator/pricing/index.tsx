@@ -196,7 +196,7 @@ export const PricingCTA = () => {
           Start Free Trial
         </Link>
         <CheckoutButton
-          priceId="pri_01k9770ec4netjw3pz6m4zey9y"
+          priceId="pri_01kaf98db9esez9zd60k822pzg"
           appName="dps-comparator"
         />
       </div>

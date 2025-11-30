@@ -34,6 +34,24 @@ export const swords = [
   'Claymore'
 ] as const;
 
+export const fightingStyles = [
+  'None',
+  'Dragon Talon',
+  'Cat Feet',
+  'Rokushiki',
+  'Six King Gun',
+  'Lion Conan',
+  'Rhino Schneider',
+  'Snake Fist',
+  'Spider Net',
+  'Elephant Gun',
+  'Centipede 56',
+  'Elephant Hawk',
+  'Goat Point',
+  'Horn Point',
+  'Spike'
+] as const;
+
 export const accessories = [
   'None',
   'Hunter Cape',

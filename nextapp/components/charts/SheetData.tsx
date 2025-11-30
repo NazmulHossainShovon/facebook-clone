@@ -291,7 +291,11 @@ const SheetData = () => {
   };
 
   if (loading) {
-    return <div>Loading sheet data...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div>Loading sheet data...</div>
+      </div>
+    );
   }
 
   const { chartData, layout } = prepareChartData();
