@@ -1,5 +1,9 @@
 import { modelOptions, prop, getModelForClass } from "@typegoose/typegoose";
-import { DEFAULT_SECONDS_LEFT, DEFAULT_CHARTS_LIMIT } from "../constants/userConstants";
+import {
+  DEFAULT_SECONDS_LEFT,
+  DEFAULT_CHARTS_LIMIT,
+  DEFAULT_DPS_CALC_LIMIT,
+} from "../constants/userConstants";
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class User {
@@ -29,6 +33,9 @@ export class User {
 
   @prop({ default: DEFAULT_CHARTS_LIMIT })
   public remainingChartsLimit?: number;
+
+  @prop({ default: DEFAULT_DPS_CALC_LIMIT })
+  public remainingDpsCalcLimit?: number;
 }
 
 export const UserModel = getModelForClass(User);
