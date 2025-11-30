@@ -17,6 +17,7 @@ type User = {
   authProvider?: string;
   secondsLeft?: number;
   remainingChartsLimit?: number;
+  remainingDpsCalcLimit?: number;
 };
 
 type People = {

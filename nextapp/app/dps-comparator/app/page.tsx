@@ -5,6 +5,10 @@ import BuildForm from 'components/BuildForm';
 import ComparisonTable from 'components/ComparisonTable';
 import { calculateDPS } from 'lib/calculations';
 import { useState, useEffect } from 'react';
+import { useContext } from 'react';
+import { Store } from 'app/lib/store';
+import { useToast } from 'app/hooks/use-toast';
+import { checkDpsLimit, useDpsLimit } from 'utils/dps/dpsLimitUtils';
 import { BuildInput } from 'types/build';
 
 export default function BloxFruitsComparatorPage() {
@@ -17,30 +21,56 @@ export default function BloxFruitsComparatorPage() {
   } | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Test the calculation function on component mount
-  useEffect(() => {
-    // Test sample calculation
-    const testBuild: BuildInput = {
-      level: 1000,
-      stats: { melee: 25, defense: 25, fruit: 25, sword: 25, gun: 0 },
-      equipped: { fruit: 'Dragon', sword: 'Tushita', fightingStyle: 'Defense', accessories: [] },
-    };
-    console.log('Test DPS:', calculateDPS(testBuild));
-  }, []);
+  const { toast } = useToast();
+  const {
+    state: { userInfo },
+    dispatch,
+  } = useContext(Store);
 
-  const handleCompare = () => {
+  const handleCompare = async () => {
     if (build1 && build2) {
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      // Calculate DPS for both builds
-      const dps1 = calculateDPS(build1);
-      const dps2 = calculateDPS(build2);
+        // Check if user has remaining DPS calculation limit
+        const limitCheck = await checkDpsLimit();
 
-      // Calculate percentage difference
-      const diff = dps2 !== 0 ? ((dps1 - dps2) / dps2) * 100 : 0;
+        if (!limitCheck.canCalculate) {
+          toast({
+            title: 'Error',
+            description: limitCheck.message || 'You have reached your DPS calculation limit. Please upgrade your account to continue.',
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
 
-      setComparison({ dps1, dps2, diff });
-      setLoading(false);
+        // Calculate DPS for both builds
+        const dps1 = calculateDPS(build1);
+        const dps2 = calculateDPS(build2);
+
+        // Calculate percentage difference
+        const diff = dps2 !== 0 ? ((dps1 - dps2) / dps2) * 100 : 0;
+
+        // Use up one DPS calculation from the user's limit
+        await useDpsLimit(dispatch, userInfo);
+
+        setComparison({ dps1, dps2, diff });
+
+        toast({
+          title: 'Success',
+          description: 'DPS comparison completed successfully!',
+        });
+      } catch (err: any) {
+        console.error('Error comparing builds:', err);
+        toast({
+          title: 'Error',
+          description: err.message || 'An error occurred while calculating DPS. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
