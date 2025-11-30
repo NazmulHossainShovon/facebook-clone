@@ -4,11 +4,13 @@ import React, { useContext, useState } from 'react';
 import { Store } from '../lib/store';
 import apiClient from '../lib/api-client';
 import { User } from '../lib/types';
+import { useRouter } from 'next/navigation';
 
 const ThanksPage = () => {
   const { state, dispatch } = useContext(Store);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
+  const router = useRouter();
 
   // Fetch current user info from localStorage to get the username
   const currentUserInfo =
@@ -28,16 +30,14 @@ const ThanksPage = () => {
 
         // Update the store with the latest user info from the backend
         dispatch({ type: 'sign-in', payload: response.data });
-
-        // Navigate to home page
-        // window.location.href = '/dub';
-      } else {
-        // If no user info in localStorage, just navigate to home
-        window.location.href = '/dub';
       }
+
+      // Navigate to home page
+      router.push('/');
     } catch (error) {
       console.error('Error fetching user data:', error);
       setIsError(true);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -79,7 +79,7 @@ const ThanksPage = () => {
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
         <h1 className="text-3xl font-bold text-green-600 mb-4">Thank You!</h1>
         <p className="text-gray-700 mb-6">
-          We appreciate your visit. Your support means a lot to us.
+          Your payment was successful! Your account has been updated.
         </p>
         <div className="mt-6">
           <button
