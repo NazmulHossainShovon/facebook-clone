@@ -1,11 +1,11 @@
 'use client';
 
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { BuildInput } from '../types/build';
 import { defaultBuildValues } from '../constants/dps/build';
 import { buildSchema, BuildSchemaType } from '../types/dps-comparator';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Import the new sub-components
 import LevelInput from './dps-comparator/LevelInput';
@@ -37,11 +37,23 @@ export default function BuildForm({
     formState: { errors },
     watch,
     setValue,
+    control, // Destructure control to use with useWatch
   } = useForm<BuildInput>({
     // Use type assertion to bypass the type mismatch
     resolver: zodResolver(buildSchema) as any,
     defaultValues: initialData || defaultBuildValues,
   });
+
+  // Watch all form values to detect changes
+  const formValues = useWatch({
+    control,
+    defaultValue: initialData || defaultBuildValues,
+  });
+
+  // Reset isSaved to false when any form field changes
+  useEffect(() => {
+    setIsSaved(false);
+  }, [formValues]);
 
   const onSubmitHandler: SubmitHandler<BuildInput> = data => {
     onSubmit(data);
