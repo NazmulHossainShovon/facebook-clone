@@ -33,10 +33,9 @@ export const createHistogram = (
 
 // Helper function to create box plot
 export const createBoxPlot = (
-  headers: string[],
-  data: any[],
-  numericColumns: string[]
+  data: any[]
 ): { chartData: any[]; layout: any } => {
+  // Assuming data contains the numeric values for the box plot
   const chartData = [
     {
       y: data,
