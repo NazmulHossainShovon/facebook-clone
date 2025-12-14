@@ -42,6 +42,17 @@ timeOffRouter.post('/teams', isAuth, async (req, res) => {
   }
 });
 
+// GET endpoint to fetch all teams (without full member data to reduce payload)
+timeOffRouter.get('/teams', isAuth, async (req, res) => {
+  try {
+    const teams = await TeamModel.find({}, { teamId: 1 }); // Only return teamId field
+    res.json(teams);
+  } catch (error) {
+    console.error('Error fetching teams:', error);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
 // GET endpoint to fetch team data
 timeOffRouter.get('/teams/:teamId', isAuth, async (req, res) => {
   try {
@@ -52,9 +63,92 @@ timeOffRouter.get('/teams/:teamId', isAuth, async (req, res) => {
       return res.status(404).json({ msg: 'Team not found' });
     }
 
-    res.json(team);
+    // Transform the team data to maintain compatibility with the Visualization component
+    // The Visualization component expects the old availability format
+    const teamObj = JSON.parse(JSON.stringify(team));
+
+    const transformedTeam = {
+      ...teamObj,
+      members: teamObj.members.map((member: any) => {
+        // Generate availability data based on leaveDates
+        // For a period of 30 days from today, mark as unavailable if the date is in leaveDates
+        const availability = [];
+        const today = new Date();
+        for (let i = 0; i < 30; i++) {
+          const date = new Date();
+          date.setDate(today.getDate() + i);
+          const dateStr = date.toISOString().split('T')[0];
+
+          // Check if this date is in the member's leaveDates
+          const isOnLeave = member.leaveDates.some((leaveDate: Date) =>
+            new Date(leaveDate).toISOString().split('T')[0] === dateStr
+          );
+
+          availability.push({
+            date: new Date(date),
+            available: !isOnLeave // Available if not on leave
+          });
+        }
+
+        return {
+          ...member,
+          availability: availability
+        };
+      })
+    };
+
+    res.json(transformedTeam);
   } catch (error) {
     console.error('Error fetching team:', error);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// POST endpoint to add a member to a team
+timeOffRouter.post('/teams/:teamId/members', isAuth, async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { employeeId, name, role, leaveDates } = req.body;
+
+    // Validate input
+    if (!employeeId || !name || !role) {
+      return res.status(400).json({
+        msg: 'Employee ID, name, and role are required'
+      });
+    }
+
+    // Fetch the team
+    const team = await TeamModel.findOne({ teamId });
+    if (!team) {
+      return res.status(404).json({ msg: 'Team not found' });
+    }
+
+    // Check if member with this employeeId already exists in the team
+    const existingMember = team.members.find(member => member.employeeId === employeeId);
+    if (existingMember) {
+      return res.status(409).json({ msg: 'Member with this employee ID already exists in the team' });
+    }
+
+    // Create new member with empty leaveDates array if not provided
+    const newMember = {
+      employeeId,
+      name,
+      role,
+      leaveDates: leaveDates || [] // Use provided leaveDates or start with empty array
+    };
+
+    // Add the new member to the team
+    team.members.push(newMember);
+
+    // Save the updated team
+    const updatedTeam = await team.save();
+
+    res.status(201).json({
+      msg: 'Team member added successfully',
+      member: newMember
+    });
+  } catch (error) {
+    console.error('Error adding team member:', error);
     res.status(500).json({ msg: 'Server error' });
   }
 });
@@ -90,29 +184,26 @@ timeOffRouter.post('/teams/:teamId/simulate-leave', isAuth, async (req, res) => 
       return res.status(404).json({ msg: 'Employee not found in team' });
     }
 
-    // Simulate leave by setting availability to false during the leave period
+    // Add the leave dates to the employee's leaveDates array
     const currentDate = new Date(start);
     while (currentDate <= end) {
       const dateStr = currentDate.toISOString().split('T')[0]; // Convert to YYYY-MM-DD format
-      const existingAvail = targetEmployee.availability.find(avail => 
-        new Date(avail.date).toISOString().split('T')[0] === dateStr
+
+      // Check if the date is already in the leaveDates array
+      const dateExists = targetEmployee.leaveDates.some(leaveDate =>
+        new Date(leaveDate).toISOString().split('T')[0] === dateStr
       );
 
-      if (existingAvail) {
-        existingAvail.available = false;
-      } else {
-        // Add new availability entry if not existing
-        targetEmployee.availability.push({
-          date: new Date(currentDate),
-          available: false
-        });
+      if (!dateExists) {
+        // Add the date to the leaveDates array if it's not already there
+        targetEmployee.leaveDates.push(new Date(currentDate));
       }
-      
+
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Calculate coverage gaps
-    // Get all unique dates from the team's availability (next 30 days from today)
+    // Calculate coverage gaps based on leaveDates
+    // Get all unique dates from the team's leave dates (next 30 days from today)
     const allDatesSet = new Set<string>();
     const today = new Date();
     for (let i = 0; i < 30; i++) {
@@ -121,10 +212,10 @@ timeOffRouter.post('/teams/:teamId/simulate-leave', isAuth, async (req, res) => 
       allDatesSet.add(date.toISOString().split('T')[0]);
     }
 
-    // Add any dates that might exist in employee availability but are not in the next 30 days
+    // Add any dates that might exist in employee leave dates
     team.members.forEach(member => {
-      member.availability.forEach(avail => {
-        allDatesSet.add(new Date(avail.date).toISOString().split('T')[0]);
+      member.leaveDates.forEach(leaveDate => {
+        allDatesSet.add(new Date(leaveDate).toISOString().split('T')[0]);
       });
     });
 
@@ -133,18 +224,17 @@ timeOffRouter.post('/teams/:teamId/simulate-leave', isAuth, async (req, res) => 
     const gaps = [];
     for (const dateStr of allDates) {
       const date = new Date(dateStr);
-      
+
       // Count available team members for this date
       let availableCount = 0;
       team.members.forEach(member => {
-        const memberAvail = member.availability.find(avail => 
-          new Date(avail.date).toISOString().split('T')[0] === dateStr
+        // Check if the member has a leave date that matches the current date
+        const isOnLeave = member.leaveDates.some(leaveDate =>
+          new Date(leaveDate).toISOString().split('T')[0] === dateStr
         );
-        
-        if (memberAvail && memberAvail.available) {
-          availableCount++;
-        } else if (!memberAvail && date >= today) {
-          // If no availability record exists and it's a future date, assume available
+
+        // Employee is available if they are not on leave on this date
+        if (!isOnLeave) {
           availableCount++;
         }
       });
@@ -159,6 +249,9 @@ timeOffRouter.post('/teams/:teamId/simulate-leave', isAuth, async (req, res) => 
         totalMembers
       });
     }
+
+    // Save the updated team
+    await team.save();
 
     res.json({ team, gaps });
   } catch (error) {
