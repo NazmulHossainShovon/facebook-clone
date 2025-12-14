@@ -1,18 +1,20 @@
 'use client';
 
 import { useState, useEffect, useContext } from 'react';
-import { Store } from '../lib/store';
-import ProtectedRoute from '../../components/ProtectedRoute';
+import { Store } from '../../lib/store';
+import ProtectedRoute from '../../../components/ProtectedRoute';
 import { Visualization } from './Visualization';
-import apiClient from '../lib/api-client';
+import apiClient from '../../lib/api-client';
 
 const TimeOffSimulator = () => {
-  const { state: { userInfo } } = useContext(Store);
+  const {
+    state: { userInfo },
+  } = useContext(Store);
   const [team, setTeam] = useState<any>(null);
   const [leave, setLeave] = useState({
     employeeId: '',
     startDate: '',
-    endDate: ''
+    endDate: '',
   });
   const [simulation, setSimulation] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -50,7 +52,10 @@ const TimeOffSimulator = () => {
     setError('');
 
     try {
-      const response = await apiClient.post(`/api/time-off/teams/${teamId}/simulate-leave`, leave);
+      const response = await apiClient.post(
+        `/api/time-off/teams/${teamId}/simulate-leave`,
+        leave
+      );
       setSimulation(response.data);
     } catch (err: any) {
       console.error('Error simulating leave:', err);
@@ -73,16 +78,16 @@ const TimeOffSimulator = () => {
     <ProtectedRoute>
       <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6">Time-Off Impact Simulator</h1>
-        
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <h2 className="text-xl font-semibold mb-4">Submit Leave Request</h2>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -90,7 +95,9 @@ const TimeOffSimulator = () => {
               </label>
               <select
                 value={leave.employeeId}
-                onChange={(e) => setLeave({...leave, employeeId: e.target.value})}
+                onChange={e =>
+                  setLeave({ ...leave, employeeId: e.target.value })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
                 required
               >
@@ -102,7 +109,7 @@ const TimeOffSimulator = () => {
                 ))}
               </select>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -111,12 +118,14 @@ const TimeOffSimulator = () => {
                 <input
                   type="date"
                   value={leave.startDate}
-                  onChange={(e) => setLeave({...leave, startDate: e.target.value})}
+                  onChange={e =>
+                    setLeave({ ...leave, startDate: e.target.value })
+                  }
                   className="w-full p-2 border border-gray-300 rounded-md"
                   required
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   End Date
@@ -124,13 +133,15 @@ const TimeOffSimulator = () => {
                 <input
                   type="date"
                   value={leave.endDate}
-                  onChange={(e) => setLeave({...leave, endDate: e.target.value})}
+                  onChange={e =>
+                    setLeave({ ...leave, endDate: e.target.value })
+                  }
                   className="w-full p-2 border border-gray-300 rounded-md"
                   required
                 />
               </div>
             </div>
-            
+
             <button
               type="submit"
               disabled={loading}
@@ -140,7 +151,7 @@ const TimeOffSimulator = () => {
             </button>
           </form>
         </div>
-        
+
         {simulation && (
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold mb-4">Simulation Results</h2>

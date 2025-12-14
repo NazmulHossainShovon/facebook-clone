@@ -4,16 +4,54 @@ import { isAuth } from '../utils';
 
 const timeOffRouter = Router();
 
+// POST endpoint to create a new team
+timeOffRouter.post('/teams', isAuth, async (req, res) => {
+  try {
+    const { teamId } = req.body;
+
+    // Validate input
+    if (!teamId) {
+      return res.status(400).json({ msg: 'Team ID is required' });
+    }
+
+    // Check if team with this ID already exists
+    const existingTeam = await TeamModel.findOne({ teamId });
+    if (existingTeam) {
+      return res.status(409).json({ msg: 'Team with this ID already exists' });
+    }
+
+    // Create new team with empty members array
+    const newTeamData = {
+      teamId,
+      members: []
+    };
+
+    const newTeam = new TeamModel(newTeamData);
+    const savedTeam = await newTeam.save();
+
+    res.status(201).json({
+      msg: 'Team created successfully',
+      team: {
+        _id: savedTeam._id,
+        teamId: savedTeam.teamId
+      }
+    });
+  } catch (error) {
+    console.error('Error creating team:', error);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
 // GET endpoint to fetch team data
 timeOffRouter.get('/teams/:teamId', isAuth, async (req, res) => {
   try {
     const { teamId } = req.params;
     const team = await TeamModel.findOne({ teamId });
-    
+
     if (!team) {
       return res.status(404).json({ msg: 'Team not found' });
     }
-    
+
     res.json(team);
   } catch (error) {
     console.error('Error fetching team:', error);

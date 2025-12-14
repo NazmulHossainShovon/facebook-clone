@@ -1,13 +1,5 @@
 import { modelOptions, prop, getModelForClass } from "@typegoose/typegoose";
 
-export class Availability {
-  @prop({ required: true })
-  public date!: Date;
-
-  @prop({ default: true })
-  public available!: boolean;
-}
-
 export class TeamMember {
   @prop({ required: true })
   public employeeId!: string;
@@ -18,8 +10,8 @@ export class TeamMember {
   @prop({ required: true })
   public role!: string;
 
-  @prop({ type: () => [Availability] })
-  public availability!: Availability[];
+  @prop({ type: () => [Date] })
+  public leaveDates!: Date[];
 }
 
 @modelOptions({ schemaOptions: { timestamps: true } })
