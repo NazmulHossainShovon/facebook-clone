@@ -3,39 +3,57 @@
 import { useState, useEffect, useContext } from 'react';
 import { Store } from '../../lib/store';
 import ProtectedRoute from '../../../components/ProtectedRoute';
-import { Visualization } from './Visualization';
 import apiClient from '../../lib/api-client';
 
 const TimeOffSimulator = () => {
   const {
     state: { userInfo },
   } = useContext(Store);
-  const [team, setTeam] = useState<any>(null);
+  const [allTeams, setAllTeams] = useState<any[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState<string>('');
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [leave, setLeave] = useState({
     employeeId: '',
     startDate: '',
     endDate: '',
   });
-  const [simulation, setSimulation] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const teamId = 'team-1';
-
   useEffect(() => {
-    fetchTeam();
+    fetchAllTeams();
   }, []);
 
-  const fetchTeam = async () => {
+  const fetchAllTeams = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await apiClient.get('/api/time-off/teams');
+      setAllTeams(response.data);
+    } catch (err: any) {
+      console.error('Error fetching teams:', err);
+      setError(err.response?.data?.msg || 'Failed to load teams');
+
+      // Handle authentication error
+      if (err.response?.status === 401) {
+        window.location.href = '/login';
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTeamMembers = async (teamId: string) => {
     setLoading(true);
     setError('');
 
     try {
       const response = await apiClient.get(`/api/time-off/teams/${teamId}`);
-      setTeam(response.data);
+      setTeamMembers(response.data.members || []);
     } catch (err: any) {
-      console.error('Error fetching team:', err);
-      setError(err.response?.data?.msg || 'Failed to load team data');
+      console.error('Error fetching team members:', err);
+      setError(err.response?.data?.msg || 'Failed to load team members');
 
       // Handle authentication error
       if (err.response?.status === 401) {
@@ -51,12 +69,21 @@ const TimeOffSimulator = () => {
     setLoading(true);
     setError('');
 
+    if (!selectedTeam) {
+      setError('Please select a team');
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await apiClient.post(
-        `/api/time-off/teams/${teamId}/simulate-leave`,
+        `/api/time-off/teams/${selectedTeam}/simulate-leave`,
         leave
       );
-      setSimulation(response.data);
+      // Reset form after submission if needed
+      // Instead of showing visualization, we could display a success message
+      alert('Leave simulation submitted successfully!');
+      setLeave({ employeeId: '', startDate: '', endDate: '' });
     } catch (err: any) {
       console.error('Error simulating leave:', err);
       setError(err.response?.data?.msg || 'Failed to simulate leave');
@@ -77,8 +104,6 @@ const TimeOffSimulator = () => {
   return (
     <ProtectedRoute>
       <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Time-Off Impact Simulator</h1>
-
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
@@ -91,6 +116,34 @@ const TimeOffSimulator = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
+                Team
+              </label>
+              <select
+                value={selectedTeam}
+                onChange={(e) => {
+                  const teamId = e.target.value;
+                  setSelectedTeam(teamId);
+                  if (teamId) {
+                    fetchTeamMembers(teamId);
+                  } else {
+                    setTeamMembers([]);
+                    setLeave({ ...leave, employeeId: '' });
+                  }
+                }}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
+              >
+                <option value="">Select a team</option>
+                {allTeams.map((team: any) => (
+                  <option key={team.teamId} value={team.teamId}>
+                    {team.teamId}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Employee
               </label>
               <select
@@ -100,9 +153,10 @@ const TimeOffSimulator = () => {
                 }
                 className="w-full p-2 border border-gray-300 rounded-md"
                 required
+                disabled={!selectedTeam}
               >
                 <option value="">Select an employee</option>
-                {team?.members?.map((member: any) => (
+                {teamMembers.map((member: any) => (
                   <option key={member.employeeId} value={member.employeeId}>
                     {member.name} ({member.role})
                   </option>
@@ -144,20 +198,13 @@ const TimeOffSimulator = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !selectedTeam}
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
               {loading ? 'Simulating...' : 'Simulate Leave Impact'}
             </button>
           </form>
         </div>
-
-        {simulation && (
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4">Simulation Results</h2>
-            <Visualization data={simulation} />
-          </div>
-        )}
       </div>
     </ProtectedRoute>
   );
