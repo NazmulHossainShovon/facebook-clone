@@ -9,6 +9,7 @@ import DubNav from './dub/DubNav';
 import ChartNav from './charts/ChartNav';
 import SocialNav from './SocialNav';
 import BloxDPSNav from './dps-comparator/BloxDPSNav';
+import TimeOffNav from './time-off/TimeOffNav';
 
 export default function RootNav() {
   const {
@@ -25,6 +26,8 @@ export default function RootNav() {
   const isSocialRoute = pathname?.startsWith('/social');
   // Check if we're on a dps-comparator route
   const isDPSComparatorRoute = pathname?.startsWith('/dps-comparator');
+  // Check if we're on a time-off-simulator route
+  const isTimeOffRoute = pathname?.startsWith('/time-off-simulator');
 
   // Close drawer when route changes
   useEffect(() => {
@@ -71,6 +74,7 @@ export default function RootNav() {
       {isChartsRoute ? <ChartNav userInfo={userInfo} /> : null}
       {isSocialRoute ? <SocialNav /> : null}
       {isDPSComparatorRoute ? <BloxDPSNav userInfo={userInfo} /> : null}
+      {isTimeOffRoute ? <TimeOffNav userInfo={userInfo} /> : null}
 
       {/* Default navigation for all routes */}
       {!userInfo?.name ? (
