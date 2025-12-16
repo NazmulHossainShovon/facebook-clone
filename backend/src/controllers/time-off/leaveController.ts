@@ -58,3 +58,56 @@ export const submitEmployeeLeave = async (req: Request, res: Response) => {
     res.status(500).json({ msg: 'Server error' });
   }
 };
+
+export const getTeamCoverage = async (req: Request, res: Response) => {
+  try {
+    const { teamId } = req.params;
+
+    // Fetch team
+    const team = await TeamModel.findOne({ teamId });
+    if (!team) {
+      return res.status(404).json({ msg: 'Team not found' });
+    }
+
+    // Calculate coverage for next 10 days starting from tomorrow
+    const coverage = [];
+    const today = new Date();
+    today.setDate(today.getDate() + 1); // Start from tomorrow
+
+    for (let i = 0; i < 10; i++) {
+      const currentDate = new Date(today);
+      currentDate.setDate(today.getDate() + i);
+
+      const dateStr = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+      // Count available team members for this date
+      let availableCount = 0;
+      team.members.forEach((member: any) => {
+        // Check if the member has a leave date that matches the current date
+        const isOnLeave = member.leaveDates.some((leaveDate: Date) =>
+          new Date(leaveDate).toISOString().split('T')[0] === dateStr
+        );
+
+        // Employee is available if they are not on leave on this date
+        if (!isOnLeave) {
+          availableCount++;
+        }
+      });
+
+      const totalMembers = team.members.length;
+      const isGap = availableCount < (totalMembers * 0.5); // Less than 50% availability
+
+      coverage.push({
+        date: currentDate,
+        availableCount,
+        isGap,
+        totalMembers
+      });
+    }
+
+    res.json({ coverage });
+  } catch (error) {
+    console.error('Error getting team coverage:', error);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};

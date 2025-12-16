@@ -6,7 +6,7 @@ import {
   getTeamById,
 } from "../controllers/time-off/teamController";
 import { addMemberToTeam } from "../controllers/time-off/memberController";
-import { submitEmployeeLeave } from "../controllers/time-off/leaveController";
+import { submitEmployeeLeave, getTeamCoverage } from "../controllers/time-off/leaveController";
 
 const timeOffRouter = Router();
 
@@ -27,6 +27,13 @@ timeOffRouter.post(
   "/teams/:teamId/submit-leave",
   isAuth,
   submitEmployeeLeave
+);
+
+// GET endpoint to get team coverage
+timeOffRouter.get(
+  "/teams/:teamId/coverage",
+  isAuth,
+  getTeamCoverage
 );
 
 export default timeOffRouter;
