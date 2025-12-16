@@ -77,16 +77,23 @@ const TimeOffSimulator = () => {
 
     try {
       const response = await apiClient.post(
-        `/api/time-off/teams/${selectedTeam}/simulate-leave`,
-        leave
+        `/api/time-off/teams/${selectedTeam}/submit-leave`,
+        {
+          employeeId: leave.employeeId,
+          startDate: leave.startDate,
+          endDate: leave.endDate,
+        }
       );
-      // Reset form after submission if needed
-      // Instead of showing visualization, we could display a success message
-      alert('Leave simulation submitted successfully!');
+
+      // Process the response if needed
+      console.log('Leave submission response:', response.data);
+
+      // Show success message
+      alert('Leave request submitted successfully!');
       setLeave({ employeeId: '', startDate: '', endDate: '' });
     } catch (err: any) {
-      console.error('Error simulating leave:', err);
-      setError(err.response?.data?.msg || 'Failed to simulate leave');
+      console.error('Error submitting employee leave:', err);
+      setError(err.response?.data?.msg || 'Failed to submit employee leave');
 
       // Handle authentication error
       if (err.response?.status === 401) {
@@ -120,7 +127,7 @@ const TimeOffSimulator = () => {
               </label>
               <select
                 value={selectedTeam}
-                onChange={(e) => {
+                onChange={e => {
                   const teamId = e.target.value;
                   setSelectedTeam(teamId);
                   if (teamId) {
@@ -201,7 +208,7 @@ const TimeOffSimulator = () => {
               disabled={loading || !selectedTeam}
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              {loading ? 'Simulating...' : 'Simulate Leave Impact'}
+              {loading ? 'Submitting...' : 'Submit Leave Request'}
             </button>
           </form>
         </div>

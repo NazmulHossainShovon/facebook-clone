@@ -6,7 +6,7 @@ import {
   getTeamById,
 } from "../controllers/time-off/teamController";
 import { addMemberToTeam } from "../controllers/time-off/memberController";
-import { simulateLeaveImpact } from "../controllers/time-off/leaveController";
+import { submitEmployeeLeave } from "../controllers/time-off/leaveController";
 
 const timeOffRouter = Router();
 
@@ -22,11 +22,11 @@ timeOffRouter.get("/teams/:teamId", isAuth, getTeamById);
 // POST endpoint to add a member to a team
 timeOffRouter.post("/teams/:teamId/members", isAuth, addMemberToTeam);
 
-// POST endpoint to simulate leave impact
+// POST endpoint to submit employee leave
 timeOffRouter.post(
-  "/teams/:teamId/simulate-leave",
+  "/teams/:teamId/submit-leave",
   isAuth,
-  simulateLeaveImpact
+  submitEmployeeLeave
 );
 
 export default timeOffRouter;

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { TeamModel } from '../../models/teamModel';
 
-export const simulateLeaveImpact = async (req: Request, res: Response) => {
+export const submitEmployeeLeave = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
     const { employeeId, startDate, endDate } = req.body;
@@ -49,60 +49,12 @@ export const simulateLeaveImpact = async (req: Request, res: Response) => {
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Calculate coverage gaps based on leaveDates
-    // Get all unique dates from the team's leave dates (next 30 days from today)
-    const allDatesSet = new Set<string>();
-    const today = new Date();
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      allDatesSet.add(date.toISOString().split('T')[0]);
-    }
-
-    // Add any dates that might exist in employee leave dates
-    team.members.forEach((member: any) => {
-      member.leaveDates.forEach((leaveDate: Date) => {
-        allDatesSet.add(new Date(leaveDate).toISOString().split('T')[0]);
-      });
-    });
-
-    const allDates = Array.from(allDatesSet).sort();
-
-    const gaps = [];
-    for (const dateStr of allDates) {
-      const date = new Date(dateStr);
-
-      // Count available team members for this date
-      let availableCount = 0;
-      team.members.forEach((member: any) => {
-        // Check if the member has a leave date that matches the current date
-        const isOnLeave = member.leaveDates.some((leaveDate: Date) =>
-          new Date(leaveDate).toISOString().split('T')[0] === dateStr
-        );
-
-        // Employee is available if they are not on leave on this date
-        if (!isOnLeave) {
-          availableCount++;
-        }
-      });
-
-      const totalMembers = team.members.length;
-      const isGap = availableCount < (totalMembers * 0.5); // Less than 50% availability
-
-      gaps.push({
-        date: date,
-        availableCount,
-        isGap,
-        totalMembers
-      });
-    }
-
     // Save the updated team
     await team.save();
 
-    res.json({ team, gaps });
+    res.json({ msg: 'Leave dates added successfully' });
   } catch (error) {
-    console.error('Error simulating leave:', error);
+    console.error('Error submitting employee leave:', error);
     res.status(500).json({ msg: 'Server error' });
   }
 };
