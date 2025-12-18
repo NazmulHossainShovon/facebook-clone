@@ -21,6 +21,9 @@ export class Team {
   @prop({ required: true, unique: true })
   public teamId!: string;
 
+  @prop({ required: true })
+  public userId!: string;
+
   @prop({ type: () => [TeamMember] })
   public members!: TeamMember[];
 }

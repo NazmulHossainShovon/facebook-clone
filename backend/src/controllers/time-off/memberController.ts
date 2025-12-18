@@ -5,6 +5,7 @@ export const addMemberToTeam = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
     const { employeeId, name, role, leaveDates } = req.body;
+    const userId = (req as any).user?.id; // Extract userId from authenticated user
 
     // Validate input
     if (!employeeId || !name || !role) {
@@ -13,10 +14,14 @@ export const addMemberToTeam = async (req: Request, res: Response) => {
       });
     }
 
-    // Fetch the team
-    const team = await TeamModel.findOne({ teamId });
+    if (!userId) {
+      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
+    }
+
+    // Fetch the team belonging to the user
+    const team = await TeamModel.findOne({ teamId, userId });
     if (!team) {
-      return res.status(404).json({ msg: 'Team not found' });
+      return res.status(404).json({ msg: 'Team not found or not authorized' });
     }
 
     // Check if member with this employeeId already exists in the team

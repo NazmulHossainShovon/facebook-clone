@@ -4,10 +4,15 @@ import { TeamModel } from "../../models/teamModel";
 export const createTeam = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.body;
+    const userId = (req as any).user?.id; // Extract userId from authenticated user
 
     // Validate input
     if (!teamId) {
       return res.status(400).json({ msg: "Team ID is required" });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
     }
 
     // Check if team with this ID already exists
@@ -19,6 +24,7 @@ export const createTeam = async (req: Request, res: Response) => {
     // Create new team with empty members array
     const newTeamData = {
       teamId,
+      userId,
       members: [],
     };
 
@@ -30,6 +36,7 @@ export const createTeam = async (req: Request, res: Response) => {
       team: {
         _id: savedTeam._id,
         teamId: savedTeam.teamId,
+        userId: savedTeam.userId,
       },
     });
   } catch (error) {
@@ -40,7 +47,13 @@ export const createTeam = async (req: Request, res: Response) => {
 
 export const getAllTeams = async (req: Request, res: Response) => {
   try {
-    const teams = await TeamModel.find({}, { teamId: 1 }); // Only return teamId field
+    const userId = (req as any).user?.id; // Extract userId from authenticated user
+
+    if (!userId) {
+      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
+    }
+
+    const teams = await TeamModel.find({ userId }, { teamId: 1 }); // Return only teams belonging to the user
     res.json(teams);
   } catch (error) {
     console.error("Error fetching teams:", error);
@@ -51,17 +64,22 @@ export const getAllTeams = async (req: Request, res: Response) => {
 export const getTeamById = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
+    const userId = (req as any).user?.id; // Extract userId from authenticated user
 
     // Validate input
     if (!teamId) {
       return res.status(400).json({ msg: "Team ID is required" });
     }
 
-    // Find the team by teamId
-    const team = await TeamModel.findOne({ teamId });
+    if (!userId) {
+      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
+    }
+
+    // Find the team by teamId and userId (ensure the team belongs to the user)
+    const team = await TeamModel.findOne({ teamId, userId });
 
     if (!team) {
-      return res.status(404).json({ msg: "Team not found" });
+      return res.status(404).json({ msg: "Team not found or not authorized" });
     }
 
     res.json(team);

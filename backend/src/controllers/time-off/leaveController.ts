@@ -5,10 +5,15 @@ export const submitEmployeeLeave = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
     const { employeeId, startDate, endDate } = req.body;
+    const userId = (req as any).user?.id; // Extract userId from authenticated user
 
     // Validate input
     if (!employeeId || !startDate || !endDate) {
       return res.status(400).json({ msg: 'Missing required fields: employeeId, startDate, endDate' });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
     }
 
     const start = new Date(startDate);
@@ -19,10 +24,10 @@ export const submitEmployeeLeave = async (req: Request, res: Response) => {
       return res.status(400).json({ msg: 'Start date must be before end date' });
     }
 
-    // Fetch team
-    const team = await TeamModel.findOne({ teamId });
+    // Fetch team belonging to the user
+    const team = await TeamModel.findOne({ teamId, userId });
     if (!team) {
-      return res.status(404).json({ msg: 'Team not found' });
+      return res.status(404).json({ msg: 'Team not found or not authorized' });
     }
 
     // Find the target employee
@@ -62,11 +67,16 @@ export const submitEmployeeLeave = async (req: Request, res: Response) => {
 export const getTeamCoverage = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
+    const userId = (req as any).user?.id; // Extract userId from authenticated user
 
-    // Fetch team
-    const team = await TeamModel.findOne({ teamId });
+    if (!userId) {
+      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
+    }
+
+    // Fetch team belonging to the user
+    const team = await TeamModel.findOne({ teamId, userId });
     if (!team) {
-      return res.status(404).json({ msg: 'Team not found' });
+      return res.status(404).json({ msg: 'Team not found or not authorized' });
     }
 
     // Calculate coverage for next 10 days starting from tomorrow
