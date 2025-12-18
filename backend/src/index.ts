@@ -19,6 +19,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { registerChatHandlers } from "./socketHandlers/chatHandler";
 import passport from "./config/passport";
+import { isAuth } from "./utils";
 
 export const userSocketMap = new Map<string, string>();
 
@@ -79,7 +80,7 @@ app.use("/api/chat", chatRouter);
 app.use("/api/dub", dubRouter);
 app.use("/api", paymentRouter);
 app.use("/api/gemini", geminiRouter);
-app.use("/api/time-off", timeOffRouter);
+app.use("/api/time-off", isAuth, timeOffRouter);
 app.use("/api/charts", chartRouter);
 app.use("/api/dps", dpsRouter);
 
