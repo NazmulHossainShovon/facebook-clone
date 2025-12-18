@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BarChart3, Sword, ArrowRight } from 'lucide-react';
+import { BarChart3, Sword, Calendar, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   const apps = [
@@ -18,6 +18,14 @@ export default function Home() {
       icon: Sword,
       gradient: 'from-blue-600 to-indigo-700',
       hoverGradient: 'from-blue-700 to-indigo-800',
+    },
+    {
+      name: 'Time-Off Simulator',
+      description: 'Plan and simulate team time-off coverage',
+      href: '/time-off-simulator',
+      icon: Calendar,
+      gradient: 'from-emerald-500 to-teal-600',
+      hoverGradient: 'from-emerald-600 to-teal-700',
     },
   ];
 

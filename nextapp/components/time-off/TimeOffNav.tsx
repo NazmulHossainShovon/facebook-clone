@@ -49,6 +49,14 @@ export default function TimeOffNav({ userInfo }: TimeOffNavProps) {
           </li>
           <li>
             <Link
+              href="/time-off-simulator/app/team-coverage"
+              className="text-white hover:text-gray-300 block py-2 md:py-0"
+            >
+              Team Coverage
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/time-off-simulator/account"
               className="text-white hover:text-gray-300 block py-2 md:py-0"
             >
