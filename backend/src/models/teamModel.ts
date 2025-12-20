@@ -18,7 +18,7 @@ export class TeamMember {
 export class Team {
   public _id?: string;
 
-  @prop({ required: true, unique: true })
+  @prop({ required: true, unique: false })
   public teamId!: string;
 
   @prop({ required: true })
