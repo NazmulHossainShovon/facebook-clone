@@ -18,11 +18,19 @@ export interface Team {
   members: TeamMember[];
 }
 
+export interface EmployeeStatus {
+  employeeId: string;
+  name: string;
+  role: string;
+  isAvailable: boolean;
+}
+
 export interface CoverageDay {
   date: Date | string;
   availableCount: number;
   isGap: boolean;
   totalMembers: number;
+  employees: EmployeeStatus[];
 }
 
 export interface TeamCoverageResponse {

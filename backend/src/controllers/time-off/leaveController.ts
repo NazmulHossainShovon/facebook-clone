@@ -64,6 +64,21 @@ export const submitEmployeeLeave = async (req: Request, res: Response) => {
   }
 };
 
+export interface EmployeeStatus {
+  employeeId: string;
+  name: string;
+  role: string;
+  isAvailable: boolean;
+}
+
+export interface CoverageDayDetail {
+  date: Date;
+  availableCount: number;
+  isGap: boolean;
+  totalMembers: number;
+  employees: EmployeeStatus[];
+}
+
 export const getTeamCoverage = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
@@ -80,7 +95,7 @@ export const getTeamCoverage = async (req: Request, res: Response) => {
     }
 
     // Calculate coverage for next 10 days starting from tomorrow
-    const coverage = [];
+    const coverage: CoverageDayDetail[] = [];
     const today = new Date();
     today.setDate(today.getDate() + 1); // Start from tomorrow
 
@@ -90,20 +105,22 @@ export const getTeamCoverage = async (req: Request, res: Response) => {
 
       const dateStr = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD format
 
-      // Count available team members for this date
-      let availableCount = 0;
-      team.members.forEach((member: any) => {
+      // Calculate employee availability for this date
+      const employees: EmployeeStatus[] = team.members.map((member: any) => {
         // Check if the member has a leave date that matches the current date
         const isOnLeave = member.leaveDates.some((leaveDate: Date) =>
           new Date(leaveDate).toISOString().split('T')[0] === dateStr
         );
 
-        // Employee is available if they are not on leave on this date
-        if (!isOnLeave) {
-          availableCount++;
-        }
+        return {
+          employeeId: member.employeeId,
+          name: member.name,
+          role: member.role,
+          isAvailable: !isOnLeave
+        };
       });
 
+      const availableCount = employees.filter(emp => emp.isAvailable).length;
       const totalMembers = team.members.length;
       const isGap = availableCount < (totalMembers * 0.5); // Less than 50% availability
 
@@ -111,7 +128,8 @@ export const getTeamCoverage = async (req: Request, res: Response) => {
         date: currentDate,
         availableCount,
         isGap,
-        totalMembers
+        totalMembers,
+        employees
       });
     }
 
