@@ -5,7 +5,7 @@ export const addMemberToTeam = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
     const { employeeId, name, role, leaveDates } = req.body;
-    const userId = (req as any).user?.id; // Extract userId from authenticated user
+    const userId = (req as any).user?._id; // Extract userId from authenticated user
 
     // Validate input
     if (!employeeId || !name || !role) {

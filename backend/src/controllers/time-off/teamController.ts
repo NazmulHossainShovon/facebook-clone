@@ -4,7 +4,7 @@ import { TeamModel } from "../../models/teamModel";
 export const createTeam = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.body;
-    const userId = (req as any).user?.id; // Extract userId from authenticated user
+    const userId = (req as any).user?._id; // Extract userId from authenticated user
 
     // Validate input
     if (!teamId) {
@@ -12,13 +12,17 @@ export const createTeam = async (req: Request, res: Response) => {
     }
 
     if (!userId) {
-      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
+      return res
+        .status(401)
+        .json({ msg: "Unauthorized: User not authenticated" });
     }
 
-    // Check if team with this ID already exists
-    const existingTeam = await TeamModel.findOne({ teamId });
+    // Check if team with this ID already exists for this user
+    const existingTeam = await TeamModel.findOne({ teamId, userId });
     if (existingTeam) {
-      return res.status(409).json({ msg: "Team with this ID already exists" });
+      return res
+        .status(409)
+        .json({ msg: "Team with this ID already exists for your account" });
     }
 
     // Create new team with empty members array
@@ -47,10 +51,12 @@ export const createTeam = async (req: Request, res: Response) => {
 
 export const getAllTeams = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id; // Extract userId from authenticated user
+    const userId = (req as any).user?._id; // Extract userId from authenticated user
 
     if (!userId) {
-      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
+      return res
+        .status(401)
+        .json({ msg: "Unauthorized: User not authenticated" });
     }
 
     const teams = await TeamModel.find({ userId }, { teamId: 1 }); // Return only teams belonging to the user
@@ -64,7 +70,7 @@ export const getAllTeams = async (req: Request, res: Response) => {
 export const getTeamById = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
-    const userId = (req as any).user?.id; // Extract userId from authenticated user
+    const userId = (req as any).user?._id; // Extract userId from authenticated user
 
     // Validate input
     if (!teamId) {
@@ -72,7 +78,9 @@ export const getTeamById = async (req: Request, res: Response) => {
     }
 
     if (!userId) {
-      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
+      return res
+        .status(401)
+        .json({ msg: "Unauthorized: User not authenticated" });
     }
 
     // Find the team by teamId and userId (ensure the team belongs to the user)

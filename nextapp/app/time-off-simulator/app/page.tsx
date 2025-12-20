@@ -34,11 +34,6 @@ const TimeOffSimulator = () => {
     } catch (err: any) {
       console.error('Error fetching teams:', err);
       setError(err.response?.data?.msg || 'Failed to load teams');
-
-      // Handle authentication error
-      if (err.response?.status === 401) {
-        window.location.href = '/login';
-      }
     } finally {
       setLoading(false);
     }
@@ -54,11 +49,6 @@ const TimeOffSimulator = () => {
     } catch (err: any) {
       console.error('Error fetching team members:', err);
       setError(err.response?.data?.msg || 'Failed to load team members');
-
-      // Handle authentication error
-      if (err.response?.status === 401) {
-        window.location.href = '/login';
-      }
     } finally {
       setLoading(false);
     }
@@ -85,20 +75,12 @@ const TimeOffSimulator = () => {
         }
       );
 
-      // Process the response if needed
-      console.log('Leave submission response:', response.data);
-
       // Show success message
       alert('Leave request submitted successfully!');
       setLeave({ employeeId: '', startDate: '', endDate: '' });
     } catch (err: any) {
       console.error('Error submitting employee leave:', err);
       setError(err.response?.data?.msg || 'Failed to submit employee leave');
-
-      // Handle authentication error
-      if (err.response?.status === 401) {
-        window.location.href = '/login';
-      }
     } finally {
       setLoading(false);
     }

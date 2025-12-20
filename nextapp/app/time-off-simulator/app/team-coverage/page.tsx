@@ -29,11 +29,6 @@ export default function TeamCoverage() {
     } catch (err: any) {
       console.error('Error fetching teams:', err);
       setError(err.response?.data?.msg || 'Failed to load teams');
-
-      // Handle authentication error
-      if (err.response?.status === 401) {
-        window.location.href = '/login';
-      }
     } finally {
       setLoading(false);
     }
@@ -49,26 +44,23 @@ export default function TeamCoverage() {
     setError('');
 
     try {
-      const response = await apiClient.get(`/api/time-off/teams/${selectedTeam}/coverage`);
+      const response = await apiClient.get(
+        `/api/time-off/teams/${selectedTeam}/coverage`
+      );
       setCoverageData(response.data.coverage);
     } catch (err: any) {
       console.error('Error fetching coverage data:', err);
       setError(err.response?.data?.msg || 'Failed to fetch coverage data');
-
-      // Handle authentication error
-      if (err.response?.status === 401) {
-        window.location.href = '/login';
-      }
     } finally {
       setLoading(false);
     }
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -80,7 +72,7 @@ export default function TeamCoverage() {
     <ProtectedRoute>
       <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">Team Coverage</h1>
-        
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
@@ -94,7 +86,7 @@ export default function TeamCoverage() {
             </label>
             <select
               value={selectedTeam}
-              onChange={(e) => setSelectedTeam(e.target.value)}
+              onChange={e => setSelectedTeam(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-md"
               disabled={loading}
             >
@@ -118,14 +110,18 @@ export default function TeamCoverage() {
 
         {coverageData.length > 0 && (
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4">Coverage for Next 10 Days</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              Coverage for Next 10 Days
+            </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
               {coverageData.map((day: any, index: number) => (
-                <div 
+                <div
                   key={index}
                   className={`p-3 rounded-lg text-center ${day.isGap ? 'bg-red-200' : 'bg-green-200'}`}
                 >
-                  <div className="font-medium">{formatDate(new Date(day.date))}</div>
+                  <div className="font-medium">
+                    {formatDate(new Date(day.date))}
+                  </div>
                   <div className="text-sm mt-1">
                     {day.availableCount} of {day.totalMembers} available
                   </div>

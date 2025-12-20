@@ -5,7 +5,7 @@ export const submitEmployeeLeave = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
     const { employeeId, startDate, endDate } = req.body;
-    const userId = (req as any).user?.id; // Extract userId from authenticated user
+    const userId = (req as any).user?._id; // Extract userId from authenticated user
 
     // Validate input
     if (!employeeId || !startDate || !endDate) {
@@ -67,7 +67,7 @@ export const submitEmployeeLeave = async (req: Request, res: Response) => {
 export const getTeamCoverage = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
-    const userId = (req as any).user?.id; // Extract userId from authenticated user
+    const userId = (req as any).user?._id; // Extract userId from authenticated user
 
     if (!userId) {
       return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
