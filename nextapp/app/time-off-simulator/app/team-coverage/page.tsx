@@ -4,16 +4,17 @@ import { useState, useEffect, useContext } from 'react';
 import { Store } from '../../../lib/store';
 import ProtectedRoute from '../../../../components/ProtectedRoute';
 import apiClient from '../../../lib/api-client';
+import { CoverageDay, SimpleTeam } from 'types/time-off';
 
 export default function TeamCoverage() {
   const {
     state: { userInfo },
   } = useContext(Store);
-  const [allTeams, setAllTeams] = useState<any[]>([]);
+  const [allTeams, setAllTeams] = useState<SimpleTeam[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string>('');
-  const [coverageData, setCoverageData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [coverageData, setCoverageData] = useState<CoverageDay[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     fetchAllTeams();
@@ -24,7 +25,7 @@ export default function TeamCoverage() {
     setError('');
 
     try {
-      const response = await apiClient.get('/api/time-off/teams');
+      const response = await apiClient.get<SimpleTeam[]>('/api/time-off/teams');
       setAllTeams(response.data);
     } catch (err: any) {
       console.error('Error fetching teams:', err);
@@ -44,7 +45,7 @@ export default function TeamCoverage() {
     setError('');
 
     try {
-      const response = await apiClient.get(
+      const response = await apiClient.get<{ coverage: CoverageDay[] }>(
         `/api/time-off/teams/${selectedTeam}/coverage`
       );
       setCoverageData(response.data.coverage);
@@ -56,8 +57,8 @@ export default function TeamCoverage() {
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
+  const formatDate = (date: Date | string) => {
+    return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -91,7 +92,7 @@ export default function TeamCoverage() {
               disabled={loading}
             >
               <option value="">Select a team</option>
-              {allTeams.map((team: any) => (
+              {allTeams.map(team => (
                 <option key={team.teamId} value={team.teamId}>
                   {team.teamId}
                 </option>
@@ -114,14 +115,12 @@ export default function TeamCoverage() {
               Coverage for Next 10 Days
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-              {coverageData.map((day: any, index: number) => (
+              {coverageData.map((day, index) => (
                 <div
                   key={index}
                   className={`p-3 rounded-lg text-center ${day.isGap ? 'bg-red-200' : 'bg-green-200'}`}
                 >
-                  <div className="font-medium">
-                    {formatDate(new Date(day.date))}
-                  </div>
+                  <div className="font-medium">{formatDate(day.date)}</div>
                   <div className="text-sm mt-1">
                     {day.availableCount} of {day.totalMembers} available
                   </div>
