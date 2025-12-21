@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { checkTimeOffTeamLimit, checkTimeOffMemberLimit } from "../utils";
 import {
   createTeam,
   getAllTeams,
@@ -10,7 +11,7 @@ import { submitEmployeeLeave, getTeamCoverage } from "../controllers/time-off/le
 const timeOffRouter = Router();
 
 // POST endpoint to create a new team
-timeOffRouter.post("/teams", createTeam);
+timeOffRouter.post("/teams", checkTimeOffTeamLimit, createTeam);
 
 // GET endpoint to fetch all teams (without full member data to reduce payload)
 timeOffRouter.get("/teams", getAllTeams);
@@ -19,7 +20,7 @@ timeOffRouter.get("/teams", getAllTeams);
 timeOffRouter.get("/teams/:teamId", getTeamById);
 
 // POST endpoint to add a member to a team
-timeOffRouter.post("/teams/:teamId/members", addMemberToTeam);
+timeOffRouter.post("/teams/:teamId/members", checkTimeOffMemberLimit, addMemberToTeam);
 
 // POST endpoint to submit employee leave
 timeOffRouter.post(
