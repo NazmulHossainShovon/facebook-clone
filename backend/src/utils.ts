@@ -2,6 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { User, UserModel } from "./models/userModel";
 import { TeamModel } from "./models/teamModel";
+import {
+  FREE_TIER_TEAM_LIMIT,
+  FREE_TIER_MEMBER_LIMIT,
+} from "./constants/userConstants";
 
 export const generateToken = (user: User) => {
   const token = jwt.sign(
@@ -39,12 +43,18 @@ export const isAuth = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export const checkTimeOffTeamLimit = async (req: Request, res: Response, next: NextFunction) => {
+export const checkTimeOffTeamLimit = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = (req as any).user?._id;
 
     if (!userId) {
-      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
+      return res
+        .status(401)
+        .json({ msg: "Unauthorized: User not authenticated" });
     }
 
     // Get user to check their timeOffAppTier
@@ -58,10 +68,10 @@ export const checkTimeOffTeamLimit = async (req: Request, res: Response, next: N
       // Count number of teams for this user
       const teamCount = await TeamModel.countDocuments({ userId });
 
-      // Check if team count exceeds or equals 5
-      if (teamCount >= 5) {
+      // Check if team count exceeds or equals FREE_TIER_TEAM_LIMIT
+      if (teamCount >= FREE_TIER_TEAM_LIMIT) {
         return res.status(403).json({
-          msg: "Free tier limit exceeded: Maximum 5 teams allowed. Upgrade to paid tier to create more teams."
+          msg: `Free tier limit exceeded: Maximum ${FREE_TIER_TEAM_LIMIT} teams allowed. Upgrade to paid tier to create more teams.`,
         });
       }
     }
@@ -73,13 +83,19 @@ export const checkTimeOffTeamLimit = async (req: Request, res: Response, next: N
   }
 };
 
-export const checkTimeOffMemberLimit = async (req: Request, res: Response, next: NextFunction) => {
+export const checkTimeOffMemberLimit = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = (req as any).user?._id;
     const { teamId } = req.params;
 
     if (!userId) {
-      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
+      return res
+        .status(401)
+        .json({ msg: "Unauthorized: User not authenticated" });
     }
 
     if (!teamId) {
@@ -98,13 +114,15 @@ export const checkTimeOffMemberLimit = async (req: Request, res: Response, next:
       const team = await TeamModel.findOne({ teamId, userId }).exec();
 
       if (!team) {
-        return res.status(404).json({ msg: "Team not found or not authorized" });
+        return res
+          .status(404)
+          .json({ msg: "Team not found or not authorized" });
       }
 
-      // Check if team has more than 10 members
-      if (team.members && team.members.length >= 10) {
+      // Check if team has more than FREE_TIER_MEMBER_LIMIT members
+      if (team.members && team.members.length >= FREE_TIER_MEMBER_LIMIT) {
         return res.status(403).json({
-          msg: "Free tier limit exceeded: Maximum 10 members per team allowed. Upgrade to paid tier to add more members."
+          msg: `Free tier limit exceeded: Maximum ${FREE_TIER_MEMBER_LIMIT} members per team allowed. Upgrade to paid tier to add more members.`,
         });
       }
     }
