@@ -28,7 +28,7 @@ export default function TimeOffNav({ userInfo }: TimeOffNavProps) {
               href="/time-off-simulator/app"
               className="text-white hover:text-gray-300 block py-2 md:py-0"
             >
-              Dashboard
+              Submit
             </Link>
           </li>
           <li>

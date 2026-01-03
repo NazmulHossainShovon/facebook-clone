@@ -34,6 +34,254 @@ export default function RootNav() {
     setIsDrawerOpen(false);
   }, [pathname]);
 
+  // Dropdown components for desktop
+  const DubDropdown = ({ userInfo }: { userInfo?: any }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    useEffect(() => {
+      setIsOpen(false);
+    }, [pathname]);
+    return (
+      <li className="relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="text-white hover:text-gray-300"
+        >
+          Dub
+        </button>
+        {isOpen && (
+          <ul className="absolute top-full left-0 bg-black text-white mt-1 rounded shadow-lg z-50">
+            <li>
+              <Link
+                href="/dub"
+                className="block px-4 py-2 hover:bg-gray-700"
+                onClick={() => setIsOpen(false)}
+              >
+                Intro
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/dub/pricing"
+                className="block px-4 py-2 hover:bg-gray-700"
+                onClick={() => setIsOpen(false)}
+              >
+                Pricing
+              </Link>
+            </li>
+            {userInfo?.name && (
+              <li>
+                <Link
+                  href="/dub/account"
+                  className="block px-4 py-2 hover:bg-gray-700"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Account
+                </Link>
+              </li>
+            )}
+          </ul>
+        )}
+      </li>
+    );
+  };
+
+  const ChartDropdown = ({ userInfo }: { userInfo?: any }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    useEffect(() => {
+      setIsOpen(false);
+    }, [pathname]);
+    return (
+      <li className="relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="text-white hover:text-gray-300"
+        >
+          Charts
+        </button>
+        {isOpen && (
+          <ul className="absolute top-full left-0 bg-black text-white mt-1 rounded shadow-lg z-50">
+            <li>
+              <Link
+                href="/charts"
+                className="block px-4 py-2 hover:bg-gray-700"
+                onClick={() => setIsOpen(false)}
+              >
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/charts/chart-app"
+                className="block px-4 py-2 hover:bg-gray-700"
+                onClick={() => setIsOpen(false)}
+              >
+                Create Chart
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/charts/pricing"
+                className="block px-4 py-2 hover:bg-gray-700"
+                onClick={() => setIsOpen(false)}
+              >
+                Pricing
+              </Link>
+            </li>
+            {userInfo?.name && (
+              <li>
+                <Link
+                  href="/charts/account"
+                  className="block px-4 py-2 hover:bg-gray-700"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Account
+                </Link>
+              </li>
+            )}
+          </ul>
+        )}
+      </li>
+    );
+  };
+
+  const BloxDPSDropdown = ({ userInfo }: { userInfo?: any }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    useEffect(() => {
+      setIsOpen(false);
+    }, [pathname]);
+    return (
+      <li className="relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="text-white hover:text-gray-300"
+        >
+          DPS Comparator
+        </button>
+        {isOpen && (
+          <ul className="absolute top-full left-0 bg-black text-white mt-1 rounded shadow-lg z-50">
+            <li>
+              <Link
+                href="/dps-comparator"
+                className="block px-4 py-2 hover:bg-gray-700"
+                onClick={() => setIsOpen(false)}
+              >
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/dps-comparator/app"
+                className="block px-4 py-2 hover:bg-gray-700"
+                onClick={() => setIsOpen(false)}
+              >
+                Compare DPS
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/dps-comparator/pricing"
+                className="block px-4 py-2 hover:bg-gray-700"
+                onClick={() => setIsOpen(false)}
+              >
+                Pricing
+              </Link>
+            </li>
+            {userInfo?.name && (
+              <li>
+                <Link
+                  href="/dps-comparator/account"
+                  className="block px-4 py-2 hover:bg-gray-700"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Account
+                </Link>
+              </li>
+            )}
+          </ul>
+        )}
+      </li>
+    );
+  };
+
+  const TimeOffDropdown = ({ userInfo }: { userInfo?: any }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    useEffect(() => {
+      setIsOpen(false);
+    }, [pathname]);
+    return (
+      <li className="relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="text-white hover:text-gray-300"
+        >
+          Time Off Simulator
+        </button>
+        {isOpen && (
+          <ul className="absolute top-full left-0 bg-black text-white mt-1 rounded shadow-lg z-50">
+            <li>
+              <Link
+                href="/time-off-simulator"
+                className="block px-4 py-2 hover:bg-gray-700"
+                onClick={() => setIsOpen(false)}
+              >
+                Home
+              </Link>
+            </li>
+            {userInfo?.name && (
+              <>
+                <li>
+                  <Link
+                    href="/time-off-simulator/app"
+                    className="block px-4 py-2 hover:bg-gray-700"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Submit
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/time-off-simulator/app/add-team"
+                    className="block px-4 py-2 hover:bg-gray-700"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Add Team
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/time-off-simulator/app/add-member"
+                    className="block px-4 py-2 hover:bg-gray-700"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Add Member
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/time-off-simulator/app/team-coverage"
+                    className="block px-4 py-2 hover:bg-gray-700"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Team Coverage
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/time-off-simulator/account"
+                    className="block px-4 py-2 hover:bg-gray-700"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Account
+                  </Link>
+                </li>
+              </>
+            )}
+          </ul>
+        )}
+      </li>
+    );
+  };
+
   // Close drawer when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -59,7 +307,7 @@ export default function RootNav() {
     setIsDrawerOpen(!isDrawerOpen);
   };
 
-  const NavigationLinks = () => (
+  const NavigationLinks = ({ isMobile }: { isMobile: boolean }) => (
     <>
       <li>
         <Link
@@ -70,11 +318,25 @@ export default function RootNav() {
         </Link>
       </li>
 
-      {isDubRoute ? <DubNav userInfo={userInfo} /> : null}
-      {isChartsRoute ? <ChartNav userInfo={userInfo} /> : null}
-      {isSocialRoute ? <SocialNav /> : null}
-      {isDPSComparatorRoute ? <BloxDPSNav userInfo={userInfo} /> : null}
-      {isTimeOffRoute ? <TimeOffNav userInfo={userInfo} /> : null}
+      {isMobile ? (
+        <>
+          {isDubRoute ? <DubNav userInfo={userInfo} /> : null}
+          {isChartsRoute ? <ChartNav userInfo={userInfo} /> : null}
+          {isSocialRoute ? <SocialNav /> : null}
+          {isDPSComparatorRoute ? <BloxDPSNav userInfo={userInfo} /> : null}
+          {isTimeOffRoute ? <TimeOffNav userInfo={userInfo} /> : null}
+        </>
+      ) : (
+        <>
+          {isDubRoute ? <DubDropdown userInfo={userInfo} /> : null}
+          {isChartsRoute ? <ChartDropdown userInfo={userInfo} /> : null}
+          {isSocialRoute ? <SocialNav /> : null}
+          {isDPSComparatorRoute ? (
+            <BloxDPSDropdown userInfo={userInfo} />
+          ) : null}
+          {isTimeOffRoute ? <TimeOffDropdown userInfo={userInfo} /> : null}
+        </>
+      )}
 
       {/* Default navigation for all routes */}
       {!userInfo?.name ? (
@@ -117,7 +379,7 @@ export default function RootNav() {
       <nav className="bg-black p-4 fixed top-0 left-0 right-0 z-50">
         {/* Desktop Navigation */}
         <ul className="hidden md:flex space-x-4 items-center">
-          <NavigationLinks />
+          <NavigationLinks isMobile={false} />
         </ul>
 
         {/* Mobile Navigation - Hamburger Button */}
@@ -172,7 +434,7 @@ export default function RootNav() {
         >
           <div className="p-4 pt-20">
             <ul className="space-y-2">
-              <NavigationLinks />
+              <NavigationLinks isMobile={true} />
             </ul>
           </div>
         </div>
