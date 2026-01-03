@@ -3,13 +3,13 @@
 import Link from 'next/link';
 import { useContext, useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { Store } from '../app/lib/store';
-import Logout from './Logout';
-import DubNav from './dub/DubNav';
-import ChartNav from './charts/ChartNav';
-import SocialNav from './SocialNav';
-import BloxDPSNav from './dps-comparator/BloxDPSNav';
-import TimeOffNav from './time-off/TimeOffNav';
+import { Store } from '../../app/lib/store';
+import Logout from '../Logout';
+import DubNav from '../dub/DubNav';
+import ChartNav from '../charts/ChartNav';
+import SocialNav from '../SocialNav';
+import BloxDPSNav from '../dps-comparator/BloxDPSNav';
+import TimeOffNav from '../time-off/TimeOffNav';
 
 export default function RootNav() {
   const {
