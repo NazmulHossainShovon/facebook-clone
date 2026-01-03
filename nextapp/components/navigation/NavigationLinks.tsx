@@ -1,13 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
 import Logout from '../Logout';
 import DubNav from '../dub/DubNav';
 import ChartNav from '../charts/ChartNav';
 import SocialNav from '../SocialNav';
 import BloxDPSNav from '../dps-comparator/BloxDPSNav';
 import TimeOffNav from '../time-off/TimeOffNav';
+import DubDropdown from './DubDropdown';
+import ChartDropdown from './ChartDropdown';
+import BloxDPSDropdown from './BloxDPSDropdown';
+import TimeOffDropdown from './TimeOffDropdown';
 
 interface NavigationLinksProps {
   isMobile: boolean;
@@ -30,254 +33,6 @@ export default function NavigationLinks({
   isDPSComparatorRoute,
   isTimeOffRoute,
 }: NavigationLinksProps) {
-  // Dropdown components for desktop
-  const DubDropdown = ({ userInfo }: { userInfo?: any }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    useEffect(() => {
-      setIsOpen(false);
-    }, [pathname]);
-    return (
-      <li className="relative">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="text-white hover:text-gray-300"
-        >
-          Dub
-        </button>
-        {isOpen && (
-          <ul className="absolute top-full left-0 bg-black text-white mt-1 rounded shadow-lg z-50">
-            <li>
-              <Link
-                href="/dub"
-                className="block px-4 py-2 hover:bg-gray-700"
-                onClick={() => setIsOpen(false)}
-              >
-                Intro
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/dub/pricing"
-                className="block px-4 py-2 hover:bg-gray-700"
-                onClick={() => setIsOpen(false)}
-              >
-                Pricing
-              </Link>
-            </li>
-            {userInfo?.name && (
-              <li>
-                <Link
-                  href="/dub/account"
-                  className="block px-4 py-2 hover:bg-gray-700"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Account
-                </Link>
-              </li>
-            )}
-          </ul>
-        )}
-      </li>
-    );
-  };
-
-  const ChartDropdown = ({ userInfo }: { userInfo?: any }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    useEffect(() => {
-      setIsOpen(false);
-    }, [pathname]);
-    return (
-      <li className="relative">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="text-white hover:text-gray-300"
-        >
-          Charts
-        </button>
-        {isOpen && (
-          <ul className="absolute top-full left-0 bg-black text-white mt-1 rounded shadow-lg z-50">
-            <li>
-              <Link
-                href="/charts"
-                className="block px-4 py-2 hover:bg-gray-700"
-                onClick={() => setIsOpen(false)}
-              >
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/charts/chart-app"
-                className="block px-4 py-2 hover:bg-gray-700"
-                onClick={() => setIsOpen(false)}
-              >
-                Create Chart
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/charts/pricing"
-                className="block px-4 py-2 hover:bg-gray-700"
-                onClick={() => setIsOpen(false)}
-              >
-                Pricing
-              </Link>
-            </li>
-            {userInfo?.name && (
-              <li>
-                <Link
-                  href="/charts/account"
-                  className="block px-4 py-2 hover:bg-gray-700"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Account
-                </Link>
-              </li>
-            )}
-          </ul>
-        )}
-      </li>
-    );
-  };
-
-  const BloxDPSDropdown = ({ userInfo }: { userInfo?: any }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    useEffect(() => {
-      setIsOpen(false);
-    }, [pathname]);
-    return (
-      <li className="relative">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="text-white hover:text-gray-300"
-        >
-          DPS Comparator
-        </button>
-        {isOpen && (
-          <ul className="absolute top-full left-0 bg-black text-white mt-1 rounded shadow-lg z-50">
-            <li>
-              <Link
-                href="/dps-comparator"
-                className="block px-4 py-2 hover:bg-gray-700"
-                onClick={() => setIsOpen(false)}
-              >
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/dps-comparator/app"
-                className="block px-4 py-2 hover:bg-gray-700"
-                onClick={() => setIsOpen(false)}
-              >
-                Compare DPS
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/dps-comparator/pricing"
-                className="block px-4 py-2 hover:bg-gray-700"
-                onClick={() => setIsOpen(false)}
-              >
-                Pricing
-              </Link>
-            </li>
-            {userInfo?.name && (
-              <li>
-                <Link
-                  href="/dps-comparator/account"
-                  className="block px-4 py-2 hover:bg-gray-700"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Account
-                </Link>
-              </li>
-            )}
-          </ul>
-        )}
-      </li>
-    );
-  };
-
-  const TimeOffDropdown = ({ userInfo }: { userInfo?: any }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    useEffect(() => {
-      setIsOpen(false);
-    }, [pathname]);
-    return (
-      <li className="relative">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="text-white hover:text-gray-300"
-        >
-          Time Off Simulator
-        </button>
-        {isOpen && (
-          <ul className="absolute top-full left-0 bg-black text-white mt-1 rounded shadow-lg z-50">
-            <li>
-              <Link
-                href="/time-off-simulator"
-                className="block px-4 py-2 hover:bg-gray-700"
-                onClick={() => setIsOpen(false)}
-              >
-                Home
-              </Link>
-            </li>
-            {userInfo?.name && (
-              <>
-                <li>
-                  <Link
-                    href="/time-off-simulator/app"
-                    className="block px-4 py-2 hover:bg-gray-700"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Submit
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/time-off-simulator/app/add-team"
-                    className="block px-4 py-2 hover:bg-gray-700"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Add Team
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/time-off-simulator/app/add-member"
-                    className="block px-4 py-2 hover:bg-gray-700"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Add Member
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/time-off-simulator/app/team-coverage"
-                    className="block px-4 py-2 hover:bg-gray-700"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Team Coverage
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/time-off-simulator/account"
-                    className="block px-4 py-2 hover:bg-gray-700"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Account
-                  </Link>
-                </li>
-              </>
-            )}
-          </ul>
-        )}
-      </li>
-    );
-  };
-
   return (
     <>
       <li>
@@ -299,13 +54,19 @@ export default function NavigationLinks({
         </>
       ) : (
         <>
-          {isDubRoute ? <DubDropdown userInfo={userInfo} /> : null}
-          {isChartsRoute ? <ChartDropdown userInfo={userInfo} /> : null}
+          {isDubRoute ? (
+            <DubDropdown userInfo={userInfo} pathname={pathname} />
+          ) : null}
+          {isChartsRoute ? (
+            <ChartDropdown userInfo={userInfo} pathname={pathname} />
+          ) : null}
           {isSocialRoute ? <SocialNav /> : null}
           {isDPSComparatorRoute ? (
-            <BloxDPSDropdown userInfo={userInfo} />
+            <BloxDPSDropdown userInfo={userInfo} pathname={pathname} />
           ) : null}
-          {isTimeOffRoute ? <TimeOffDropdown userInfo={userInfo} /> : null}
+          {isTimeOffRoute ? (
+            <TimeOffDropdown userInfo={userInfo} pathname={pathname} />
+          ) : null}
         </>
       )}
 
