@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { TeamModel } from "../../models/teamModel";
+import { getJson, setJson, delKey } from "../../utils/redis";
 
 export const createTeam = async (req: Request, res: Response) => {
   try {
@@ -35,6 +36,14 @@ export const createTeam = async (req: Request, res: Response) => {
     const newTeam = new TeamModel(newTeamData);
     const savedTeam = await newTeam.save();
 
+    // Invalidate cached teams for this user
+    try {
+      const cacheKey = `timeoff:teams:${userId}`;
+      await delKey(cacheKey);
+    } catch (err) {
+      console.error("Redis del error after createTeam:", err);
+    }
+
     res.status(201).json({
       msg: "Team created successfully",
       team: {
@@ -59,7 +68,22 @@ export const getAllTeams = async (req: Request, res: Response) => {
         .json({ msg: "Unauthorized: User not authenticated" });
     }
 
+    const cacheKey = `timeoff:teams:${userId}`;
+    try {
+      const cached = await getJson(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
+    } catch (err) {
+      console.error("Redis get error for getAllTeams:", err);
+    }
+
     const teams = await TeamModel.find({ userId }, { teamId: 1 }); // Return only teams belonging to the user
+    try {
+      await setJson(cacheKey, teams, 300); // cache for 5 minutes
+    } catch (err) {
+      console.error("Redis set error for getAllTeams:", err);
+    }
     res.json(teams);
   } catch (error) {
     console.error("Error fetching teams:", error);

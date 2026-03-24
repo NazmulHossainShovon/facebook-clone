@@ -1,24 +1,10 @@
 import express, { Request, Response, NextFunction } from "express";
 import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { redis } from "../utils/redis";
 import { isAuth } from "../utils";
 import { processS3Url } from "../controllers/dubController";
 
-// Create Upstash Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || "",
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || "",
-});
-
-// Check connection
-(async () => {
-  try {
-    await redis.ping();
-    console.log("Successfully connected to Upstash Redis");
-  } catch (error) {
-    console.error("Failed to connect to Upstash Redis:", error);
-  }
-})();
+// Reuse shared Upstash Redis client from utils/redis
 
 // Rate limiter: 1 request per 60 seconds per user using Upstash Ratelimit
 const ratelimit = new Ratelimit({
