@@ -38,8 +38,6 @@
     "@types/node-fetch": "^2.6.13",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
-    "@upstash/ratelimit": "^2.0.8",
-    "@upstash/redis": "^1.36.2",
     "assemblyai": "^4.16.0",
     "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
