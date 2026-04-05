@@ -1,9 +1,46 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+@theme {
+  --color-brand: #2563eb;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+
+  --color-status-error: #dc2626;
+  --color-status-success: #16a34a;
+  --color-status-warning: #f59e0b;
+  --color-status-info: #0ea5e9;
+
+  --color-neutral-900: #0f172a;
+  --color-neutral-700: #334155;
+  --color-neutral-500: #64748b;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-100: #f1f5f9;
+
+  --color-TK-background: #131921;
+  --color-TK-default: #131921;
+}
 
 @layer base {
   :root {
     --radius: 0.5rem;
+    /* Brand + status tokens (keep in sync with app/lib/colors.js) */
+    --color-brand: #2563eb;
+    --color-brand-500: #3b82f6;
+    --color-brand-600: #2563eb;
+    --color-brand-700: #1d4ed8;
+
+    --color-success: #16a34a;
+    --color-error: #dc2626;
+    --color-warning: #f59e0b;
+    --color-info: #0ea5e9;
+
+    --neutral-900: #0f172a;
+    --neutral-700: #334155;
+    --neutral-500: #64748b;
+    --neutral-300: #cbd5e1;
+    --neutral-100: #f1f5f9;
   }
 }
 
@@ -11,10 +48,16 @@
   .animate-fadeIn {
     animation: fadeIn 0.3s ease-in-out;
   }
-  
+
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 

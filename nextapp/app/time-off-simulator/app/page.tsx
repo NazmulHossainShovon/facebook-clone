@@ -93,7 +93,7 @@ const TimeOffSimulator = () => {
   return (
     <div className="max-w-4xl mx-auto p-6">
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-status-error text-white px-4 py-3 rounded mb-4">
           {error}
         </div>
       )}
@@ -103,7 +103,7 @@ const TimeOffSimulator = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Team
             </label>
             <select
@@ -118,7 +118,7 @@ const TimeOffSimulator = () => {
                   setLeave({ ...leave, employeeId: '' });
                 }
               }}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-neutral-300 rounded-md"
               required
             >
               <option value="">Select a team</option>
@@ -131,13 +131,13 @@ const TimeOffSimulator = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Employee
             </label>
             <select
               value={leave.employeeId}
               onChange={e => setLeave({ ...leave, employeeId: e.target.value })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-neutral-300 rounded-md"
               required
               disabled={!selectedTeam}
             >
@@ -152,7 +152,7 @@ const TimeOffSimulator = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
                 Start Date
               </label>
               <input
@@ -161,20 +161,20 @@ const TimeOffSimulator = () => {
                 onChange={e =>
                   setLeave({ ...leave, startDate: e.target.value })
                 }
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:border-brand-500 focus:ring-brand-500"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
                 End Date
               </label>
               <input
                 type="date"
                 value={leave.endDate}
                 onChange={e => setLeave({ ...leave, endDate: e.target.value })}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:border-brand-500 focus:ring-brand-500"
                 required
               />
             </div>
@@ -183,7 +183,7 @@ const TimeOffSimulator = () => {
           <button
             type="submit"
             disabled={loading || !selectedTeam}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="bg-brand text-white px-4 py-2 rounded-md hover:bg-brand-700 disabled:opacity-50"
           >
             {loading ? 'Submitting...' : 'Submit Leave Request'}
           </button>

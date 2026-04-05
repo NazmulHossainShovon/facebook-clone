@@ -5,13 +5,19 @@ interface MessageDisplayProps {
   type?: 'success' | 'error';
 }
 
-const MessageDisplay: React.FC<MessageDisplayProps> = ({ message, type = 'success' }) => {
+const MessageDisplay: React.FC<MessageDisplayProps> = ({
+  message,
+  type = 'success',
+}) => {
   if (!message) return null;
 
-  const bgColor = type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-  
+  const classes =
+    type === 'success'
+      ? 'mt-4 p-3 rounded-md bg-status-success text-white'
+      : 'mt-4 p-3 rounded-md bg-status-error text-white';
+
   return (
-    <div className={`mt-4 p-3 rounded-md ${bgColor}`}>
+    <div role="status" aria-live="polite" className={classes}>
       {message}
     </div>
   );

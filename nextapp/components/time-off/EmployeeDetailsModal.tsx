@@ -46,7 +46,9 @@ export default function EmployeeDetailsModal({
                 <div>{employee.role}</div>
                 <div
                   className={
-                    employee.isAvailable ? 'text-green-600' : 'text-red-600'
+                    employee.isAvailable
+                      ? 'text-status-success'
+                      : 'text-status-error'
                   }
                 >
                   {employee.isAvailable ? 'Available' : 'On Leave'}
@@ -58,7 +60,7 @@ export default function EmployeeDetailsModal({
           <div className="mt-6 flex justify-end">
             <button
               onClick={onClose}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              className="bg-brand text-white px-4 py-2 rounded-md hover:bg-brand-700"
             >
               Close
             </button>

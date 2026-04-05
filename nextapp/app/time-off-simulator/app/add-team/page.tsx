@@ -56,7 +56,7 @@ const AddTeam = () => {
         <div>
           <label
             htmlFor="teamId"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-neutral-700 mb-1"
           >
             Team ID
           </label>
@@ -65,10 +65,10 @@ const AddTeam = () => {
             id="teamId"
             value={teamId}
             onChange={e => setTeamId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-brand-500 focus:ring-brand-500"
             placeholder="Enter unique team identifier"
           />
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-neutral-500">
             A unique identifier for the team (e.g., "engineering", "marketing",
             "sales")
           </p>
@@ -78,7 +78,7 @@ const AddTeam = () => {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50"
           >
             {loading ? 'Creating...' : 'Create Team'}
           </button>
@@ -87,15 +87,15 @@ const AddTeam = () => {
 
       {message && (
         <div
-          className={`mt-4 p-3 rounded-md ${message.includes('successfully') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+          className={`mt-4 p-3 rounded-md ${message.includes('successfully') ? 'bg-status-success text-white' : 'bg-status-error text-white'}`}
         >
           {message}
         </div>
       )}
 
-      <div className="mt-8 p-4 bg-blue-50 rounded-md">
-        <h2 className="font-medium text-blue-800 mb-2">Note:</h2>
-        <p className="text-sm text-blue-700">
+      <div className="mt-8 p-4 bg-neutral-100 rounded-md">
+        <h2 className="font-medium text-status-info mb-2">Note:</h2>
+        <p className="text-sm text-neutral-700">
           This form creates a team with an empty members field. Team members
           will be added separately on another form.
         </p>
