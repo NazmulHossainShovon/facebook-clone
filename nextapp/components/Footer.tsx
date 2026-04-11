@@ -13,7 +13,7 @@ const Footer = () => {
           <div className="flex space-x-6">
             <Link
               href="/terms-and-conditions"
-              className="text-gray-300 hover:text-white transition-colors"
+              className="text-gray-300 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500"
             >
               Terms and Conditions
             </Link>

@@ -37,7 +37,7 @@ export default function Home() {
           <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent mb-6">
             Choose Your App
           </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
             Discover our powerful suite of applications designed to enhance your
             productivity and creativity
           </p>
@@ -51,7 +51,7 @@ export default function Home() {
               <Link
                 key={app.name}
                 href={app.href}
-                className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
+                className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-brand-300"
               >
                 {/* Gradient Background */}
                 <div
@@ -71,7 +71,7 @@ export default function Home() {
                   <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-3 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors">
                     {app.name}
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+                  <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
                     {app.description}
                   </p>
 
@@ -93,7 +93,7 @@ export default function Home() {
 
         {/* Footer CTA */}
         <div className="text-center mt-16">
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-slate-600 dark:text-slate-300">
             Need help getting started?
             <a
               href="mailto:shovon2228@gmail.com"

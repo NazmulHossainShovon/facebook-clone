@@ -214,12 +214,18 @@ export default function PostCard({
       <div className="flex flex-row justify-center items-center gap-3 w-full">
         <Button
           className={twMerge(
-            'bg-white text-slate-400 hover:bg-slate-100',
+            'bg-white text-slate-600 hover:bg-slate-100',
             likers?.includes(userInfo.name) && 'text-blue-600'
           )}
           onClick={handleLike}
+          aria-pressed={likers?.includes(userInfo.name)}
         >
-          {likers?.includes(userInfo.name) ? 'Unlike' : 'Like'}
+          <span aria-hidden>
+            {likers?.includes(userInfo.name) ? '♥' : '♡'}
+          </span>
+          <span className="sr-only">
+            {likers?.includes(userInfo.name) ? 'Unlike' : 'Like'}
+          </span>
         </Button>
 
         <Dialog open={likersDialogOpen} onOpenChange={setLikersDialogOpen}>
