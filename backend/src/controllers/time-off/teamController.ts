@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { TeamModel } from "../../models/teamModel";
-import { getJson, setJson, delKey } from "../../utils/redis";
+import { getJson, setJson } from "../../utils/redis";
+import writeThrough from "../../utils/writeThrough";
 
 export const createTeam = async (req: Request, res: Response) => {
   try {
@@ -33,25 +34,45 @@ export const createTeam = async (req: Request, res: Response) => {
       members: [],
     };
 
-    const newTeam = new TeamModel(newTeamData);
-    const savedTeam = await newTeam.save();
-
-    // Invalidate cached teams for this user
+    // Use write-through: save to DB, then update the teams list cache
     try {
-      const cacheKey = `timeoff:teams:${userId}`;
-      await delKey(cacheKey);
-    } catch (err) {
-      console.error("Redis del error after createTeam:", err);
-    }
+      const savedTeam = await writeThrough(
+        async () => {
+          const newTeam = new TeamModel(newTeamData);
+          return await newTeam.save();
+        },
+        [
+          {
+            key: `timeoff:teams:${userId}`,
+            // payload builder fetches fresh list from DB
+            payload: async () =>
+              await TeamModel.find({ userId }, { teamId: 1 }),
+            ttl: 300,
+          },
+        ],
+        {
+          rollback: async (saved: any) => {
+            try {
+              await TeamModel.deleteOne({ _id: saved._id });
+            } catch (rbErr) {
+              console.error("Rollback failed for createTeam:", rbErr);
+            }
+          },
+        },
+      );
 
-    res.status(201).json({
-      msg: "Team created successfully",
-      team: {
-        _id: savedTeam._id,
-        teamId: savedTeam.teamId,
-        userId: savedTeam.userId,
-      },
-    });
+      res.status(201).json({
+        msg: "Team created successfully",
+        team: {
+          _id: savedTeam._id,
+          teamId: savedTeam.teamId,
+          userId: savedTeam.userId,
+        },
+      });
+    } catch (err) {
+      console.error("Error in write-through createTeam:", err);
+      return res.status(500).json({ msg: "Server error" });
+    }
   } catch (error) {
     console.error("Error creating team:", error);
     res.status(500).json({ msg: "Server error" });

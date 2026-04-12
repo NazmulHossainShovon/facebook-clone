@@ -1,5 +1,6 @@
-import { Request, Response } from 'express';
-import { TeamModel } from '../../models/teamModel';
+import { Request, Response } from "express";
+import { TeamModel } from "../../models/teamModel";
+import writeThrough from "../../utils/writeThrough";
 
 export const submitEmployeeLeave = async (req: Request, res: Response) => {
   try {
@@ -9,11 +10,17 @@ export const submitEmployeeLeave = async (req: Request, res: Response) => {
 
     // Validate input
     if (!employeeId || !startDate || !endDate) {
-      return res.status(400).json({ msg: 'Missing required fields: employeeId, startDate, endDate' });
+      return res
+        .status(400)
+        .json({
+          msg: "Missing required fields: employeeId, startDate, endDate",
+        });
     }
 
     if (!userId) {
-      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
+      return res
+        .status(401)
+        .json({ msg: "Unauthorized: User not authenticated" });
     }
 
     const start = new Date(startDate);
@@ -21,46 +28,84 @@ export const submitEmployeeLeave = async (req: Request, res: Response) => {
 
     // Validate dates
     if (start > end) {
-      return res.status(400).json({ msg: 'Start date must be before end date' });
+      return res
+        .status(400)
+        .json({ msg: "Start date must be before end date" });
     }
 
-    // Fetch team belonging to the user
+    // Fetch team belonging to the user to take a previous snapshot for rollback
     const team = await TeamModel.findOne({ teamId, userId });
     if (!team) {
-      return res.status(404).json({ msg: 'Team not found or not authorized' });
+      return res.status(404).json({ msg: "Team not found or not authorized" });
     }
 
-    // Find the target employee
-    const targetEmployee = team.members.find((member: any) => member.employeeId === employeeId);
-    if (!targetEmployee) {
-      return res.status(404).json({ msg: 'Employee not found in team' });
-    }
+    const previousMembers = JSON.parse(JSON.stringify(team.members || []));
 
-    // Add the leave dates to the employee's leaveDates array
-    const currentDate = new Date(start);
-    while (currentDate <= end) {
-      const dateStr = currentDate.toISOString().split('T')[0]; // Convert to YYYY-MM-DD format
+    try {
+      await writeThrough(
+        async () => {
+          // Re-fetch inside DB write to ensure fresh document
+          const t = await TeamModel.findOne({ teamId, userId });
+          if (!t) throw new Error("Team not found during write");
 
-      // Check if the date is already in the leaveDates array
-      const dateExists = targetEmployee.leaveDates.some((leaveDate: Date) =>
-        new Date(leaveDate).toISOString().split('T')[0] === dateStr
+          const targetEmployee = t.members.find(
+            (member: any) => member.employeeId === employeeId,
+          );
+          if (!targetEmployee) {
+            const err: any = new Error("Employee not found in team");
+            err.code = 404;
+            throw err;
+          }
+
+          // Add the leave dates to the employee's leaveDates array
+          const currentDate = new Date(start);
+          while (currentDate <= end) {
+            const dateStr = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD format
+
+            const dateExists = targetEmployee.leaveDates.some(
+              (leaveDate: Date) =>
+                new Date(leaveDate).toISOString().split("T")[0] === dateStr,
+            );
+
+            if (!dateExists) {
+              targetEmployee.leaveDates.push(new Date(currentDate));
+            }
+
+            currentDate.setDate(currentDate.getDate() + 1);
+          }
+
+          return await t.save();
+        },
+        [
+          {
+            key: `timeoff:team:${userId}:${teamId}`,
+            payload: async (saved: any) => saved,
+          },
+        ],
+        {
+          rollback: async () => {
+            try {
+              await TeamModel.updateOne(
+                { _id: team._id },
+                { members: previousMembers },
+              );
+            } catch (rbErr) {
+              console.error("Rollback failed for submitEmployeeLeave:", rbErr);
+            }
+          },
+        },
       );
 
-      if (!dateExists) {
-        // Add the date to the leaveDates array if it's not already there
-        targetEmployee.leaveDates.push(new Date(currentDate));
-      }
-
-      currentDate.setDate(currentDate.getDate() + 1);
+      res.json({ msg: "Leave dates added successfully" });
+    } catch (err: any) {
+      if (err && err.code === 404)
+        return res.status(404).json({ msg: err.message });
+      console.error("Error in write-through submitEmployeeLeave:", err);
+      return res.status(500).json({ msg: "Server error" });
     }
-
-    // Save the updated team
-    await team.save();
-
-    res.json({ msg: 'Leave dates added successfully' });
   } catch (error) {
-    console.error('Error submitting employee leave:', error);
-    res.status(500).json({ msg: 'Server error' });
+    console.error("Error submitting employee leave:", error);
+    res.status(500).json({ msg: "Server error" });
   }
 };
 
@@ -85,13 +130,15 @@ export const getTeamCoverage = async (req: Request, res: Response) => {
     const userId = (req as any).user?._id; // Extract userId from authenticated user
 
     if (!userId) {
-      return res.status(401).json({ msg: "Unauthorized: User not authenticated" });
+      return res
+        .status(401)
+        .json({ msg: "Unauthorized: User not authenticated" });
     }
 
     // Fetch team belonging to the user
     const team = await TeamModel.findOne({ teamId, userId });
     if (!team) {
-      return res.status(404).json({ msg: 'Team not found or not authorized' });
+      return res.status(404).json({ msg: "Team not found or not authorized" });
     }
 
     // Calculate coverage for next 10 days starting from tomorrow
@@ -103,39 +150,40 @@ export const getTeamCoverage = async (req: Request, res: Response) => {
       const currentDate = new Date(today);
       currentDate.setDate(today.getDate() + i);
 
-      const dateStr = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const dateStr = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD format
 
       // Calculate employee availability for this date
       const employees: EmployeeStatus[] = team.members.map((member: any) => {
         // Check if the member has a leave date that matches the current date
-        const isOnLeave = member.leaveDates.some((leaveDate: Date) =>
-          new Date(leaveDate).toISOString().split('T')[0] === dateStr
+        const isOnLeave = member.leaveDates.some(
+          (leaveDate: Date) =>
+            new Date(leaveDate).toISOString().split("T")[0] === dateStr,
         );
 
         return {
           employeeId: member.employeeId,
           name: member.name,
           role: member.role,
-          isAvailable: !isOnLeave
+          isAvailable: !isOnLeave,
         };
       });
 
-      const availableCount = employees.filter(emp => emp.isAvailable).length;
+      const availableCount = employees.filter((emp) => emp.isAvailable).length;
       const totalMembers = team.members.length;
-      const isGap = availableCount < (totalMembers * 0.5); // Less than 50% availability
+      const isGap = availableCount < totalMembers * 0.5; // Less than 50% availability
 
       coverage.push({
         date: currentDate,
         availableCount,
         isGap,
         totalMembers,
-        employees
+        employees,
       });
     }
 
     res.json({ coverage });
   } catch (error) {
-    console.error('Error getting team coverage:', error);
-    res.status(500).json({ msg: 'Server error' });
+    console.error("Error getting team coverage:", error);
+    res.status(500).json({ msg: "Server error" });
   }
 };
