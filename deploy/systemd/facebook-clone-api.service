@@ -1,0 +1,17 @@
+[Unit]
+Description=facebook-clone API
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/shovon/my-data/projects/facebook-clone/backend
+EnvironmentFile=/home/shovon/my-data/projects/facebook-clone/backend/.env
+ExecStart=/usr/bin/node /home/shovon/my-data/projects/facebook-clone/backend/build/index.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=facebook-clone-api
+
+[Install]
+WantedBy=multi-user.target
