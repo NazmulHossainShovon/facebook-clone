@@ -1,0 +1,38 @@
+name: CI — Integration Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies (nextapp)
+        run: |
+          npm install --legacy-peer-deps --no-audit --no-fund
+        working-directory: ./nextapp
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            nextapp/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('nextapp/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Run tests (nextapp)
+        run: npm test -- --runInBand
+        working-directory: ./nextapp
