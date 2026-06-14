@@ -20,8 +20,18 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies (nextapp)
-        run: npm ci --legacy-peer-deps
+        run: |
+          npm install --legacy-peer-deps --no-audit --no-fund
         working-directory: ./nextapp
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            nextapp/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('nextapp/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Run tests (nextapp)
         run: npm test -- --runInBand
