@@ -194,7 +194,7 @@ const SheetData = () => {
     } else if (selectedChartType === 'histogram') {
       return createHistogram(headers, data, numericColumns);
     } else if (selectedChartType === 'box') {
-      return createBoxPlot(headers, data, numericColumns);
+      return createBoxPlot(data);
     } else if (selectedChartType === 'violin') {
       // If a specific numeric column is selected, use only that column
       // Otherwise, if there are numeric columns, default to the first one

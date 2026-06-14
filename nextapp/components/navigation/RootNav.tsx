@@ -1,14 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useContext, useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { Store } from '../app/lib/store';
-import Logout from './Logout';
-import DubNav from './dub/DubNav';
-import ChartNav from './charts/ChartNav';
-import SocialNav from './SocialNav';
-import BloxDPSNav from './dps-comparator/BloxDPSNav';
+import { Store } from '../../app/lib/store';
+import NavigationLinks from './NavigationLinks';
 
 export default function RootNav() {
   const {
@@ -25,6 +20,8 @@ export default function RootNav() {
   const isSocialRoute = pathname?.startsWith('/social');
   // Check if we're on a dps-comparator route
   const isDPSComparatorRoute = pathname?.startsWith('/dps-comparator');
+  // Check if we're on a time-off-simulator route
+  const isTimeOffRoute = pathname?.startsWith('/time-off-simulator');
 
   // Close drawer when route changes
   useEffect(() => {
@@ -56,64 +53,21 @@ export default function RootNav() {
     setIsDrawerOpen(!isDrawerOpen);
   };
 
-  const NavigationLinks = () => (
-    <>
-      <li>
-        <Link
-          href="/"
-          className="text-white hover:text-gray-300 block py-2 md:py-0"
-        >
-          All apps
-        </Link>
-      </li>
-
-      {isDubRoute ? <DubNav userInfo={userInfo} /> : null}
-      {isChartsRoute ? <ChartNav userInfo={userInfo} /> : null}
-      {isSocialRoute ? <SocialNav /> : null}
-      {isDPSComparatorRoute ? <BloxDPSNav userInfo={userInfo} /> : null}
-
-      {/* Default navigation for all routes */}
-      {!userInfo?.name ? (
-        <>
-          <li>
-            <Link
-              href="/signup"
-              className="text-white hover:text-gray-300 block py-2 md:py-0"
-            >
-              Sign Up
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/login"
-              className="text-white hover:text-gray-300 block py-2 md:py-0"
-            >
-              Login
-            </Link>
-          </li>
-        </>
-      ) : (
-        <li className="block py-2 md:py-0">
-          <Logout />
-        </li>
-      )}
-      <li>
-        <Link
-          href="/contact"
-          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 block"
-        >
-          Contact Me
-        </Link>
-      </li>
-    </>
-  );
-
   return (
     <>
       <nav className="bg-black p-4 fixed top-0 left-0 right-0 z-50">
         {/* Desktop Navigation */}
         <ul className="hidden md:flex space-x-4 items-center">
-          <NavigationLinks />
+          <NavigationLinks
+            isMobile={false}
+            userInfo={userInfo}
+            pathname={pathname}
+            isDubRoute={isDubRoute}
+            isChartsRoute={isChartsRoute}
+            isSocialRoute={isSocialRoute}
+            isDPSComparatorRoute={isDPSComparatorRoute}
+            isTimeOffRoute={isTimeOffRoute}
+          />
         </ul>
 
         {/* Mobile Navigation - Hamburger Button */}
@@ -168,7 +122,16 @@ export default function RootNav() {
         >
           <div className="p-4 pt-20">
             <ul className="space-y-2">
-              <NavigationLinks />
+              <NavigationLinks
+                isMobile={true}
+                userInfo={userInfo}
+                pathname={pathname}
+                isDubRoute={isDubRoute}
+                isChartsRoute={isChartsRoute}
+                isSocialRoute={isSocialRoute}
+                isDPSComparatorRoute={isDPSComparatorRoute}
+                isTimeOffRoute={isTimeOffRoute}
+              />
             </ul>
           </div>
         </div>

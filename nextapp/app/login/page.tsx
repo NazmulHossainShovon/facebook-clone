@@ -12,7 +12,7 @@ import { Toaster } from 'components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
 import { AxiosError } from 'axios';
 import Link from 'next/link';
-import RootNav from 'components/RootNav';
+import RootNav from 'components/navigation/RootNav';
 
 interface FormData {
   email: string;

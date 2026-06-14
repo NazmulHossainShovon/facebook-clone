@@ -3,6 +3,7 @@ import {
   DEFAULT_SECONDS_LEFT,
   DEFAULT_CHARTS_LIMIT,
   DEFAULT_DPS_CALC_LIMIT,
+  DEFAULT_TIME_OFF_TIER,
 } from "../constants/userConstants";
 
 @modelOptions({ schemaOptions: { timestamps: true } })
@@ -36,6 +37,9 @@ export class User {
 
   @prop({ default: DEFAULT_DPS_CALC_LIMIT })
   public remainingDpsCalcLimit?: number;
+
+  @prop({ default: DEFAULT_TIME_OFF_TIER })
+  public timeOffAppTier?: number;
 }
 
 export const UserModel = getModelForClass(User);

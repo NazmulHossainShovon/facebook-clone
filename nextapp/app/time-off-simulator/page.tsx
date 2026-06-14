@@ -1,155 +1,269 @@
 'use client';
 
-import { useState, useEffect, useContext } from 'react';
+import Link from 'next/link';
+import { useContext } from 'react';
 import { Store } from '../lib/store';
 import ProtectedRoute from '../../components/ProtectedRoute';
-import { Visualization } from './Visualization';
-import apiClient from '../lib/api-client';
+import { Calendar, Users, BarChart3, Plus, Eye } from 'lucide-react';
 
-const TimeOffSimulator = () => {
-  const { state: { userInfo } } = useContext(Store);
-  const [team, setTeam] = useState<any>(null);
-  const [leave, setLeave] = useState({
-    employeeId: '',
-    startDate: '',
-    endDate: ''
-  });
-  const [simulation, setSimulation] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+const TimeOffSimulatorLanding = () => {
+  const {
+    state: { userInfo },
+  } = useContext(Store);
 
-  const teamId = 'team-1';
+  const features = [
+    {
+      icon: Users,
+      title: 'Team Management',
+      description: 'Create and manage teams with multiple members',
+      action: 'Manage Teams',
+      href: '/time-off-simulator/app/add-team',
+    },
+    {
+      icon: Calendar,
+      title: 'Time Off Planning',
+      description: 'Simulate and plan employee time off requests',
+      action: 'Plan Time Off',
+      href: '/time-off-simulator/app',
+    },
+    {
+      icon: BarChart3,
+      title: 'Coverage Visualization',
+      description: 'Visualize team coverage and identify staffing gaps',
+      action: 'View Coverage',
+      href: '/time-off-simulator/app/team-coverage',
+    },
+  ];
 
-  useEffect(() => {
-    fetchTeam();
-  }, []);
-
-  const fetchTeam = async () => {
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await apiClient.get(`/api/time-off/teams/${teamId}`);
-      setTeam(response.data);
-    } catch (err: any) {
-      console.error('Error fetching team:', err);
-      setError(err.response?.data?.msg || 'Failed to load team data');
-
-      // Handle authentication error
-      if (err.response?.status === 401) {
-        window.location.href = '/login';
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await apiClient.post(`/api/time-off/teams/${teamId}/simulate-leave`, leave);
-      setSimulation(response.data);
-    } catch (err: any) {
-      console.error('Error simulating leave:', err);
-      setError(err.response?.data?.msg || 'Failed to simulate leave');
-
-      // Handle authentication error
-      if (err.response?.status === 401) {
-        window.location.href = '/login';
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!userInfo.name) {
-    return <div>Redirecting...</div>;
-  }
+  const steps = [
+    {
+      number: '1',
+      title: 'Create a Team',
+      description: 'Start by creating a new team and adding team members',
+    },
+    {
+      number: '2',
+      title: 'Plan Time Off',
+      description: 'Simulate time off requests for your team members',
+    },
+    {
+      number: '3',
+      title: 'Analyze Coverage',
+      description:
+        'View detailed coverage reports and identify gaps in staffing',
+    },
+    {
+      number: '4',
+      title: 'Optimize Schedules',
+      description:
+        'Use insights to optimize team schedules and ensure coverage',
+    },
+  ];
 
   return (
-    <ProtectedRoute>
-      <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Time-Off Impact Simulator</h1>
-        
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-        
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-          <h2 className="text-xl font-semibold mb-4">Submit Leave Request</h2>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-100 to-neutral-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-neutral-300">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col items-center text-center">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Employee
-              </label>
-              <select
-                value={leave.employeeId}
-                onChange={(e) => setLeave({...leave, employeeId: e.target.value})}
-                className="w-full p-2 border border-gray-300 rounded-md"
-                required
-              >
-                <option value="">Select an employee</option>
-                {team?.members?.map((member: any) => (
-                  <option key={member.employeeId} value={member.employeeId}>
-                    {member.name} ({member.role})
-                  </option>
-                ))}
-              </select>
+              <h1 className="text-4xl font-bold text-neutral-900">
+                Team Coverage Simulator
+              </h1>
+              <p className="text-neutral-700 mt-2">
+                Plan time off and visualize team coverage effortlessly
+              </p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={leave.startDate}
-                  onChange={(e) => setLeave({...leave, startDate: e.target.value})}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  value={leave.endDate}
-                  onChange={(e) => setLeave({...leave, endDate: e.target.value})}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-            </div>
-            
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? 'Simulating...' : 'Simulate Leave Impact'}
-            </button>
-          </form>
-        </div>
-        
-        {simulation && (
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4">Simulation Results</h2>
-            <Visualization data={simulation} />
           </div>
-        )}
-      </div>
-    </ProtectedRoute>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* Hero Section */}
+        <section className="text-center mb-20">
+          <h2 className="text-3xl font-bold text-neutral-900 mb-4">
+            Never Miss a Staffing Gap Again
+          </h2>
+          <p className="text-lg text-neutral-700 max-w-2xl mx-auto mb-8">
+            Simulate your team's time off requests and instantly visualize
+            coverage across your organization. Identify potential staffing gaps
+            and make informed scheduling decisions.
+          </p>
+          <div className="flex gap-4 justify-center flex-wrap">
+            <Link
+              href="/time-off-simulator/app/add-team"
+              className="bg-brand hover:bg-brand-700 text-white font-semibold px-8 py-3 rounded-lg transition-all ease-in duration-150 flex items-center gap-2"
+            >
+              <Plus size={20} />
+              Create a Team
+            </Link>
+            <Link
+              href="/time-off-simulator/app/team-coverage"
+              className="bg-neutral-100 hover:bg-neutral-300 text-neutral-900 font-semibold px-8 py-3 rounded-lg transition-all ease-in duration-150 flex items-center gap-2"
+            >
+              <Eye size={20} />
+              View Coverage
+            </Link>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="mb-20">
+          <h3 className="text-2xl font-bold text-neutral-900 mb-12 text-center">
+            Key Features
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {features.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <div
+                  key={index}
+                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-8 border border-neutral-300"
+                >
+                  <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-neutral-100 mb-4">
+                    <IconComponent className="text-brand" size={24} />
+                  </div>
+                  <h4 className="text-xl font-semibold text-neutral-900 mb-2">
+                    {feature.title}
+                  </h4>
+                  <p className="text-neutral-700 mb-6">{feature.description}</p>
+                  <Link
+                    href={feature.href}
+                    className="inline-block text-brand hover:text-brand-700 font-semibold text-sm"
+                  >
+                    {feature.action} →
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* How It Works Section */}
+        <section className="mb-20">
+          <h3 className="text-2xl font-bold text-neutral-900 mb-12 text-center">
+            How It Works
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {steps.map((step, index) => (
+              <div key={index} className="relative">
+                <div className="bg-white rounded-lg shadow-md p-6 border border-neutral-300">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-brand text-white font-bold mb-4">
+                    {step.number}
+                  </div>
+                  <h4 className="font-semibold text-neutral-900 mb-2">
+                    {step.title}
+                  </h4>
+                  <p className="text-sm text-neutral-700">{step.description}</p>
+                </div>
+                {index < steps.length - 1 && (
+                  <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-0.5 bg-neutral-300 transform -translate-y-1/2" />
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Benefits Section */}
+        <section className="bg-white rounded-lg shadow-md p-12 border border-neutral-300">
+          <h3 className="text-2xl font-bold text-neutral-900 mb-8 text-center">
+            Benefits
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-8 w-8 rounded-md bg-brand text-white">
+                  ✓
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold text-neutral-900">
+                  Real-time Coverage Insights
+                </h4>
+                <p className="text-neutral-700 mt-1">
+                  Get instant visibility into team availability and staffing
+                  levels
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-8 w-8 rounded-md bg-brand text-white">
+                  ✓
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold text-neutral-900">
+                  Proactive Gap Identification
+                </h4>
+                <p className="text-neutral-700 mt-1">
+                  Identify critical coverage gaps before they impact operations
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-8 w-8 rounded-md bg-brand text-white">
+                  ✓
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold text-neutral-900">
+                  Better Resource Planning
+                </h4>
+                <p className="text-neutral-700 mt-1">
+                  Make data-driven decisions about staffing and scheduling
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-8 w-8 rounded-md bg-brand text-white">
+                  ✓
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold text-neutral-900">
+                  Easy Scenario Testing
+                </h4>
+                <p className="text-neutral-700 mt-1">
+                  Simulate different time off scenarios and compare outcomes
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="mt-20 text-center">
+          <div className="bg-gradient-to-r from-brand to-brand-700 rounded-lg p-12 text-white">
+            <h3 className="text-3xl font-bold mb-4">Ready to Get Started?</h3>
+            <p className="text-neutral-100 mb-8 max-w-2xl mx-auto">
+              Create your first team and start visualizing coverage today. No
+              setup required.
+            </p>
+            <Link
+              href="/time-off-simulator/app/add-team"
+              className="inline-block bg-white text-brand hover:bg-neutral-100 font-semibold px-8 py-3 rounded-lg transition-all ease-in duration-150"
+            >
+              Create Your Team Now
+            </Link>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-neutral-900 text-neutral-300 py-8 mt-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p>
+            © 2024 Team Coverage Simulator. Helping teams plan better
+            schedules.
+          </p>
+        </div>
+      </footer>
+    </div>
   );
 };
 
-export default TimeOffSimulator;
+export default TimeOffSimulatorLanding;
