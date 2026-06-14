@@ -25,11 +25,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Clean and install dependencies (skip optional)
+      - name: Clean and install dependencies (allow native builds)
         run: |
           cd nextapp
           rm -rf node_modules package-lock.json
-          npm install --no-optional
+          npm install --unsafe-perm
+          npm rebuild || true
 
       - name: Build
         run: |
