@@ -1,0 +1,28 @@
+name: CI — Integration Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies (nextapp)
+        run: npm ci --legacy-peer-deps
+        working-directory: ./nextapp
+
+      - name: Run tests (nextapp)
+        run: npm test -- --runInBand
+        working-directory: ./nextapp
