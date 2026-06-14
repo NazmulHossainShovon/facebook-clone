@@ -21,14 +21,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('nextapp/package.json') }}-${{ hashFiles('nextapp/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('nextapp/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-${{ hashFiles('nextapp/package.json') }}-
+            ${{ runner.os }}-node-
 
-      - name: Install dependencies
+      - name: Clean and install dependencies (skip optional)
         run: |
           cd nextapp
-          npm ci || npm install
+          rm -rf node_modules package-lock.json
+          npm install --no-optional
 
       - name: Build
         run: |
