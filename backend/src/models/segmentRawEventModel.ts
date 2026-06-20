@@ -28,6 +28,15 @@ export class SegmentRawEvent {
   @prop({ default: false })
   public processed?: boolean;
 
+  @prop({ default: 0 })
+  public pendingDestinations?: number;
+
+  @prop({ default: 0 })
+  public succeededDestinations?: number;
+
+  @prop({ default: 0 })
+  public failedDestinations?: number;
+
   @prop({ default: Date.now })
   public createdAt?: Date;
 }

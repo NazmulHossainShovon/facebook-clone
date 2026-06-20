@@ -5,12 +5,11 @@ import {
   SegmentDestination,
 } from "../../models/segmentDestinationModel";
 import { SegmentRawEventModel } from "../../models/segmentRawEventModel";
-import {
-  getIpAddress,
-  appendToGoogleSheets,
-  appendToPostgres,
-  shouldForwardEvent,
-} from "./helpers";
+import { getIpAddress, shouldForwardEvent } from "./helpers";
+import { segmentQueue } from "../../queues/segmentQueue";
+
+// ensure worker is started
+import "../../queues/segmentWorker";
 
 export const trackEventHandler = async (req: Request, res: Response) => {
   const authorization = req.headers.authorization;
@@ -35,59 +34,38 @@ export const trackEventHandler = async (req: Request, res: Response) => {
     return;
   }
 
+  const destinations = await SegmentDestinationModel.find({
+    userId: (user as any)._id,
+    enabled: true,
+  }).lean();
+
+  const filtered = destinations.filter(destination => shouldForwardEvent(eventName, destination.eventFilters));
+
   const rawEvent = await SegmentRawEventModel.create({
     userId: (user as any)._id,
     eventName,
     externalUserId,
     properties,
     ipAddress: getIpAddress(req),
-    processed: false,
+    processed: filtered.length === 0, // if no destinations, mark processed
+    pendingDestinations: filtered.length,
     createdAt: new Date(),
   });
 
-  const destinations = await SegmentDestinationModel.find({
-    userId: (user as any)._id,
-    enabled: true,
-  }).lean();
-
   const createdAt = rawEvent.createdAt || new Date();
-  const forwardingJobs = destinations
-    .filter(destination => shouldForwardEvent(eventName, destination.eventFilters))
-    .map(async destination => {
-      if (destination.type === "google_sheets") {
-        await appendToGoogleSheets(destination as SegmentDestination, {
-          eventName,
-          externalUserId,
-          properties,
-          createdAt,
-        });
-        return;
-      }
 
-      await appendToPostgres(destination as SegmentDestination, {
-        eventName,
-        externalUserId,
-        properties,
-        createdAt,
-      });
-    });
+  // enqueue forwarding jobs for each destination
+  for (const destination of filtered) {
+    // job data
+    const jobData = {
+      destination: destination as SegmentDestination,
+      payload: { eventName, externalUserId, properties, createdAt },
+      rawEventId: String(rawEvent._id),
+      retryCount: 0,
+    };
 
-  Promise.allSettled(forwardingJobs)
-    .then(results => {
-      results.forEach(result => {
-        if (result.status === "rejected") {
-          console.error("Segment destination forwarding error:", result.reason);
-        }
-      });
-    })
-    .catch(error => {
-      console.error("Segment forwarding batch error:", error);
-    })
-    .finally(async () => {
-      await SegmentRawEventModel.findByIdAndUpdate(rawEvent._id, {
-        processed: true,
-      });
-    });
+    await segmentQueue.add('forward', jobData, { removeOnComplete: true });
+  }
 
   res.json({ success: true, eventId: rawEvent._id });
 };
