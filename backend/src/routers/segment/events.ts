@@ -84,3 +84,61 @@ export const recentEventsHandler = async (req: Request, res: Response) => {
 
   res.json(events);
 };
+
+export const retryEventHandler = async (req: Request, res: Response) => {
+  const userId = (req as any).user?._id;
+  if (!userId) {
+    res.status(401).json({ message: 'Unauthorized' });
+    return;
+  }
+
+  const eventId = req.params.id;
+  if (!eventId) {
+    res.status(400).json({ message: 'Missing event id' });
+    return;
+  }
+
+  const ev = await SegmentRawEventModel.findById(eventId).lean();
+  if (!ev) {
+    res.status(404).json({ message: 'Event not found' });
+    return;
+  }
+
+  if (String(ev.userId) !== String(userId)) {
+    res.status(403).json({ message: 'Forbidden' });
+    return;
+  }
+
+  // find enabled destinations for user and matching event filters
+  const destinations = await SegmentDestinationModel.find({ userId, enabled: true }).lean();
+  const filtered = destinations.filter(destination => shouldForwardEvent(ev.eventName, destination.eventFilters));
+
+  if (filtered.length === 0) {
+    res.json({ success: true, requeued: 0 });
+    return;
+  }
+
+  // reset counts and enqueue forwarding jobs
+  await SegmentRawEventModel.findByIdAndUpdate(eventId, {
+    $set: { processed: false, lastError: undefined, lastFailedDestinationId: undefined, lastRetryCount: 0 },
+    $inc: { pendingDestinations: filtered.length },
+  });
+
+  for (const destination of filtered) {
+    const jobData = {
+      destination: destination as any,
+      payload: {
+        eventName: ev.eventName,
+        externalUserId: ev.externalUserId,
+        properties: ev.properties,
+        createdAt: ev.createdAt || new Date(),
+      },
+      rawEventId: String(ev._id),
+      retryCount: 0,
+    };
+
+    await segmentQueue.add('forward', jobData, { removeOnComplete: true });
+  }
+
+  res.json({ success: true, requeued: filtered.length });
+};

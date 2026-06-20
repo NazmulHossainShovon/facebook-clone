@@ -58,6 +58,18 @@ const worker = new Worker<JobData>(
     } catch (err) {
       // failure: retry with custom delays
       const nextRetry = (retryCount || 0) + 1;
+
+      // update event with last error info and retry count
+      try {
+        await SegmentRawEventModel.findByIdAndUpdate(rawEventId, {
+          lastError: err instanceof Error ? err.message : String(err),
+          lastFailedDestinationId: destination._id,
+          lastRetryCount: nextRetry,
+        });
+      } catch (updateErr) {
+        // ignore
+      }
+
       if (retryCount < RETRY_DELAYS.length) {
         // re-add job with increased retryCount and delay via shared queue
         await segmentQueue.add(
@@ -80,7 +92,7 @@ const worker = new Worker<JobData>(
 
       // log error
       // eslint-disable-next-line no-console
-      console.error('Segment forwarding job failed for destination', destination._id, err);
+      console.error('Segment forwarding job failed for destination', destination._id, err instanceof Error ? err.message : err);
     }
   },
   { connection }

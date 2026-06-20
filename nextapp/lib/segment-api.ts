@@ -27,6 +27,12 @@ export type SegmentRawEvent = {
   ipAddress?: string;
   processed: boolean;
   createdAt: string;
+  pendingDestinations?: number;
+  succeededDestinations?: number;
+  failedDestinations?: number;
+  lastError?: string;
+  lastFailedDestinationId?: string;
+  lastRetryCount?: number;
 };
 
 const getToken = () => {
@@ -120,4 +126,12 @@ export const segmentRecentEvents = async () => {
     headers: withAuthHeaders(),
   });
   return parseResponse<SegmentRawEvent[]>(response);
+};
+
+export const segmentRetryEvent = async (id: string) => {
+  const response = await fetch(`${API_BASE}/api/segment/events/${id}/retry`, {
+    method: 'POST',
+    headers: withAuthHeaders(),
+  });
+  return parseResponse<{ success: boolean; requeued?: number }>(response);
 };

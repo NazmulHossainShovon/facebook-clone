@@ -37,6 +37,15 @@ export class SegmentRawEvent {
   @prop({ default: 0 })
   public failedDestinations?: number;
 
+  @prop()
+  public lastError?: string;
+
+  @prop()
+  public lastFailedDestinationId?: string;
+
+  @prop({ default: 0 })
+  public lastRetryCount?: number;
+
   @prop({ default: Date.now })
   public createdAt?: Date;
 }

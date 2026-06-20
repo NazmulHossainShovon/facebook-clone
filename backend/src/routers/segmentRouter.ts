@@ -10,6 +10,7 @@ import {
   updateDestinationHandler,
   trackEventHandler,
   recentEventsHandler,
+  retryEventHandler,
 } from "./segment";
 
 export const segmentRouter = express.Router();
@@ -23,3 +24,4 @@ segmentRouter.put("/destinations/:id", isAuth, asyncHandler(updateDestinationHan
 
 segmentRouter.post("/events/track", asyncHandler(trackEventHandler));
 segmentRouter.get("/events/recent", isAuth, asyncHandler(recentEventsHandler));
+segmentRouter.post("/events/:id/retry", isAuth, asyncHandler(retryEventHandler));
