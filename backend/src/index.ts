@@ -15,6 +15,7 @@ import { geminiRouter } from "./routers/geminiRouter";
 import timeOffRouter from "./routers/timeOffRouter";
 import { chartRouter } from "./routers/chartRouter";
 import { dpsRouter } from "./routers/dpsRouter";
+import { segmentRouter } from "./routers/segmentRouter";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { registerChatHandlers } from "./socketHandlers/chatHandler";
@@ -83,6 +84,7 @@ app.use("/api/gemini", geminiRouter);
 app.use("/api/time-off", isAuth, timeOffRouter);
 app.use("/api/charts", chartRouter);
 app.use("/api/dps", dpsRouter);
+app.use("/api/segment", segmentRouter);
 
 // Separate route for Paddle webhook to avoid JSON parsing interference
 import { handlePaddleWebhook } from "./routers/paymentRouter";
@@ -98,7 +100,9 @@ io.on("connection", (socket) => {
   // Register chat handlers
   registerChatHandlers(io, socket);
 
-  socket.on("disconnect", () => {});
+  socket.on("disconnect", () => {
+    // Connection cleanup is handled by socket.io internals.
+  });
 });
 
 httpServer.listen(PORT, () => {

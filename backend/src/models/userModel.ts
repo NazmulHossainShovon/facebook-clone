@@ -15,6 +15,8 @@ export class User {
   public email!: string;
   @prop({ required: false })
   public password?: string;
+  @prop({ unique: true, sparse: true })
+  public apiKey?: string;
   @prop()
   public profileImage?: string;
   @prop()
