@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import EventTable from '../../../../components/segment/EventTable';
-import { SegmentRawEvent, segmentRecentEvents } from '../../../../lib/segment-api';
+import { SegmentRawEvent, segmentRecentEvents, segmentClearEvents } from '../../../../lib/segment-api';
 
 export default function SegmentEventsPage() {
   const [events, setEvents] = useState<SegmentRawEvent[]>([]);
@@ -49,7 +49,18 @@ export default function SegmentEventsPage() {
           </button>
           <button
             type="button"
-            onClick={() => setEvents([])}
+            onClick={async () => {
+              setError('');
+              setLoading(true);
+              try {
+                await segmentClearEvents();
+                setEvents([]);
+              } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to clear events');
+              } finally {
+                setLoading(false);
+              }
+            }}
             className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
           >
             Clear

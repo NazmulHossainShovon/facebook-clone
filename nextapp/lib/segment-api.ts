@@ -135,3 +135,11 @@ export const segmentRetryEvent = async (id: string) => {
   });
   return parseResponse<{ success: boolean; requeued?: number }>(response);
 };
+
+export const segmentClearEvents = async () => {
+  const response = await fetch(`${API_BASE}/api/segment/events/clear`, {
+    method: 'DELETE',
+    headers: withAuthHeaders(),
+  });
+  return parseResponse<{ success: boolean }>(response);
+};

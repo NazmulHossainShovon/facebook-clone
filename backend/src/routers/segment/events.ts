@@ -146,3 +146,18 @@ export const retryEventHandler = async (req: Request, res: Response) => {
 
   res.json({ success: true, requeued: filtered.length });
 };
+
+export const clearEventsHandler = async (req: Request, res: Response) => {
+  const userId = (req as any).user?._id;
+  if (!userId) {
+    res.status(401).json({ message: 'Unauthorized' });
+    return;
+  }
+
+  try {
+    await SegmentRawEventModel.deleteMany({ userId });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to clear events' });
+  }
+};

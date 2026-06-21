@@ -10,6 +10,7 @@ import {
   updateDestinationHandler,
   trackEventHandler,
   recentEventsHandler,
+  clearEventsHandler,
   retryEventHandler,
 } from "./segment";
 
@@ -25,3 +26,4 @@ segmentRouter.put("/destinations/:id", isAuth, asyncHandler(updateDestinationHan
 segmentRouter.post("/events/track", asyncHandler(trackEventHandler));
 segmentRouter.get("/events/recent", isAuth, asyncHandler(recentEventsHandler));
 segmentRouter.post("/events/:id/retry", isAuth, asyncHandler(retryEventHandler));
+segmentRouter.delete("/events/clear", isAuth, asyncHandler(clearEventsHandler));
