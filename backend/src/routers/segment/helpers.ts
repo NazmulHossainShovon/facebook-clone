@@ -142,7 +142,7 @@ export const appendToGoogleSheets = async (
     requestBody: {
       values: [
         [
-          payload.createdAt.toISOString(),
+          payload.createdAt.toLocaleString('en-US'),
           payload.eventName,
           payload.externalUserId || "",
           JSON.stringify(payload.properties || {}),
