@@ -27,9 +27,6 @@ export type SegmentRawEvent = {
   ipAddress?: string;
   processed: boolean;
   createdAt: string;
-  pendingDestinations?: number;
-  succeededDestinations?: number;
-  failedDestinations?: number;
   lastError?: string;
   lastFailedDestinationId?: string;
   lastRetryCount?: number;

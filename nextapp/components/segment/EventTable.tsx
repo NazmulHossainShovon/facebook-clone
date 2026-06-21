@@ -26,10 +26,9 @@ export default function EventTable({ events }: Props) {
             <th className="px-4 py-3 text-left font-semibold text-gray-700">Event Name</th>
             <th className="px-4 py-3 text-left font-semibold text-gray-700">User ID</th>
             <th className="px-4 py-3 text-left font-semibold text-gray-700">Properties</th>
-            <th className="px-4 py-3 text-left font-semibold text-gray-700">Status</th>
-            <th className="px-4 py-3 text-left font-semibold text-gray-700">Counts (S / P / F)</th>
-            <th className="px-4 py-3 text-left font-semibold text-gray-700">Retries</th>
-            <th className="px-4 py-3 text-left font-semibold text-gray-700">Last Error</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">Status</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">Retries</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">Last Error</th>
             <th className="px-4 py-3 text-left font-semibold text-gray-700">Actions</th>
           </tr>
         </thead>
@@ -45,25 +44,12 @@ export default function EventTable({ events }: Props) {
                 {JSON.stringify(event.properties || {})}
               </td>
               <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                {event.pendingDestinations && event.pendingDestinations > 0 ? (
-                  'pending'
-                ) : (event.succeededDestinations || 0) > 0 && (event.pendingDestinations || 0) === 0 ? (
-                  'succeeded'
-                ) : (event.failedDestinations || 0) > 0 ? (
-                  'failed'
-                ) : event.processed ? (
-                  'processed'
-                ) : (
-                  'unknown'
-                )}
-              </td>
-              <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                {(event.succeededDestinations || 0) + ' / ' + (event.pendingDestinations || 0) + ' / ' + (event.failedDestinations || 0)}
+                {!event.processed ? (event.lastError ? 'failed' : 'pending') : 'succeeded'}
               </td>
               <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{event.lastRetryCount || 0}</td>
               <td className="px-4 py-3 text-red-600 max-w-[320px] truncate">{event.lastError || '-'}</td>
               <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                {(event.failedDestinations || 0) > 0 && (event.pendingDestinations || 0) === 0 && (event.succeededDestinations || 0) === 0 ? (
+                  {event.lastError && !event.processed ? (
                   <button
                     type="button"
                     disabled={retryingId === event._id}
@@ -85,9 +71,9 @@ export default function EventTable({ events }: Props) {
                   >
                     {retryingId === event._id ? 'Retrying…' : 'Retry'}
                   </button>
-                ) : (
-                  '-'
-                )}
+                  ) : (
+                    '-'
+                  )}
               </td>
             </tr>
           ))}

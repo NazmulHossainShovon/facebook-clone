@@ -45,16 +45,10 @@ const worker = new Worker<JobData>(
         });
       }
 
-      // success: increment succeededDestinations, decrement pending
+      // success: mark the event processed and clear last error info
       await SegmentRawEventModel.findByIdAndUpdate(rawEventId, {
-        $inc: { succeededDestinations: 1, pendingDestinations: -1 },
+        $set: { processed: true, lastError: undefined, lastFailedDestinationId: undefined },
       });
-
-      // if pending reaches 0, mark processed true
-      const ev = await SegmentRawEventModel.findById(rawEventId).lean();
-      if (ev && (ev.pendingDestinations || 0) <= 0) {
-        await SegmentRawEventModel.findByIdAndUpdate(rawEventId, { processed: true });
-      }
     } catch (err) {
       // failure: retry with custom delays
       const nextRetry = (retryCount || 0) + 1;
@@ -80,15 +74,8 @@ const worker = new Worker<JobData>(
         return;
       }
 
-      // exhausted retries: mark failed
-      await SegmentRawEventModel.findByIdAndUpdate(rawEventId, {
-        $inc: { failedDestinations: 1, pendingDestinations: -1 },
-      });
-
-      const ev = await SegmentRawEventModel.findById(rawEventId).lean();
-      if (ev && (ev.pendingDestinations || 0) <= 0) {
-        await SegmentRawEventModel.findByIdAndUpdate(rawEventId, { processed: true });
-      }
+      // exhausted retries: update last error (processed remains false)
+      // lastError/lastRetryCount already set above
 
       // log error
       // eslint-disable-next-line no-console

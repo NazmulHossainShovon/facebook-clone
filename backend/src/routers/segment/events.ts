@@ -48,7 +48,6 @@ export const trackEventHandler = async (req: Request, res: Response) => {
     properties,
     ipAddress: getIpAddress(req),
     processed: filtered.length === 0, // if no destinations, mark processed
-    pendingDestinations: filtered.length,
     createdAt: new Date(),
   });
 
@@ -117,15 +116,9 @@ export const retryEventHandler = async (req: Request, res: Response) => {
     res.json({ success: true, requeued: 0 });
     return;
   }
-
-  // compute new failed count to avoid negative values and reset error info
-  const existing = await SegmentRawEventModel.findById(eventId).lean();
-  const currentFailed = existing?.failedDestinations || 0;
-  const newFailed = Math.max(0, currentFailed - filtered.length);
-
+  // reset error info and mark not-processed so worker will mark processed on success
   await SegmentRawEventModel.findByIdAndUpdate(eventId, {
-    $set: { processed: false, lastError: undefined, lastFailedDestinationId: undefined, failedDestinations: newFailed },
-    $inc: { pendingDestinations: filtered.length },
+    $set: { processed: false, lastError: undefined, lastFailedDestinationId: undefined },
   });
 
   for (const destination of filtered) {

@@ -29,13 +29,7 @@ export class SegmentRawEvent {
   public processed?: boolean;
 
   @prop({ default: 0 })
-  public pendingDestinations?: number;
-
-  @prop({ default: 0 })
-  public succeededDestinations?: number;
-
-  @prop({ default: 0 })
-  public failedDestinations?: number;
+  // removed per-destination counters (kept minimal event state)
 
   @prop()
   public lastError?: string;
