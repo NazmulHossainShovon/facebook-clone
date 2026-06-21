@@ -118,9 +118,13 @@ export const retryEventHandler = async (req: Request, res: Response) => {
     return;
   }
 
-  // reset counts and enqueue forwarding jobs
+  // compute new failed count to avoid negative values and reset error info
+  const existing = await SegmentRawEventModel.findById(eventId).lean();
+  const currentFailed = existing?.failedDestinations || 0;
+  const newFailed = Math.max(0, currentFailed - filtered.length);
+
   await SegmentRawEventModel.findByIdAndUpdate(eventId, {
-    $set: { processed: false, lastError: undefined, lastFailedDestinationId: undefined, lastRetryCount: 0 },
+    $set: { processed: false, lastError: undefined, lastFailedDestinationId: undefined, lastRetryCount: 0, failedDestinations: newFailed },
     $inc: { pendingDestinations: filtered.length },
   });
 

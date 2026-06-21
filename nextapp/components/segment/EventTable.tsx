@@ -45,15 +45,17 @@ export default function EventTable({ events }: Props) {
                 {JSON.stringify(event.properties || {})}
               </td>
               <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                {event.pendingDestinations && event.pendingDestinations > 0
-                  ? 'pending'
-                  : event.failedDestinations && event.failedDestinations > 0
-                  ? 'failed'
-                  : event.succeededDestinations && event.succeededDestinations > 0
-                  ? 'succeeded'
-                  : event.processed
-                  ? 'processed'
-                  : 'unknown'}
+                {event.pendingDestinations && event.pendingDestinations > 0 ? (
+                  'pending'
+                ) : (event.succeededDestinations || 0) > 0 && (event.pendingDestinations || 0) === 0 ? (
+                  'succeeded'
+                ) : (event.failedDestinations || 0) > 0 ? (
+                  'failed'
+                ) : event.processed ? (
+                  'processed'
+                ) : (
+                  'unknown'
+                )}
               </td>
               <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
                 {(event.succeededDestinations || 0) + ' / ' + (event.pendingDestinations || 0) + ' / ' + (event.failedDestinations || 0)}
@@ -61,7 +63,7 @@ export default function EventTable({ events }: Props) {
               <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{event.lastRetryCount || 0}</td>
               <td className="px-4 py-3 text-red-600 max-w-[320px] truncate">{event.lastError || '-'}</td>
               <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                {event.failedDestinations && event.failedDestinations > 0 ? (
+                {(event.failedDestinations || 0) > 0 && (event.pendingDestinations || 0) === 0 && (event.succeededDestinations || 0) === 0 ? (
                   <button
                     type="button"
                     disabled={retryingId === event._id}
@@ -69,7 +71,7 @@ export default function EventTable({ events }: Props) {
                       setRetryingId(event._id);
                       try {
                         await segmentRetryEvent(event._id);
-                        // naive: reload page after retry — prefer parent to refresh via polling
+                        // naive: reload page after retry — parent page polls every 5s
                         window.location.reload();
                       } catch (err) {
                         // eslint-disable-next-line no-console
