@@ -124,7 +124,7 @@ export const retryEventHandler = async (req: Request, res: Response) => {
   const newFailed = Math.max(0, currentFailed - filtered.length);
 
   await SegmentRawEventModel.findByIdAndUpdate(eventId, {
-    $set: { processed: false, lastError: undefined, lastFailedDestinationId: undefined, lastRetryCount: 0, failedDestinations: newFailed },
+    $set: { processed: false, lastError: undefined, lastFailedDestinationId: undefined, failedDestinations: newFailed },
     $inc: { pendingDestinations: filtered.length },
   });
 
