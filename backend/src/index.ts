@@ -16,6 +16,7 @@ import timeOffRouter from "./routers/timeOffRouter";
 import { chartRouter } from "./routers/chartRouter";
 import { dpsRouter } from "./routers/dpsRouter";
 import { segmentRouter } from "./routers/segmentRouter";
+import flagsmithRouter from "./routers/flagsmithRouter";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { registerChatHandlers } from "./socketHandlers/chatHandler";
@@ -85,6 +86,7 @@ app.use("/api/time-off", isAuth, timeOffRouter);
 app.use("/api/charts", chartRouter);
 app.use("/api/dps", dpsRouter);
 app.use("/api/segment", segmentRouter);
+app.use("/api/flagsmith", flagsmithRouter);
 
 // Separate route for Paddle webhook to avoid JSON parsing interference
 import { handlePaddleWebhook } from "./routers/paymentRouter";
