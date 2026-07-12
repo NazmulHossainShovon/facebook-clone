@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import FlagModal from "../../../../components/flagsmith/FlagModal";
+import FlagModal from "../../../../components/flagpilot/FlagModal";
 
 type Flag = { _id: string; key: string; name: string; type: "BOOLEAN" | "STRING"; enabled: boolean; value: string };
 type Env = { _id: string; name: string; apiKey: string };
@@ -15,7 +15,7 @@ export default function FlagManagerPage() {
   const [editing, setEditing] = useState<Flag | null>(null);
 
   const load = () => {
-    fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagsmith/flags?environmentId=" + environmentId)
+    fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagpilot/flags?environmentId=" + environmentId)
       .then((r) => r.json())
       .then((data) => setFlags(data || []));
   };
@@ -25,7 +25,7 @@ export default function FlagManagerPage() {
   }, [environmentId]);
 
   const toggleFlag = async (f: Flag) => {
-    const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagsmith/flags/" + f._id, {
+    const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagpilot/flags/" + f._id, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ enabled: !f.enabled }),

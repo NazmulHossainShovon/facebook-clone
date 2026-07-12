@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export type FeatureFlagType = "BOOLEAN" | "STRING";
 
-export interface IFlagsmithFeatureFlag extends Document {
+export interface IFlagpilotFeatureFlag extends Document {
   environment: mongoose.Types.ObjectId;
   key: string;
   name: string;
@@ -13,8 +13,8 @@ export interface IFlagsmithFeatureFlag extends Document {
   createdAt: Date;
 }
 
-const flagsmithFeatureFlagSchema = new Schema<IFlagsmithFeatureFlag>({
-  environment: { type: Schema.Types.ObjectId, ref: "FlagsmithEnvironment", required: true },
+const flagpilotFeatureFlagSchema = new Schema<IFlagpilotFeatureFlag>({
+  environment: { type: Schema.Types.ObjectId, ref: "FlagpilotEnvironment", required: true },
   key: {
     type: String,
     required: true,
@@ -34,9 +34,9 @@ const flagsmithFeatureFlagSchema = new Schema<IFlagsmithFeatureFlag>({
 });
 
 // Compound unique index to prevent duplicate keys per environment
-flagsmithFeatureFlagSchema.index({ environment: 1, key: 1 }, { unique: true });
+flagpilotFeatureFlagSchema.index({ environment: 1, key: 1 }, { unique: true });
 
-export const FlagsmithFeatureFlag = mongoose.model<IFlagsmithFeatureFlag>(
-  "FlagsmithFeatureFlag",
-  flagsmithFeatureFlagSchema
+export const FlagpilotFeatureFlag = mongoose.model<IFlagpilotFeatureFlag>(
+  "FlagpilotFeatureFlag",
+  flagpilotFeatureFlagSchema
 );

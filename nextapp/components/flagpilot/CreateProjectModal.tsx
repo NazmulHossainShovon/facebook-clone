@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 
-export default function CreateEnvironmentModal({ open, projectId, onClose, onCreated }: { open: boolean; projectId: string; onClose: () => void; onCreated: (env: any) => void }) {
+export default function CreateProjectModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: (proj: any) => void }) {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -10,13 +10,13 @@ export default function CreateEnvironmentModal({ open, projectId, onClose, onCre
 
   const create = async () => {
     setError(null);
-    if (!name.trim()) return setError("Environment name is required");
+    if (!name.trim()) return setError("Project name is required");
     setLoading(true);
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagsmith/environments", {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagpilot/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), projectId }),
+        body: JSON.stringify({ name: name.trim() }),
       });
       if (!res.ok) throw new Error("failed");
       const data = await res.json();
@@ -24,7 +24,7 @@ export default function CreateEnvironmentModal({ open, projectId, onClose, onCre
       setName("");
       onClose();
     } catch (err) {
-      setError("Failed to create environment");
+      setError("Failed to create project");
     } finally {
       setLoading(false);
     }
@@ -33,9 +33,9 @@ export default function CreateEnvironmentModal({ open, projectId, onClose, onCre
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
       <div className="bg-white rounded shadow p-6 w-full max-w-md">
-        <h3 className="text-lg font-bold mb-2">Create Environment</h3>
+        <h3 className="text-lg font-bold mb-2">Create Project</h3>
         <label className="block mb-2">
-          <div className="text-sm text-gray-600">Environment name</div>
+          <div className="text-sm text-gray-600">Project name</div>
           <input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 block w-full border rounded px-2 py-1" />
         </label>
         {error && <div className="text-red-600 mb-2">{error}</div>}

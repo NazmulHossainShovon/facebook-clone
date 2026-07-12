@@ -1,8 +1,8 @@
 import express from "express";
 import crypto from "crypto";
-import { FlagsmithProject } from "../models/flagsmithProjectModel";
-import { FlagsmithEnvironment } from "../models/flagsmithEnvironmentModel";
-import { FlagsmithFeatureFlag } from "../models/flagsmithFeatureFlagModel";
+import { FlagpilotProject } from "../models/flagpilotProjectModel";
+import { FlagpilotEnvironment } from "../models/flagpilotEnvironmentModel";
+import { FlagpilotFeatureFlag } from "../models/flagpilotFeatureFlagModel";
 import mongoose from "mongoose";
 
 const router = express.Router();
@@ -12,7 +12,7 @@ router.post("/projects", async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: "name is required" });
-    const project = new FlagsmithProject({ name });
+    const project = new FlagpilotProject({ name });
     await project.save();
     res.json(project);
   } catch (err) {
@@ -23,7 +23,7 @@ router.post("/projects", async (req, res) => {
 // List Projects
 router.get("/projects", async (_req, res) => {
   try {
-    const projects = await FlagsmithProject.find().sort({ createdAt: -1 }).lean();
+    const projects = await FlagpilotProject.find().sort({ createdAt: -1 }).lean();
     res.json(projects);
   } catch (err) {
     res.status(500).json({ error: "failed to fetch projects" });
@@ -36,8 +36,8 @@ router.post("/environments", async (req, res) => {
     const { name, projectId } = req.body;
     if (!name || !projectId) return res.status(400).json({ error: "name and projectId required" });
     if (!mongoose.Types.ObjectId.isValid(projectId)) return res.status(400).json({ error: "invalid projectId" });
-    const apiKey = `fs_env_${crypto.randomBytes(8).toString("hex")}`;
-    const env = new FlagsmithEnvironment({ name, project: projectId, apiKey });
+    const apiKey = `fp_env_${crypto.randomBytes(8).toString("hex")}`;
+    const env = new FlagpilotEnvironment({ name, project: projectId, apiKey });
     await env.save();
     res.json(env);
   } catch (err) {
@@ -50,7 +50,7 @@ router.get("/environments", async (req, res) => {
   try {
     const { projectId } = req.query;
     if (!projectId) return res.status(400).json({ error: "projectId is required" });
-    const envs = await FlagsmithEnvironment.find({ project: projectId }).sort({ createdAt: -1 }).lean();
+    const envs = await FlagpilotEnvironment.find({ project: projectId }).sort({ createdAt: -1 }).lean();
     res.json(envs);
   } catch (err) {
     res.status(500).json({ error: "failed to fetch environments" });
@@ -62,7 +62,7 @@ router.post("/flags", async (req, res) => {
   try {
     const { environmentId, key, name, type, enabled, value, description } = req.body;
     if (!environmentId || !key || !name) return res.status(400).json({ error: "environmentId, key and name required" });
-    const flag = new FlagsmithFeatureFlag({
+    const flag = new FlagpilotFeatureFlag({
       environment: environmentId,
       key,
       name,
@@ -86,7 +86,7 @@ router.get("/flags", async (req, res) => {
   try {
     const { environmentId } = req.query;
     if (!environmentId) return res.status(400).json({ error: "environmentId is required" });
-    const flags = await FlagsmithFeatureFlag.find({ environment: environmentId }).sort({ createdAt: -1 }).lean();
+    const flags = await FlagpilotFeatureFlag.find({ environment: environmentId }).sort({ createdAt: -1 }).lean();
     res.json(flags);
   } catch (err) {
     res.status(500).json({ error: "failed to fetch flags" });
@@ -102,7 +102,7 @@ router.put("/flags/:id", async (req, res) => {
     for (const k of allowed) {
       if (k in req.body) update[k] = req.body[k];
     }
-    const flag = await FlagsmithFeatureFlag.findByIdAndUpdate(id, update, { new: true });
+    const flag = await FlagpilotFeatureFlag.findByIdAndUpdate(id, update, { new: true });
     if (!flag) return res.status(404).json({ error: "flag not found" });
     res.json(flag);
   } catch (err) {
@@ -114,7 +114,7 @@ router.put("/flags/:id", async (req, res) => {
 router.delete("/flags/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    await FlagsmithFeatureFlag.findByIdAndDelete(id);
+    await FlagpilotFeatureFlag.findByIdAndDelete(id);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "failed to delete flag" });
@@ -126,9 +126,9 @@ router.get("/public/flags", async (req, res) => {
   try {
     const apiKey = (req.header("X-Environment-Key") || req.header("x-environment-key")) as string;
     if (!apiKey) return res.status(400).json({ error: "X-Environment-Key header required" });
-    const env = await FlagsmithEnvironment.findOne({ apiKey }).lean();
+    const env = await FlagpilotEnvironment.findOne({ apiKey }).lean();
     if (!env) return res.status(404).json({ error: "environment not found" });
-    const flags = await FlagsmithFeatureFlag.find({ environment: env._id }).lean();
+    const flags = await FlagpilotFeatureFlag.find({ environment: env._id }).lean();
     const payload: Record<string, { enabled: boolean; value: string }> = {};
     for (const f of flags) {
       payload[f.key] = { enabled: !!f.enabled, value: f.value || "" };

@@ -1,17 +1,17 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import CreateProjectModal from "../../components/flagsmith/CreateProjectModal";
+import CreateProjectModal from "../../components/flagpilot/CreateProjectModal";
 
 type Project = { _id: string; name: string };
 
-export default function FlagsmithIndex() {
+export default function FlagpilotIndex() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
 
   const load = () => {
     setLoading(true);
-    fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagsmith/projects")
+    fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagpilot/projects")
       .then((r) => r.json())
       .then((data) => setProjects(data || []))
       .finally(() => setLoading(false));
@@ -37,7 +37,7 @@ export default function FlagsmithIndex() {
       <ul>
         {projects.map((p) => (
           <li key={p._id} className="p-2 border rounded mb-2">
-            <a href={`/flagsmith/${p._id}/environments`} className="text-blue-600">{p.name}</a>
+            <a href={`/flagpilot/${p._id}/environments`} className="text-blue-600">{p.name}</a>
           </li>
         ))}
       </ul>

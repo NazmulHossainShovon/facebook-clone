@@ -1,8 +1,8 @@
-# Flagsmith (MVP) — Feature Summary
+# Flagpilot (MVP) — Feature Summary
 
 NOTE: The feature list below is written for non-technical users.
 
-This page explains, in simple terms, what the Flagsmith feature does and how you can use it.
+This page explains, in simple terms, what the Flagpilot feature does and how you can use it.
 
 ## What this does (plain language)
 
@@ -30,9 +30,9 @@ This page explains, in simple terms, what the Flagsmith feature does and how you
 
 If you need the technical details or want to extend this feature, the implementation lives in these files:
 
-- Backend models: `backend/src/models/flagsmithProjectModel.ts`, `flagsmithEnvironmentModel.ts`, `flagsmithFeatureFlagModel.ts`
-- Backend router: `backend/src/routers/flagsmithRouter.ts` (mounted at `app.use('/api/flagsmith', ...)`)
-- Frontend pages: `nextapp/app/flagsmith/layout.tsx`, `page.tsx`, `[projectId]/environments/page.tsx`, `env/[environmentId]/page.tsx`
+- Backend models: `backend/src/models/flagpilotProjectModel.ts`, `flagpilotEnvironmentModel.ts`, `flagpilotFeatureFlagModel.ts`
+- Backend router: `backend/src/routers/flagpilotRouter.ts` (mounted at `app.use('/api/flagpilot', ...)`)
+- Frontend pages: `nextapp/app/flagpilot/layout.tsx`, `page.tsx`, `[projectId]/environments/page.tsx`, `env/[environmentId]/page.tsx`
 
 ## Want UI improvements?
 
