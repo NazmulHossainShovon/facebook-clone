@@ -37,3 +37,15 @@ If you need the technical details or want to extend this feature, the implementa
 ## Want UI improvements?
 
 I can add friendly forms and dialogs for creating and editing Projects, Environments, and Flags. Tell me which one to build first.
+
+## Features of the SDK
+
+- Initialize with an environment key and optional API base URL so clients can target a specific environment.
+- Fetch the public flags payload for an environment (map of flag-key → { enabled, value }).
+- Provide a stable flags map that client code can read synchronously.
+- Read a single flag by key (returns enabled state and optional value).
+- Return a loading state while flags are being fetched and a `refetch` method to refresh flags on demand.
+- Support simple boolean and string-valued flags and graceful fallbacks when flags are missing.
+- Work in browser-based and server-rendered environments by accepting an explicit API base URL.
+- Small, dependency-light footprint suitable for publishing to package registries and reimplementing across platforms.
+
