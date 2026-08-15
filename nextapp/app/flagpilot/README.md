@@ -1,51 +1,40 @@
-# Flagpilot (MVP) — Feature Summary
+# Flagpilot (MVP v2)
 
-NOTE: The feature list below is written for non-technical users.
+This Flagpilot app now uses an optimization-first architecture based on implicit anonymous identity and multi-armed bandit traffic allocation.
 
-This page explains, in simple terms, what the Flagpilot feature does and how you can use it.
+## What changed
 
-## What this does (plain language)
+- Project-level API key auth
+- Variant-based flags (not simple boolean/string toggles)
+- Goal auto-registration at evaluate time
+- Sticky assignment by `flag + anon user + goalEvent`
+- Conversion tracking with deduplication
+- Dynamic traffic splitting via Thompson Sampling
 
-- Groups (called "Projects")
-  - You can create named Projects to keep related settings together (for example, "Website" or "Mobile App").
+## Backend API surface
 
-- Environments (stages for your work)
-  - Inside a Project you can create Environments such as "Development" or "Production".
-  - Each Environment has a unique secret code (an API key) that developers use to connect an app to these settings.
+- `POST /api/flagpilot/projects`
+- `GET /api/flagpilot/projects`
+- `GET /api/flagpilot/projects/:id`
+- `POST /api/flagpilot/flags`
+- `GET /api/flagpilot/flags?projectId=...`
+- `GET /api/flagpilot/flags/:id`
+- `PUT /api/flagpilot/flags/:id`
+- `POST /api/flagpilot/v1/evaluate`
+- `POST /api/flagpilot/v1/track`
 
-- Feature Flags (on/off switches and small settings)
-  - Create a flag to turn a feature on or off for an app (for example, "Show New Landing Page").
-  - A flag has a name and a short key (used by apps). It can be a simple on/off toggle, or it can hold a small text value (for things like percentage, color, or a message).
-  - Flags are stored per Environment, so you can turn a feature on in Development without affecting Production.
+## Data model summary
 
-- Public endpoint for apps
-  - Apps can fetch the list of flags for a specific Environment using its secret code. This lets apps know which features should be enabled.
+- `FlagpilotProject`: `name`, `orgId`, `apiKey`
+- `FlagpilotFeatureFlag`: `project`, `key`, `status`, `trackedGoals`, `minImpressionsBeforeOptimization`, `variants[]`
+- `FlagpilotEvaluationLog`: sticky exposure logs with `converted` and 30-day TTL
 
-## Examples (what you'll see)
+## Dashboard screens
 
-- Turn a feature on or off: flip a switch in the web UI and the connected app can immediately read the new state.
-- Change a setting value: store a short text value for a flag (e.g., "20" for a discount) that the app reads and uses.
+- `/flagpilot`: Projects list and creation
+- `/flagpilot/[projectId]/environments`: Project detail, API key, and flag management
+- `/flagpilot/env/[environmentId]`: Flag detail page with traffic and conversion metrics
 
-## For developers (short reference)
+## SDK package
 
-If you need the technical details or want to extend this feature, the implementation lives in these files:
-
-- Backend models: `backend/src/models/flagpilotProjectModel.ts`, `flagpilotEnvironmentModel.ts`, `flagpilotFeatureFlagModel.ts`
-- Backend router: `backend/src/routers/flagpilotRouter.ts` (mounted at `app.use('/api/flagpilot', ...)`)
-- Frontend pages: `nextapp/app/flagpilot/layout.tsx`, `page.tsx`, `[projectId]/environments/page.tsx`, `env/[environmentId]/page.tsx`
-
-## Want UI improvements?
-
-I can add friendly forms and dialogs for creating and editing Projects, Environments, and Flags. Tell me which one to build first.
-
-## Features of the SDK
-
-- Initialize with an environment key and optional API base URL so clients can target a specific environment.
-- Fetch the public flags payload for an environment (map of flag-key → { enabled, value }).
-- Provide a stable flags map that client code can read synchronously.
-- Read a single flag by key (returns enabled state and optional value).
-- Return a loading state while flags are being fetched and a `refetch` method to refresh flags on demand.
-- Support simple boolean and string-valued flags and graceful fallbacks when flags are missing.
-- Work in browser-based and server-rendered environments by accepting an explicit API base URL.
-- Small, dependency-light footprint suitable for publishing to package registries and reimplementing across platforms.
-
+See `sdk/flagpilot/react` for evaluate/track based client and React hooks.

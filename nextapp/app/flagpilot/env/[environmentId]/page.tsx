@@ -1,77 +1,123 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import FlagModal from "../../../../components/flagpilot/FlagModal";
 
-type Flag = { _id: string; key: string; name: string; type: "BOOLEAN" | "STRING"; enabled: boolean; value: string };
-type Env = { _id: string; name: string; apiKey: string };
+type Variant = {
+  key: string;
+  value: unknown;
+  impressions: number;
+  conversions: number;
+  currentWeight: number;
+};
 
-export default function FlagManagerPage() {
+type Flag = {
+  _id: string;
+  key: string;
+  description?: string;
+  status: "active" | "paused" | "archived";
+  trackedGoals: string[];
+  minImpressionsBeforeOptimization: number;
+  variants: Variant[];
+};
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
+function toPercent(num: number): string {
+  return `${(num * 100).toFixed(1)}%`;
+}
+
+export default function FlagDetailPage() {
   const params = useParams() as { environmentId: string };
-  const { environmentId } = params;
-  const [env, setEnv] = useState<Env | null>(null);
-  const [flags, setFlags] = useState<Flag[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState<Flag | null>(null);
+  const flagId = params.environmentId;
 
-  const load = () => {
-    fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagpilot/flags?environmentId=" + environmentId)
-      .then((r) => r.json())
-      .then((data) => setFlags(data || []));
+  const [flag, setFlag] = useState<Flag | null>(null);
+
+  const load = async () => {
+    const res = await fetch(API_BASE + "/api/flagpilot/flags/" + flagId, {
+      cache: "no-store",
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    setFlag(data);
   };
 
   useEffect(() => {
     load();
-  }, [environmentId]);
+    const intervalId = setInterval(load, 10000);
+    return () => clearInterval(intervalId);
+  }, [flagId]);
 
-  const toggleFlag = async (f: Flag) => {
-    const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagpilot/flags/" + f._id, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ enabled: !f.enabled }),
-    });
-    if (res.ok) {
-      setFlags((cur) => cur.map((x) => (x._id === f._id ? { ...x, enabled: !x.enabled } : x)));
-    }
-  };
+  const totalImpressions = useMemo(() => {
+    return (flag?.variants || []).reduce((sum, variant) => sum + variant.impressions, 0);
+  }, [flag]);
+
+  if (!flag) {
+    return <div>Loading flag details...</div>;
+  }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Flag Manager</h1>
-        <div>
-          <button className="bg-green-600 text-white px-3 py-1 rounded mr-2" onClick={() => { setEditing(null); setShowModal(true); }}>Create Flag</button>
+    <div className="space-y-6">
+      <div className="border rounded p-4">
+        <h1 className="text-2xl font-bold">FLAG: {flag.key}</h1>
+        <div className="text-sm text-gray-600 mt-1">Status: {flag.status}</div>
+        {flag.description && <div className="text-sm mt-2">{flag.description}</div>}
+        <div className="mt-3 text-sm">
+          AUTO-DETECTED GOALS: {flag.trackedGoals?.length ? flag.trackedGoals.join(", ") : "None yet"}
+        </div>
+        <div className="mt-1 text-xs text-gray-500">
+          Optimization threshold: {flag.minImpressionsBeforeOptimization} impressions
         </div>
       </div>
 
-      <table className="w-full table-auto">
-        <thead>
-          <tr>
-            <th className="text-left p-2">Name / Key</th>
-            <th className="p-2">Type</th>
-            <th className="p-2">Enabled</th>
-            <th className="p-2">Value</th>
-            <th className="p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {flags.map((f) => (
-            <tr key={f._id} className="border-t">
-              <td className="p-2">{f.name} <div className="text-sm text-gray-500">{f.key}</div></td>
-              <td className="p-2">{f.type}</td>
-              <td className="p-2">
-                <input type="checkbox" checked={f.enabled} onChange={() => toggleFlag(f)} />
-              </td>
-              <td className="p-2">{f.value}</td>
-              <td className="p-2">
-                <button className="px-2 py-1 mr-2 border rounded" onClick={() => { setEditing(f); setShowModal(true); }}>Edit</button>
-              </td>
-            </tr>
+      <div className="border rounded p-4">
+        <h2 className="font-semibold mb-3">Traffic Distribution (Thompson Sampling)</h2>
+        <div className="space-y-2">
+          {flag.variants.map((variant) => (
+            <div key={variant.key}>
+              <div className="flex justify-between text-sm mb-1">
+                <span>{variant.key}</span>
+                <span>{toPercent(variant.currentWeight)}</span>
+              </div>
+              <div className="h-2 bg-gray-200 rounded">
+                <div
+                  className="h-2 bg-blue-600 rounded"
+                  style={{ width: `${Math.max(2, variant.currentWeight * 100)}%` }}
+                />
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
 
-      <FlagModal open={showModal} environmentId={environmentId} flag={editing} onClose={() => setShowModal(false)} onSaved={(f) => { load(); }} />
+      <div className="border rounded p-4">
+        <h2 className="font-semibold mb-3">Variant Performance</h2>
+        <table className="w-full table-auto text-sm">
+          <thead>
+            <tr>
+              <th className="text-left p-2">Variant</th>
+              <th className="p-2">Impressions</th>
+              <th className="p-2">Conversions</th>
+              <th className="p-2">Conv Rate</th>
+              <th className="p-2">Traffic Split</th>
+            </tr>
+          </thead>
+          <tbody>
+            {flag.variants.map((variant) => {
+              const convRate = variant.impressions > 0 ? variant.conversions / variant.impressions : 0;
+              return (
+                <tr key={variant.key} className="border-t">
+                  <td className="p-2">{variant.key}</td>
+                  <td className="p-2 text-center">{variant.impressions.toLocaleString()}</td>
+                  <td className="p-2 text-center">{variant.conversions.toLocaleString()}</td>
+                  <td className="p-2 text-center">{toPercent(convRate)}</td>
+                  <td className="p-2 text-center">{toPercent(variant.currentWeight)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <div className="text-xs text-gray-500 mt-3">Total impressions: {totalImpressions.toLocaleString()}</div>
+      </div>
     </div>
   );
 }

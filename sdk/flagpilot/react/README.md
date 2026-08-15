@@ -1,36 +1,80 @@
 # Flagpilot React SDK
 
-Simple React SDK to fetch flags from a Flagpilot backend.
+React SDK for Flagpilot evaluation and goal tracking APIs.
 
-Quick start
-
-1. Install:
+## Install
 
 ```bash
 npm install flagpilot-react
 ```
 
-2. Wrap your app:
+## Provider setup
 
 ```tsx
-import { FlagpilotProvider } from 'flagpilot-react'
+import { FlagpilotProvider } from "flagpilot-react";
 
-<FlagpilotProvider environmentKey={process.env.NEXT_PUBLIC_FLAGPILOT_KEY}>
+<FlagpilotProvider
+  apiKey={process.env.NEXT_PUBLIC_FLAGPILOT_API_KEY as string}
+  baseUrl={process.env.NEXT_PUBLIC_FLAGPILOT_BASE_URL}
+>
   <App />
 </FlagpilotProvider>
 ```
 
-3. Use the `useFlag` hook:
+Default `baseUrl` is `http://localhost:4000/api/flagpilot/v1`.
+
+## Evaluate a flag
 
 ```tsx
-import { useFlag } from 'flagpilot-react'
+import { useFlag } from "flagpilot-react";
 
-function MyFeature() {
-  const { enabled, value } = useFlag('show_new_landing')
-  return enabled ? <NewLanding value={value} /> : <OldLanding />
+function CheckoutButton() {
+  const { value: config, isLoading } = useFlag(
+    "new_checkout_flow",
+    "purchase_completed",
+    { btnColor: "blue", text: "Checkout" }
+  );
+
+  if (isLoading) return <button>Checkout</button>;
+
+  return <button style={{ background: config.btnColor }}>{config.text}</button>;
 }
 ```
 
-Build/publish
+`useFlag` performs `POST /evaluate` and persists anonymous identity automatically.
 
-Run `npm run build` to compile to `dist/`, then publish from the package folder.
+## Track conversion goals
+
+```tsx
+import { useTrackGoal } from "flagpilot-react";
+
+function PurchaseComplete() {
+  const trackGoal = useTrackGoal();
+
+  const onSuccess = async () => {
+    await trackGoal("purchase_completed");
+  };
+
+  return <button onClick={onSuccess}>Complete Purchase</button>;
+}
+```
+
+`useTrackGoal` calls `POST /track` and relies on the same anonymous identity used during evaluation.
+
+## Low-level client
+
+```tsx
+import { AutoFlagClient } from "flagpilot-react";
+
+const client = new AutoFlagClient({
+  apiKey: "fp_proj_...",
+  baseUrl: "https://api.example.com/api/flagpilot/v1",
+});
+
+const value = await client.getValue("new_checkout_flow", "purchase_completed", false);
+await client.trackGoal("purchase_completed");
+```
+
+## Build
+
+Run `npm run build` to compile to `dist/`.

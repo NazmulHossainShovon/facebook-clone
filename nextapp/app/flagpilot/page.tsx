@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import CreateProjectModal from "../../components/flagpilot/CreateProjectModal";
 
-type Project = { _id: string; name: string };
+type Project = { _id: string; name: string; apiKey?: string };
 
 export default function FlagpilotIndex() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -24,7 +24,7 @@ export default function FlagpilotIndex() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Projects</h1>
+        <h1 className="text-2xl font-bold">Flagpilot Projects</h1>
         <button className="bg-blue-600 text-white px-3 py-1 rounded" onClick={() => setShowCreate(true)}>Create Project</button>
       </div>
 
@@ -38,6 +38,7 @@ export default function FlagpilotIndex() {
         {projects.map((p) => (
           <li key={p._id} className="p-2 border rounded mb-2">
             <a href={`/flagpilot/${p._id}/environments`} className="text-blue-600">{p.name}</a>
+            {p.apiKey && <div className="text-xs text-gray-600 mt-1">API key: {p.apiKey}</div>}
           </li>
         ))}
       </ul>

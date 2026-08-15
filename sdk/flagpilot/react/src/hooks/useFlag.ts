@@ -1,17 +1,35 @@
-import { useMemo } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFlagpilotContext } from "../FlagpilotProvider";
+import type { UseFlagResult } from "../types";
 
-export function useFlag(key: string) {
-  const { flags } = useFlagpilotContext();
+export function useFlag<T = unknown>(
+  flagKey: string,
+  goalEvent: string,
+  defaultValue: T
+): UseFlagResult<T> {
+  const { client } = useFlagpilotContext();
+  const [value, setValue] = useState<T>(defaultValue);
+  const [isLoading, setIsLoading] = useState(false);
 
-  return useMemo(() => {
-    const entry = flags[key];
-    if (!entry) return { enabled: false, value: undefined };
-    return { enabled: !!entry.enabled, value: entry.value };
-  }, [flags, key]);
+  const fetchValue = useCallback(async () => {
+    setIsLoading(true);
+    const nextValue = await client.getValue(flagKey, goalEvent, defaultValue);
+    setValue(nextValue);
+    setIsLoading(false);
+  }, [client, defaultValue, flagKey, goalEvent]);
+
+  useEffect(() => {
+    fetchValue();
+  }, [fetchValue]);
+
+  return {
+    value,
+    isLoading,
+    refetch: fetchValue,
+  };
 }
 
-export function useFlags() {
-  const { flags, isLoading, refetch } = useFlagpilotContext();
-  return { flags, isLoading, refetch };
+export function useTrackGoal() {
+  const { trackGoal } = useFlagpilotContext();
+  return trackGoal;
 }
