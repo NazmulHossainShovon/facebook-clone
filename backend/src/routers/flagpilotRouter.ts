@@ -319,7 +319,7 @@ router.post("/v1/evaluate", async (req, res) => {
 
     const selectedVariant = selectWeightedVariant(flag.variants);
 
-    Promise.all([
+    await Promise.all([
       FlagpilotEvaluationLog.create({
         flag: flag._id,
         userId: anonUserId,
