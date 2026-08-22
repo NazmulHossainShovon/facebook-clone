@@ -251,6 +251,14 @@ router.put("/flags/:id", async (req, res) => {
       return res.status(404).json({ error: "flag not found" });
     }
 
+    // Automatically recalculate weights if we now meet or exceed the optimization threshold
+    const totalImpressions = flag.variants.reduce((sum, v) => sum + v.impressions, 0);
+    if (totalImpressions >= flag.minImpressionsBeforeOptimization) {
+      await recalculateFlagWeights(flag);
+      const updatedFlag = await FlagpilotFeatureFlag.findById(flag._id).lean();
+      return res.json(updatedFlag);
+    }
+
     return res.json(flag);
   } catch (err: unknown) {
     if (err instanceof Error) {
