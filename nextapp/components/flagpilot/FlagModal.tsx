@@ -263,6 +263,12 @@ export default function FlagModal({
             </button>
           </div>
 
+          <div className="hidden md:grid grid-cols-[1fr_2fr_auto] gap-2 text-xs font-semibold text-gray-500 mb-1">
+            <div>Key</div>
+            <div>Value</div>
+            <div></div>
+          </div>
+
           {variants.map((variant, idx) => (
             <div key={`${variant.key}-${idx}`} className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-2 mb-2">
               <input
