@@ -1,40 +1,24 @@
-# Flagpilot (MVP v2)
+# Flagpilot
 
-This Flagpilot app now uses an optimization-first architecture based on implicit anonymous identity and multi-armed bandit traffic allocation.
+Flagpilot is an intelligent, self-optimizing feature testing platform that helps you deliver the best possible user experience and maximize your conversion rates effortlessly. 
 
-## What changed
+## Key Features
 
-- Project-level API key auth
-- Variant-based flags (not simple boolean/string toggles)
-- Goal auto-registration at evaluate time
-- Sticky assignment by `flag + anon user + goalEvent`
-- Conversion tracking with deduplication
-- Dynamic traffic splitting via Thompson Sampling
+* **Smart A/B/C Testing & Auto-Optimization**: Let Flagpilot do the heavy lifting. Our system learns from user behavior in real-time, automatically directing more traffic to your highest-performing designs (variants) to maximize sign-ups, sales, or engagement without any manual intervention.
+* **Multi-Option Testing**: Go beyond simple on/off switches. Test multiple design ideas, text versions, or layouts simultaneously to discover what truly resonates with your audience.
+* **Instant Setup with Secure Keys**: Connect your apps securely using project-level keys, keeping your integration simple, robust, and safe.
+* **Zero-Setup Goal Discovery**: Simply track what matters. Your conversion goals are automatically detected and registered the moment they happen, eliminating tedious dashboard configurations.
+* **Consistent User Experiences**: Ensure your visitors enjoy a seamless journey. Once a user sees a specific version of your feature, Flagpilot remembers and continues to show them that exact version on every return visit.
+* **Accurate Success Tracking**: Get clean, reliable metrics. Duplicate conversion events are automatically filtered out so you can trust your performance data.
 
-## Backend API surface
+## Interactive Dashboards
 
-- `POST /api/flagpilot/projects`
-- `GET /api/flagpilot/projects`
-- `GET /api/flagpilot/projects/:id`
-- `POST /api/flagpilot/flags`
-- `GET /api/flagpilot/flags?projectId=...`
-- `GET /api/flagpilot/flags/:id`
-- `PUT /api/flagpilot/flags/:id`
-- `POST /api/flagpilot/v1/evaluate`
-- `POST /api/flagpilot/v1/track`
+* **Project Center**: Easily organize and overview all your ongoing projects in a single, clean workspace.
+* **Experiment Dashboard**: Monitor active tests, create new variations, and check real-time traffic splits for your projects.
+* **Live Performance Insights**: Analyze interactive visual charts. See real-time conversion rates, traffic distribution, and detailed performance metrics to know exactly which options are winning.
 
-## Data model summary
+---
 
-- `FlagpilotProject`: `name`, `orgId`, `apiKey`
-- `FlagpilotFeatureFlag`: `project`, `key`, `status`, `trackedGoals`, `minImpressionsBeforeOptimization`, `variants[]`
-- `FlagpilotEvaluationLog`: sticky exposure logs with `converted` and 30-day TTL
+### Getting Started
 
-## Dashboard screens
-
-- `/flagpilot`: Projects list and creation
-- `/flagpilot/[projectId]/environments`: Project detail, API key, and flag management
-- `/flagpilot/env/[environmentId]`: Flag detail page with traffic and conversion metrics
-
-## SDK package
-
-See `sdk/flagpilot/react` for evaluate/track based client and React hooks.
+For guidelines on integrating Flagpilot into your React applications, please check out our React SDK instructions.
