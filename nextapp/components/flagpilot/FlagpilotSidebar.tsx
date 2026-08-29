@@ -48,6 +48,10 @@ export default function FlagpilotSidebar() {
           Projects
         </Link>
 
+        <Link href="/flagpilot/test-playground" className={getActiveClass(pathname === "/flagpilot/test-playground")}>
+          Test Playground
+        </Link>
+
         {projects.length ? (
           <div className="mt-3">
             <div className="px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
