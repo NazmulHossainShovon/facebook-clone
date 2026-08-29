@@ -3,13 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import apiClient from "../../app/lib/api-client";
 
 type Project = {
   _id: string;
   name: string;
 };
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 function getActiveClass(isActive: boolean): string {
   if (isActive) {
@@ -30,15 +29,9 @@ export default function FlagpilotSidebar() {
   const flagId = flagMatch?.[1];
 
   useEffect(() => {
-    fetch(API_BASE + "/api/flagpilot/projects")
+    apiClient.get("/api/flagpilot/projects")
       .then((res) => {
-        if (!res.ok) {
-          return [];
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setProjects(Array.isArray(data) ? data.slice(0, 8) : []);
+        setProjects(Array.isArray(res.data) ? res.data.slice(0, 8) : []);
       })
       .catch(() => {
         setProjects([]);

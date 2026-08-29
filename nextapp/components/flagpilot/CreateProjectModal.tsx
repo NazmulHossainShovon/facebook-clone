@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import apiClient from "../../app/lib/api-client";
 
 export default function CreateProjectModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: (proj: any) => void }) {
   const [name, setName] = useState("");
@@ -14,22 +15,17 @@ export default function CreateProjectModal({ open, onClose, onCreated }: { open:
     if (!name.trim()) return setError("Project name is required");
     setLoading(true);
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagpilot/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), orgId: orgId.trim() || undefined }),
+      const res = await apiClient.post("/api/flagpilot/projects", {
+        name: name.trim(),
+        orgId: orgId.trim() || undefined,
       });
-      if (!res.ok) {
-        const maybeErr = await res.json().catch(() => null);
-        throw new Error(maybeErr?.error || "failed");
-      }
-      const data = await res.json();
-      onCreated(data);
+      onCreated(res.data);
       setName("");
       setOrgId("");
       onClose();
     } catch (err: any) {
-      setError(err?.message || "Failed to create project");
+      const errorMsg = err?.response?.data?.error || err?.message || "Failed to create project";
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

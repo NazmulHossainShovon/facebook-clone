@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import apiClient from "../../app/lib/api-client";
 
 type VariantInput = {
   key: string;
@@ -158,39 +159,20 @@ export default function FlagModal({
         variants: normalizedVariants,
       };
 
-      let res: Response;
+      let resData;
       if (flag && flag._id) {
-        res = await fetch(
-          (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") +
-            "/api/flagpilot/flags/" +
-            flag._id,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          }
-        );
+        const response = await apiClient.put("/api/flagpilot/flags/" + flag._id, payload);
+        resData = response.data;
       } else {
-        res = await fetch(
-          (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagpilot/flags",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          }
-        );
+        const response = await apiClient.post("/api/flagpilot/flags", payload);
+        resData = response.data;
       }
 
-      if (!res.ok) {
-        const maybeErr = await res.json().catch(() => null);
-        throw new Error(maybeErr?.error || "Failed to save flag");
-      }
-
-      const data = await res.json();
-      onSaved(data);
+      onSaved(resData);
       onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save flag");
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.error || err?.message || "Failed to save flag";
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

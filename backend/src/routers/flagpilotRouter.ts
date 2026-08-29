@@ -9,6 +9,7 @@ import {
 } from "../models/flagpilotFeatureFlagModel";
 import { FlagpilotEvaluationLog } from "../models/flagpilotEvaluationLogModel";
 import { calculateThompsonWeights } from "../lib/mab";
+import { isAuth } from "../utils";
 
 const router = express.Router();
 
@@ -104,20 +105,18 @@ async function recalculateFlagWeights(flag: IFlagpilotFeatureFlag): Promise<void
   await FlagpilotFeatureFlag.updateOne({ _id: flag._id }, { $set: { variants: updatedVariants } });
 }
 
-router.post("/projects", async (req, res) => {
+router.post("/projects", isAuth, async (req, res) => {
   try {
-    const { name, orgId } = req.body;
+    const { name } = req.body;
     if (!name) {
       return res.status(400).json({ error: "name is required" });
     }
 
-    const normalizedOrgId = orgId && mongoose.Types.ObjectId.isValid(orgId)
-      ? new mongoose.Types.ObjectId(orgId)
-      : new mongoose.Types.ObjectId();
+    const orgId = req.user!._id;
 
     const project = new FlagpilotProject({
       name,
-      orgId: normalizedOrgId,
+      orgId,
       apiKey: `fp_proj_${crypto.randomBytes(12).toString("hex")}`,
     });
 
@@ -128,18 +127,18 @@ router.post("/projects", async (req, res) => {
   }
 });
 
-router.get("/projects", async (_req, res) => {
+router.get("/projects", isAuth, async (req, res) => {
   try {
-    const projects = await FlagpilotProject.find().sort({ createdAt: -1 }).lean();
+    const projects = await FlagpilotProject.find({ orgId: req.user!._id }).sort({ createdAt: -1 }).lean();
     return res.json(projects);
   } catch (_err) {
     return res.status(500).json({ error: "failed to fetch projects" });
   }
 });
 
-router.get("/projects/:id", async (req, res) => {
+router.get("/projects/:id", isAuth, async (req, res) => {
   try {
-    const project = await FlagpilotProject.findById(req.params.id).lean();
+    const project = await FlagpilotProject.findOne({ _id: req.params.id, orgId: req.user!._id }).lean();
     if (!project) {
       return res.status(404).json({ error: "project not found" });
     }
@@ -149,7 +148,7 @@ router.get("/projects/:id", async (req, res) => {
   }
 });
 
-router.post("/flags", async (req, res) => {
+router.post("/flags", isAuth, async (req, res) => {
   try {
     const {
       projectId,
@@ -168,6 +167,12 @@ router.post("/flags", async (req, res) => {
 
     if (!mongoose.Types.ObjectId.isValid(projectId)) {
       return res.status(400).json({ error: "invalid projectId" });
+    }
+
+    // Verify project ownership
+    const project = await FlagpilotProject.findOne({ _id: projectId, orgId: req.user!._id }).lean();
+    if (!project) {
+      return res.status(403).json({ error: "Unauthorized access to project" });
     }
 
     const normalizedVariants = normalizeVariants(variants);
@@ -197,11 +202,21 @@ router.post("/flags", async (req, res) => {
   }
 });
 
-router.get("/flags", async (req, res) => {
+router.get("/flags", isAuth, async (req, res) => {
   try {
     const { projectId } = req.query;
     if (!projectId) {
       return res.status(400).json({ error: "projectId is required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(projectId as string)) {
+      return res.status(400).json({ error: "invalid projectId" });
+    }
+
+    // Verify project ownership
+    const project = await FlagpilotProject.findOne({ _id: projectId, orgId: req.user!._id }).lean();
+    if (!project) {
+      return res.status(403).json({ error: "Unauthorized access to project" });
     }
 
     const flags = await FlagpilotFeatureFlag.find({ project: projectId })
@@ -214,11 +229,17 @@ router.get("/flags", async (req, res) => {
   }
 });
 
-router.get("/flags/:id", async (req, res) => {
+router.get("/flags/:id", isAuth, async (req, res) => {
   try {
-    const flag = await FlagpilotFeatureFlag.findById(req.params.id).lean();
+    const flag = await FlagpilotFeatureFlag.findById(req.params.id);
     if (!flag) {
       return res.status(404).json({ error: "flag not found" });
+    }
+
+    // Verify project ownership
+    const project = await FlagpilotProject.findOne({ _id: flag.project, orgId: req.user!._id }).lean();
+    if (!project) {
+      return res.status(403).json({ error: "Unauthorized access to project" });
     }
 
     return res.json(flag);
@@ -227,8 +248,19 @@ router.get("/flags/:id", async (req, res) => {
   }
 });
 
-router.put("/flags/:id", async (req, res) => {
+router.put("/flags/:id", isAuth, async (req, res) => {
   try {
+    const flagToUpdate = await FlagpilotFeatureFlag.findById(req.params.id);
+    if (!flagToUpdate) {
+      return res.status(404).json({ error: "flag not found" });
+    }
+
+    // Verify project ownership
+    const project = await FlagpilotProject.findOne({ _id: flagToUpdate.project, orgId: req.user!._id }).lean();
+    if (!project) {
+      return res.status(403).json({ error: "Unauthorized access to project" });
+    }
+
     const update: Record<string, unknown> = {};
     const allowed = ["description", "status", "minImpressionsBeforeOptimization", "variants"];
 
@@ -269,6 +301,7 @@ router.put("/flags/:id", async (req, res) => {
   }
 });
 
+// Evaluate & track remain public/unauthenticated endpoints since they are called from external client SDKs
 router.post("/v1/evaluate", async (req, res) => {
   try {
     const apiKey = req.header("x-api-key");

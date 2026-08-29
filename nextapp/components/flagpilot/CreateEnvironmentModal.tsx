@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import apiClient from "../../app/lib/api-client";
 
 export default function CreateEnvironmentModal({ open, projectId, onClose, onCreated }: { open: boolean; projectId: string; onClose: () => void; onCreated: (env: any) => void }) {
   const [name, setName] = useState("");
@@ -13,14 +14,11 @@ export default function CreateEnvironmentModal({ open, projectId, onClose, onCre
     if (!name.trim()) return setError("Environment name is required");
     setLoading(true);
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagpilot/environments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), projectId }),
+      const res = await apiClient.post("/api/flagpilot/environments", {
+        name: name.trim(),
+        projectId,
       });
-      if (!res.ok) throw new Error("failed");
-      const data = await res.json();
-      onCreated(data);
+      onCreated(res.data);
       setName("");
       onClose();
     } catch (err) {

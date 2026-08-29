@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import FlagModal from "../../../../components/flagpilot/FlagModal";
 import CopyKeyButton from "../../../../components/flagpilot/CopyKeyButton";
+import apiClient from "../../../lib/api-client";
 
 type Variant = {
   key: string;
@@ -26,8 +27,6 @@ type Project = {
   apiKey: string;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-
 export default function ProjectFlagsPage() {
   const params = useParams() as { projectId: string };
   const { projectId } = params;
@@ -38,19 +37,16 @@ export default function ProjectFlagsPage() {
   const [editing, setEditing] = useState<any | null>(null);
 
   const load = async () => {
-    const [projectRes, flagsRes] = await Promise.all([
-      fetch(API_BASE + "/api/flagpilot/projects/" + projectId),
-      fetch(API_BASE + "/api/flagpilot/flags?projectId=" + projectId),
-    ]);
+    try {
+      const [projectRes, flagsRes] = await Promise.all([
+        apiClient.get("/api/flagpilot/projects/" + projectId),
+        apiClient.get("/api/flagpilot/flags?projectId=" + projectId),
+      ]);
 
-    if (projectRes.ok) {
-      const projectData = await projectRes.json();
-      setProject(projectData);
-    }
-
-    if (flagsRes.ok) {
-      const flagsData = await flagsRes.json();
-      setFlags(flagsData || []);
+      setProject(projectRes.data);
+      setFlags(flagsRes.data || []);
+    } catch (err) {
+      console.error("Failed to load project flags", err);
     }
   };
 

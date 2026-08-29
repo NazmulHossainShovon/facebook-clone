@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import apiClient from "../../../lib/api-client";
 
 type Variant = {
   key: string;
@@ -20,8 +21,6 @@ type Flag = {
   variants: Variant[];
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-
 function toPercent(num: number): string {
   return `${(num * 100).toFixed(1)}%`;
 }
@@ -33,12 +32,12 @@ export default function FlagDetailPage() {
   const [flag, setFlag] = useState<Flag | null>(null);
 
   const load = async () => {
-    const res = await fetch(API_BASE + "/api/flagpilot/flags/" + flagId, {
-      cache: "no-store",
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-    setFlag(data);
+    try {
+      const res = await apiClient.get("/api/flagpilot/flags/" + flagId);
+      setFlag(res.data);
+    } catch (err) {
+      console.error("Failed to load flag details", err);
+    }
   };
 
   useEffect(() => {

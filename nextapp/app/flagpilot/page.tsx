@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import CreateProjectModal from "../../components/flagpilot/CreateProjectModal";
+import apiClient from "../lib/api-client";
 
 type Project = { _id: string; name: string; apiKey?: string };
 
@@ -11,9 +12,9 @@ export default function FlagpilotIndex() {
 
   const load = () => {
     setLoading(true);
-    fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000") + "/api/flagpilot/projects")
-      .then((r) => r.json())
-      .then((data) => setProjects(data || []))
+    apiClient.get("/api/flagpilot/projects")
+      .then((res) => setProjects(res.data || []))
+      .catch(() => setProjects([]))
       .finally(() => setLoading(false));
   };
 
