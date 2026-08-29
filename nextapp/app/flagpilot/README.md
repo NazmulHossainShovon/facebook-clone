@@ -20,8 +20,56 @@ Flagpilot is an intelligent, self-optimizing feature testing platform that helps
 * **Experiment Dashboard**: Monitor active tests, create new variations, configure optimization thresholds, and check real-time traffic splits for your projects.
 * **Live Performance Insights**: Analyze interactive visual charts. See real-time conversion rates, traffic distribution, and detailed performance metrics to know exactly which options are winning.
 
----
+## React SDK Integration Guide
 
-### Getting Started
+Integrating Flagpilot into your React or Next.js application is simple and takes just two steps:
 
-For guidelines on integrating Flagpilot into your React applications, please check out our React SDK instructions.
+### 1. Set Up the Provider
+Wrap your root application component with the `FlagpilotProvider` and supply your secure project API key:
+
+```tsx
+import { FlagpilotProvider } from "flagpilot-react";
+
+export default function RootLayout({ children }) {
+  return (
+    <FlagpilotProvider 
+      apiKey="YOUR_PROJECT_API_KEY" 
+      baseUrl="http://localhost:4000/api/flagpilot/v1"
+    >
+      {children}
+    </FlagpilotProvider>
+  );
+}
+```
+
+### 2. Evaluate Flags & Track Conversion Goals
+Use custom React hooks to instantly evaluate dynamic variations (booleans, strings, or complex JSON configurations) and track successful actions/goals:
+
+```tsx
+import { useFlag, useTrackGoal } from "flagpilot-react";
+
+export function PromoBanner() {
+  // Retrieve variant configuration with automatic visitor session assignment
+  const { value: config, isLoading } = useFlag(
+    "promo_banner_test",   // Flag Key
+    "banner_clicked",      // Goal Event Key
+    { title: "Standard Offer", theme: "gray" } // Fallback Default
+  );
+
+  const trackGoal = useTrackGoal();
+
+  if (isLoading) return null;
+
+  return (
+    <div className={`p-4 rounded border ${config.theme === "gray" ? "bg-gray-100" : "bg-blue-100"}`}>
+      <h2>{config.title}</h2>
+      <button 
+        onClick={() => trackGoal("banner_clicked")}
+        className="mt-2 bg-blue-600 text-white px-3 py-1 rounded"
+      >
+        Claim Offer
+      </button>
+    </div>
+  );
+}
+```
