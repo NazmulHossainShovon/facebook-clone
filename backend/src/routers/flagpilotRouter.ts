@@ -45,7 +45,7 @@ function getExistingAnonymousUserId(req: express.Request): string | undefined {
   const headerAnon = req.header("x-anon-user-id") || undefined;
   const cookieMap = parseCookieHeader(req.header("cookie"));
   const cookieAnon = cookieMap.af_anon_id;
-  return cookieAnon || headerAnon;
+  return headerAnon || cookieAnon;
 }
 
 function buildCookieHeader(value: string): string {
