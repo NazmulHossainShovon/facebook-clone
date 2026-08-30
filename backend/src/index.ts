@@ -27,16 +27,18 @@ export const userSocketMap = new Map<string, string>();
 
 const MONGODB_URI = process.env.MONGODB_URI || "";
 mongoose.set("strictQuery", true);
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => {
-    console.log("connected to mongodb");
-  })
-  .catch(() => {
-    console.log("error mongodb");
-  });
+if (process.env.NODE_ENV !== "test") {
+  mongoose
+    .connect(MONGODB_URI)
+    .then(() => {
+      console.log("connected to mongodb");
+    })
+    .catch(() => {
+      console.log("error mongodb");
+    });
+}
 
-const app = express();
+export const app = express();
 const httpServer = createServer(app);
 export const io = new Server(httpServer, {
   cors: {
@@ -107,6 +109,8 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(PORT, () => {
-  console.log(`server started at http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  httpServer.listen(PORT, () => {
+    console.log(`server started at http://localhost:${PORT}`);
+  });
+}
