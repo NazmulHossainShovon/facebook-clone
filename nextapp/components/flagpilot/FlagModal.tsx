@@ -121,8 +121,13 @@ export default function FlagModal({
   const save = async () => {
     setError(null);
 
-    if (!projectId || !key.trim()) {
-      setError("Project and key are required");
+    if (!projectId) {
+      setError("Project ID is missing");
+      return;
+    }
+
+    if (!key.trim()) {
+      setError("Flag key is required");
       return;
     }
 
@@ -138,6 +143,12 @@ export default function FlagModal({
 
     if (normalizedVariants.some((variant) => !variant.key)) {
       setError("Each variant needs a key");
+      return;
+    }
+
+    const variantKeys = normalizedVariants.map((v) => v.key);
+    if (new Set(variantKeys).size !== variantKeys.length) {
+      setError("Variant keys must be unique");
       return;
     }
 

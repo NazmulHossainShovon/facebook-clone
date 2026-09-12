@@ -21,8 +21,9 @@ export default function CreateEnvironmentModal({ open, projectId, onClose, onCre
       onCreated(res.data);
       setName("");
       onClose();
-    } catch (err) {
-      setError("Failed to create environment");
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.error || err?.message || "Failed to create environment";
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
