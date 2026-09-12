@@ -96,12 +96,6 @@ export default function FlagModal({
     ]);
   }, [flag, open]);
 
-  useEffect(() => {
-    if (!flag) {
-      setKey(slugify(displayName));
-    }
-  }, [displayName, flag]);
-
   if (!open) return null;
 
   const updateVariant = (idx: number, patch: Partial<VariantInput>) => {
@@ -252,7 +246,7 @@ export default function FlagModal({
           </div>
 
           {variants.map((variant, idx) => (
-            <div key={`${variant.key}-${idx}`} className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-2 mb-2">
+            <div key={`variant-row-${idx}`} className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-2 mb-2">
               <input
                 value={variant.key}
                 onChange={(e) => updateVariant(idx, { key: slugify(e.target.value) })}
