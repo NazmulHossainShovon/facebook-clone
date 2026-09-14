@@ -33,3 +33,13 @@ export function useTrackGoal() {
   const { trackGoal } = useFlagpilotContext();
   return trackGoal;
 }
+
+export function useFlagpilot() {
+  const { client, trackGoal, identify, resetIdentity } = useFlagpilotContext();
+  return {
+    client,
+    trackGoal,
+    identify,
+    resetIdentity,
+  };
+}

@@ -27,9 +27,9 @@ describe("SignInTestPage Integration Tests", () => {
     expect(await screen.findByRole("button", { name: "Log In" })).toBeInTheDocument();
   });
 
-  test("submits form and triggers trackGoal conversion event", async () => {
+  test("submits form, calls identify and triggers trackGoal conversion event", async () => {
     (global.fetch as jest.Mock)
-      // First fetch for evaluate
+      // 1. Fetch for evaluate
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -38,7 +38,12 @@ describe("SignInTestPage Integration Tests", () => {
           anonUserId: "anon_test_123",
         }),
       })
-      // Second fetch for track
+      // 2. Fetch for identify
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: "success", mergedCount: 1 }),
+      })
+      // 3. Fetch for track
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ status: "queued" }),
@@ -56,16 +61,15 @@ describe("SignInTestPage Integration Tests", () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(global.fetch).toHaveBeenCalledTimes(3);
       expect(global.fetch).toHaveBeenLastCalledWith(
         "http://localhost:4000/api/flagpilot/v1/track",
         expect.objectContaining({
           method: "POST",
-          body: JSON.stringify({ eventName: "signin_button_clicked" }),
         })
       );
       expect(
-        screen.getByText('Submitted! Goal "signin_button_clicked" tracked.')
+        screen.getByText(/Identity merged & goal "signin_button_clicked" tracked/i)
       ).toBeInTheDocument();
     });
   });

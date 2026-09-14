@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { AutoFlagClient } from "./AutoFlagClient";
+import type { UserIdentifyInput } from "./types";
 
 type FlagpilotContextType = {
   client: AutoFlagClient;
   trackGoal: (eventName: string) => Promise<void>;
+  identify: (user: UserIdentifyInput) => Promise<void>;
+  resetIdentity: () => void;
 };
 
 const FlagpilotContext = createContext<FlagpilotContextType | null>(null);
@@ -23,6 +26,8 @@ export function FlagpilotProvider({
     () => ({
       client,
       trackGoal: async (eventName: string) => client.trackGoal(eventName),
+      identify: async (user: UserIdentifyInput) => client.identify(user),
+      resetIdentity: () => client.resetIdentity(),
     }),
     [client]
   );

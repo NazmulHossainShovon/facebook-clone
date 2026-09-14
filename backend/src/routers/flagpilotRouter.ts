@@ -301,11 +301,66 @@ router.put("/flags/:id", isAuth, async (req, res) => {
   }
 });
 
+// Identify endpoint to link anonymous ID -> authenticated User ID
+router.post("/v1/identify", async (req, res) => {
+  try {
+    const apiKey = req.header("x-api-key");
+    const { anonymousId, userId } = req.body;
+    const headerAnonId = getExistingAnonymousUserId(req);
+    const anonId = anonymousId || headerAnonId;
+
+    if (!apiKey || !userId) {
+      return res.status(400).json({ error: "Missing required parameters: userId is required." });
+    }
+
+    const project = await FlagpilotProject.findOne({ apiKey }).lean();
+    if (!project) {
+      return res.status(401).json({ error: "Invalid API Key" });
+    }
+
+    if (!anonId || anonId === userId) {
+      return res.json({ status: "success", mergedCount: 0 });
+    }
+
+    // Find all evaluation logs previously linked to the anonymous ID
+    const anonLogs = await FlagpilotEvaluationLog.find({
+      $or: [{ userId: anonId }, { anonUserId: anonId }],
+    });
+
+    let mergedCount = 0;
+
+    for (const log of anonLogs) {
+      // Check if user already has an assignment for this flag and goalEvent
+      const existingUserLog = await FlagpilotEvaluationLog.findOne({
+        flag: log.flag,
+        userId: userId,
+        goalEvent: log.goalEvent,
+      });
+
+      if (!existingUserLog) {
+        // Migrate log from anonId -> userId
+        await FlagpilotEvaluationLog.updateOne(
+          { _id: log._id },
+          { $set: { userId: userId, anonUserId: log.anonUserId || anonId } }
+        );
+        mergedCount += 1;
+      }
+    }
+
+    return res.json({ status: "success", mergedCount });
+  } catch (error) {
+    console.error("Flagpilot identify failed", error);
+    return res.status(500).json({ error: "failed to identify user" });
+  }
+});
+
 // Evaluate & track remain public/unauthenticated endpoints since they are called from external client SDKs
 router.post("/v1/evaluate", async (req, res) => {
   try {
     const apiKey = req.header("x-api-key");
-    const { flagKey, goalEvent } = req.body;
+    const { flagKey, goalEvent, userId: bodyUserId } = req.body;
+    const headerUserId = req.header("x-user-id") || undefined;
+    const userId = bodyUserId || headerUserId;
 
     if (!apiKey || !flagKey || !goalEvent) {
       return res.status(400).json({
@@ -339,14 +394,39 @@ router.post("/v1/evaluate", async (req, res) => {
       res.setHeader("Set-Cookie", buildCookieHeader(anonUserId));
     }
 
-    const existingLog = await FlagpilotEvaluationLog.findOne({
-      flag: flag._id,
-      userId: anonUserId,
-      goalEvent,
-    }).lean();
+    // 1. First check if a sticky assignment exists by authenticated userId
+    let existingLog = userId
+      ? await FlagpilotEvaluationLog.findOne({
+          flag: flag._id,
+          userId,
+          goalEvent,
+        }).lean()
+      : null;
+
+    // 2. If not found by userId, check by anonUserId
+    if (!existingLog && anonUserId) {
+      const anonLog = await FlagpilotEvaluationLog.findOne({
+        flag: flag._id,
+        $or: [{ userId: anonUserId }, { anonUserId: anonUserId }],
+        goalEvent,
+      }).lean();
+
+      if (anonLog) {
+        existingLog = anonLog;
+        // Upgrade/associate log to userId
+        if (userId) {
+          await FlagpilotEvaluationLog.updateOne(
+            { _id: anonLog._id },
+            { $set: { userId, anonUserId } }
+          );
+          existingLog.userId = userId;
+        }
+      }
+    }
 
     if (existingLog) {
-      const existingVariant = flag.variants.find((variant) => variant.key === existingLog.variantKey);
+      const variantKey = existingLog.variantKey;
+      const existingVariant = flag.variants.find((variant) => variant.key === variantKey);
       if (!existingVariant) {
         return res.status(409).json({ error: "Assigned variant no longer exists for this flag" });
       }
@@ -355,15 +435,19 @@ router.post("/v1/evaluate", async (req, res) => {
         variant: existingVariant.key,
         value: existingVariant.value,
         anonUserId,
+        userId: userId || existingLog.userId,
       });
     }
 
+    // 3. New evaluation
     const selectedVariant = selectWeightedVariant(flag.variants);
+    const activeUserId = userId || anonUserId;
 
     await Promise.all([
       FlagpilotEvaluationLog.create({
         flag: flag._id,
-        userId: anonUserId,
+        userId: activeUserId,
+        anonUserId,
         variantKey: selectedVariant.key,
         goalEvent,
       }),
@@ -379,6 +463,7 @@ router.post("/v1/evaluate", async (req, res) => {
       variant: selectedVariant.key,
       value: selectedVariant.value,
       anonUserId,
+      userId: activeUserId,
     });
   } catch (_err) {
     return res.status(500).json({ error: "failed to evaluate flag" });
@@ -388,10 +473,14 @@ router.post("/v1/evaluate", async (req, res) => {
 router.post("/v1/track", async (req, res) => {
   try {
     const apiKey = req.header("x-api-key");
-    const { eventName } = req.body;
+    const { eventName, userId: bodyUserId } = req.body;
+    const headerUserId = req.header("x-user-id") || undefined;
+    const userId = bodyUserId || headerUserId;
     const anonUserId = getExistingAnonymousUserId(req);
 
-    if (!apiKey || !eventName || !anonUserId) {
+    const userIdsToMatch = [userId, anonUserId].filter(Boolean) as string[];
+
+    if (!apiKey || !eventName || userIdsToMatch.length === 0) {
       return res.status(400).json({ error: "Missing parameters or uninitialized session." });
     }
 
@@ -412,7 +501,10 @@ router.post("/v1/track", async (req, res) => {
       const evalLog = await FlagpilotEvaluationLog.findOneAndUpdate(
         {
           flag: flag._id,
-          userId: anonUserId,
+          $or: [
+            { userId: { $in: userIdsToMatch } },
+            { anonUserId: { $in: userIdsToMatch } },
+          ],
           goalEvent: eventName,
           converted: false,
         },

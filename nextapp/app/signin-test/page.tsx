@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FlagpilotProvider, useFlag, useTrackGoal } from 'flagpilot-react';
+import { FlagpilotProvider, useFlag, useFlagpilot } from 'flagpilot-react';
 
 function SignInForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
 
-  const trackGoal = useTrackGoal();
+  const { trackGoal, identify } = useFlagpilot();
 
   // Flagpilot SDK: Flag name "signin_button_text", default "Sign In"
   const { value: buttonText, isLoading } = useFlag<string>(
@@ -20,9 +20,13 @@ function SignInForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Track conversion goal when button is clicked / form is submitted
+    // 1. Identify user to resolve anonymous ID -> user_id
+    const simulatedUserId = `user_${email.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    await identify(simulatedUserId);
+
+    // 2. Track conversion goal when button is clicked / form is submitted
     await trackGoal('signin_button_clicked');
-    setMessage(`Submitted! Goal "signin_button_clicked" tracked.`);
+    setMessage(`Signed in as ${simulatedUserId}! Identity merged & goal "signin_button_clicked" tracked.`);
   };
 
   return (

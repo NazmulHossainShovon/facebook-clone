@@ -273,4 +273,83 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
       expect(variantWinner?.currentWeight).toBeGreaterThan(variantLoser?.currentWeight || 0);
     });
   });
+
+  describe("Identity Resolution & Merging Flow (Anonymous -> User)", () => {
+    const anonVisitorId = "anon_A7F9K2";
+    const authenticatedUserId = "user_123456";
+    let assignedVariant: string;
+
+    it("should assign variant to anonymous visitor on first visit", async () => {
+      const res = await request(app)
+        .post("/api/flagpilot/v1/evaluate")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", anonVisitorId)
+        .send({
+          flagKey: "promo_banner_test",
+          goalEvent: "banner_clicked",
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("variant");
+      assignedVariant = res.body.variant;
+    });
+
+    it("should merge anonymous identity to authenticated userId via /v1/identify", async () => {
+      const res = await request(app)
+        .post("/api/flagpilot/v1/identify")
+        .set("x-api-key", apiKeyAlice)
+        .send({
+          anonymousId: anonVisitorId,
+          userId: authenticatedUserId,
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe("success");
+      expect(res.body.mergedCount).toBeGreaterThanOrEqual(1);
+
+      // Verify the log in database was upgraded to userId
+      const log = await FlagpilotEvaluationLog.findOne({
+        flag: flagIdAlice,
+        userId: authenticatedUserId,
+      });
+      expect(log).not.toBeNull();
+      expect(log?.variantKey).toBe(assignedVariant);
+    });
+
+    it("should return the exact same variant when user logs in on a new device (without anon cookie)", async () => {
+      const res = await request(app)
+        .post("/api/flagpilot/v1/evaluate")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-user-id", authenticatedUserId)
+        .send({
+          flagKey: "promo_banner_test",
+          goalEvent: "banner_clicked",
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.variant).toBe(assignedVariant);
+      expect(res.body.userId).toBe(authenticatedUserId);
+    });
+
+    it("should attribute conversion to the assigned variant when authenticated user converts", async () => {
+      const resTrack = await request(app)
+        .post("/api/flagpilot/v1/track")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-user-id", authenticatedUserId)
+        .send({
+          eventName: "banner_clicked",
+        });
+
+      expect(resTrack.status).toBe(200);
+      expect(resTrack.body.status).toBe("queued");
+
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      const updatedLog = await FlagpilotEvaluationLog.findOne({
+        flag: flagIdAlice,
+        userId: authenticatedUserId,
+      });
+      expect(updatedLog?.converted).toBe(true);
+    });
+  });
 });

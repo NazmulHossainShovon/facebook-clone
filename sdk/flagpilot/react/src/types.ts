@@ -7,6 +7,7 @@ export type EvaluateResponse = {
   variant: string;
   value: unknown;
   anonUserId?: string;
+  userId?: string;
 };
 
 export type UseFlagResult<T> = {
@@ -14,3 +15,5 @@ export type UseFlagResult<T> = {
   isLoading: boolean;
   refetch: () => Promise<void>;
 };
+
+export type UserIdentifyInput = string | { id: string };
