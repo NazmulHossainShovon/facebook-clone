@@ -79,6 +79,60 @@ function normalizeVariants(variants: CreateVariantInput[]): IFlagpilotVariant[] 
   });
 }
 
+function mergeAndValidateVariants(
+  existingVariants: IFlagpilotVariant[],
+  incomingRaw: CreateVariantInput[]
+): IFlagpilotVariant[] {
+  const normalizedIncoming = normalizeVariants(incomingRaw);
+
+  const existingMap = new Map<string, IFlagpilotVariant>();
+  for (const v of existingVariants) {
+    existingMap.set(v.key, v);
+  }
+
+  // Validate against deletion or value modification of already served variants
+  for (const oldVar of existingVariants) {
+    if (oldVar.impressions > 0) {
+      const newVar = normalizedIncoming.find((v) => v.key === oldVar.key);
+      if (!newVar) {
+        throw new Error(`Cannot delete variant '${oldVar.key}' because it has already been served to users.`);
+      }
+
+      if (JSON.stringify(newVar.value) !== JSON.stringify(oldVar.value)) {
+        throw new Error(`Cannot modify value of variant '${oldVar.key}' because it has already been served to users.`);
+      }
+    }
+  }
+
+  // Determine if the keys are identical to the existing ones to decide whether to preserve current weights
+  const existingKeys = new Set(existingVariants.map((v) => v.key));
+  const incomingKeys = new Set(normalizedIncoming.map((v) => v.key));
+  const isKeysSetIdentical =
+    existingKeys.size === incomingKeys.size &&
+    [...existingKeys].every((k) => incomingKeys.has(k));
+
+  return normalizedIncoming.map((newVar) => {
+    const matched = existingMap.get(newVar.key);
+    if (matched) {
+      return {
+        key: newVar.key,
+        value: newVar.value,
+        impressions: matched.impressions,
+        conversions: matched.conversions,
+        currentWeight: isKeysSetIdentical ? matched.currentWeight : 1 / normalizedIncoming.length,
+      } as IFlagpilotVariant;
+    } else {
+      return {
+        key: newVar.key,
+        value: newVar.value,
+        impressions: 0,
+        conversions: 0,
+        currentWeight: 1 / normalizedIncoming.length,
+      } as IFlagpilotVariant;
+    }
+  });
+}
+
 function selectWeightedVariant(variants: IFlagpilotVariant[]): IFlagpilotVariant {
   const rand = Math.random();
   let cumulative = 0;
@@ -270,8 +324,15 @@ router.put("/flags/:id", isAuth, async (req, res) => {
       }
     }
 
+    let isKeysSetIdentical = true;
     if (Array.isArray(update.variants)) {
-      update.variants = normalizeVariants(update.variants as CreateVariantInput[]);
+      const existingKeys = new Set(flagToUpdate.variants.map((v) => v.key));
+      const incomingKeys = new Set((update.variants as CreateVariantInput[]).map((v) => (v.key || "").trim()));
+      isKeysSetIdentical =
+        existingKeys.size === incomingKeys.size &&
+        [...existingKeys].every((k) => incomingKeys.has(k));
+
+      update.variants = mergeAndValidateVariants(flagToUpdate.variants, update.variants as CreateVariantInput[]);
     }
 
     const flag = await FlagpilotFeatureFlag.findByIdAndUpdate(req.params.id, update, {
@@ -284,8 +345,10 @@ router.put("/flags/:id", isAuth, async (req, res) => {
     }
 
     // Automatically recalculate weights if we now meet or exceed the optimization threshold
+    // Only automatically recalculate if the variant keys did NOT change.
+    // If a new variant was added, we want to skip immediate recalculation so the new variant can collect impressions with its initial fair weight!
     const totalImpressions = flag.variants.reduce((sum, v) => sum + v.impressions, 0);
-    if (totalImpressions >= flag.minImpressionsBeforeOptimization) {
+    if (isKeysSetIdentical && totalImpressions >= flag.minImpressionsBeforeOptimization) {
       await recalculateFlagWeights(flag);
       const updatedFlag = await FlagpilotFeatureFlag.findById(flag._id).lean();
       return res.json(updatedFlag);

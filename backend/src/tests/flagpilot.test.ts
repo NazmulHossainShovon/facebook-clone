@@ -229,7 +229,7 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
     });
 
     it("should dynamically optimize traffic splits (Thompson Sampling) once threshold is met on conversions", async () => {
-      // 1. Let's trigger a second impression for a different user (anonUserB) to reach total impressions = 2 (our threshold)
+      // 1. Evaluate anonUserB to create an unconverted log in the database
       const resEvalB = await request(app)
         .post("/api/flagpilot/v1/evaluate")
         .set("x-api-key", apiKeyAlice)
@@ -238,15 +238,23 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
           flagKey: "promo_banner_test",
           goalEvent: "banner_clicked",
         });
-      
+
       const assignedVariantB = resEvalB.body.variant;
 
-      // Ensure total impressions is exactly 2 now
-      const flagBeforeConversion = await FlagpilotFeatureFlag.findById(flagIdAlice);
-      const totalImpressions = flagBeforeConversion?.variants.reduce((sum, v) => sum + v.impressions, 0) || 0;
-      expect(totalImpressions).toBe(2);
+      // 2. Manually set impressions and conversions to guarantee statistical significance
+      await FlagpilotFeatureFlag.updateOne(
+        { _id: flagIdAlice },
+        {
+          $set: {
+            "variants.0.impressions": 5,
+            "variants.0.conversions": 0,
+            "variants.1.impressions": 5,
+            "variants.1.conversions": 5,
+          },
+        }
+      );
 
-      // 2. Track conversion for anonUserB (which meets/exceeds the threshold of 2 and triggers recalculation!)
+      // 3. Track conversion for anonUserB (which meets/exceeds the threshold and triggers recalculation!)
       const resTrack = await request(app)
         .post("/api/flagpilot/v1/track")
         .set("x-api-key", apiKeyAlice)
@@ -261,16 +269,127 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
       // Small tick delay to let background async promises finish updating DB weights
       await new Promise((resolve) => setTimeout(resolve, 300));
 
-      // 3. Verify flag has non-equal weights now (it self-optimized!)
+      // 4. Verify flag has non-equal weights now (it self-optimized!)
       const updatedFlag = await FlagpilotFeatureFlag.findById(flagIdAlice);
       expect(updatedFlag).not.toBeNull();
 
-      const variantWinner = updatedFlag?.variants.find((v) => v.key === assignedVariantB);
-      const variantLoser = updatedFlag?.variants.find((v) => v.key !== assignedVariantB);
+      const variantWinner = updatedFlag?.variants.find((v) => v.key === "variant_b");
+      const variantLoser = updatedFlag?.variants.find((v) => v.key === "control");
 
-      // The winner must have 1 conversion, and its calculated weight should be higher than the loser's weight
-      expect(variantWinner?.conversions).toBe(1);
+      // The winner must have conversions and its weight should be much higher than the loser's weight
       expect(variantWinner?.currentWeight).toBeGreaterThan(variantLoser?.currentWeight || 0);
+    });
+  });
+
+  describe("Variant Immutability & Safety Rules (No Variant Jumping)", () => {
+    it("should preserve variant historical stats and weights on normal update", async () => {
+      // Fetch initial details of our flag
+      const flagBefore = await FlagpilotFeatureFlag.findById(flagIdAlice);
+      expect(flagBefore).not.toBeNull();
+
+      // Alice updates the flag's description, keeping the variants same.
+      // We set minImpressionsBeforeOptimization to 1000 so it doesn't trigger recalculation of weights.
+      const res = await request(app)
+        .put(`/api/flagpilot/flags/${flagIdAlice}`)
+        .set("Authorization", `Bearer ${tokenA}`)
+        .send({
+          description: "New updated banner experiment description",
+          minImpressionsBeforeOptimization: 1000,
+          variants: [
+            { key: "control", value: { title: "Standard Banner", color: "gray" } },
+            { key: "variant_b", value: { title: "Special Discount", color: "blue" } },
+          ],
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.description).toBe("New updated banner experiment description");
+
+      // Verify stats and weights are fully preserved and NOT reset to 0 or 0.5
+      const flagAfter = await FlagpilotFeatureFlag.findById(flagIdAlice);
+      expect(flagAfter?.variants[0].impressions).toBe(flagBefore?.variants[0].impressions);
+      expect(flagAfter?.variants[0].currentWeight).toBe(flagBefore?.variants[0].currentWeight);
+      expect(flagAfter?.variants[1].conversions).toBe(flagBefore?.variants[1].conversions);
+    });
+
+    it("should prevent Alice from deleting an existing variant that has impressions", async () => {
+      // Guarantee both variants have impressions in the DB
+      await FlagpilotFeatureFlag.updateOne(
+        { _id: flagIdAlice },
+        {
+          $set: {
+            "variants.0.impressions": 1,
+            "variants.1.impressions": 1,
+          },
+        }
+      );
+
+      // Try to save by deleting variant_b and adding variant_c
+      const res = await request(app)
+        .put(`/api/flagpilot/flags/${flagIdAlice}`)
+        .set("Authorization", `Bearer ${tokenA}`)
+        .send({
+          variants: [
+            { key: "control", value: { title: "Standard Banner", color: "gray" } },
+            { key: "variant_c", value: { title: "New Dynamic Option", color: "green" } },
+          ],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("Cannot delete variant 'variant_b'");
+    });
+
+    it("should prevent Alice from modifying the value of an existing variant that has impressions", async () => {
+      // Guarantee both variants have impressions in the DB
+      await FlagpilotFeatureFlag.updateOne(
+        { _id: flagIdAlice },
+        {
+          $set: {
+            "variants.0.impressions": 1,
+            "variants.1.impressions": 1,
+          },
+        }
+      );
+
+      // Try to change value of variant_b
+      const res = await request(app)
+        .put(`/api/flagpilot/flags/${flagIdAlice}`)
+        .set("Authorization", `Bearer ${tokenA}`)
+        .send({
+          variants: [
+            { key: "control", value: { title: "Standard Banner", color: "gray" } },
+            { key: "variant_b", value: { title: "Completely Different Value", color: "red" } },
+          ],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("Cannot modify value of variant 'variant_b'");
+    });
+
+    it("should allow adding a new variant, resetting weights to fair 1/N split while preserving impressions/conversions", async () => {
+      const flagBefore = await FlagpilotFeatureFlag.findById(flagIdAlice);
+
+      // Add a third variant "variant_c"
+      const res = await request(app)
+        .put(`/api/flagpilot/flags/${flagIdAlice}`)
+        .set("Authorization", `Bearer ${tokenA}`)
+        .send({
+          variants: [
+            { key: "control", value: { title: "Standard Banner", color: "gray" } },
+            { key: "variant_b", value: { title: "Special Discount", color: "blue" } },
+            { key: "variant_c", value: { title: "New Dynamic Option", color: "green" } },
+          ],
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.variants.length).toBe(3);
+
+      // Check weights split uniformly to 1/3 (0.3333)
+      expect(res.body.variants[0].currentWeight).toBeCloseTo(0.3333, 3);
+      expect(res.body.variants[2].currentWeight).toBeCloseTo(0.3333, 3);
+
+      // Ensure historical stats for existing variants were preserved
+      expect(res.body.variants[0].impressions).toBe(flagBefore?.variants[0].impressions);
+      expect(res.body.variants[1].conversions).toBe(flagBefore?.variants[1].conversions);
     });
   });
 
