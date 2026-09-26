@@ -70,6 +70,7 @@ export default function FlagModal({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setError(null);
     if (flag) {
       setDisplayName(flag.key.replace(/_/g, " "));
       setKey(flag.key || "");

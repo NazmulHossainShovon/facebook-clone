@@ -90,17 +90,15 @@ function mergeAndValidateVariants(
     existingMap.set(v.key, v);
   }
 
-  // Validate against deletion or value modification of already served variants
+  // Validate against deletion of already served variants
   for (const oldVar of existingVariants) {
     if (oldVar.impressions > 0) {
       const newVar = normalizedIncoming.find((v) => v.key === oldVar.key);
       if (!newVar) {
         throw new Error(`Cannot delete variant '${oldVar.key}' because it has already been served to users.`);
       }
-
-      if (JSON.stringify(newVar.value) !== JSON.stringify(oldVar.value)) {
-        throw new Error(`Cannot modify value of variant '${oldVar.key}' because it has already been served to users.`);
-      }
+      // Note: We deliberately allow modifying the "value" of the variant here to support typo/minor corrections
+      // without breaking historical impressions, conversions, or weights!
     }
   }
 

@@ -338,31 +338,36 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
       expect(res.body.error).toContain("Cannot delete variant 'variant_b'");
     });
 
-    it("should prevent Alice from modifying the value of an existing variant that has impressions", async () => {
-      // Guarantee both variants have impressions in the DB
+    it("should allow Alice to modify the value of an existing variant (e.g. for typo fixes) while preserving statistics", async () => {
+      // Guarantee variant_b has impressions and conversions in the DB
       await FlagpilotFeatureFlag.updateOne(
         { _id: flagIdAlice },
         {
           $set: {
             "variants.0.impressions": 1,
-            "variants.1.impressions": 1,
+            "variants.1.impressions": 5,
+            "variants.1.conversions": 3,
           },
         }
       );
 
-      // Try to change value of variant_b
+      // Try to correct the value of variant_b (e.g. fixing typo/wording)
       const res = await request(app)
         .put(`/api/flagpilot/flags/${flagIdAlice}`)
         .set("Authorization", `Bearer ${tokenA}`)
         .send({
           variants: [
             { key: "control", value: { title: "Standard Banner", color: "gray" } },
-            { key: "variant_b", value: { title: "Completely Different Value", color: "red" } },
+            { key: "variant_b", value: { title: "Special Premium Discount!", color: "blue" } },
           ],
         });
 
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain("Cannot modify value of variant 'variant_b'");
+      expect(res.status).toBe(200);
+      expect(res.body.variants[1].value.title).toBe("Special Premium Discount!");
+
+      // Verify that its impressions, conversions and weights are completely preserved and NOT reset
+      expect(res.body.variants[1].impressions).toBe(5);
+      expect(res.body.variants[1].conversions).toBe(3);
     });
 
     it("should allow adding a new variant, resetting weights to fair 1/N split while preserving impressions/conversions", async () => {
