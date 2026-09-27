@@ -7,6 +7,11 @@ type VariantInput = {
   value: string;
 };
 
+type GoalSettingInput = {
+  eventName: string;
+  type: "unique" | "repeatable";
+};
+
 type Flag = {
   _id?: string;
   key: string;
@@ -14,6 +19,8 @@ type Flag = {
   status: "active" | "paused" | "archived";
   minImpressionsBeforeOptimization: number;
   variants: { key: string; value: unknown }[];
+  trackedGoals?: string[];
+  goalSettings?: GoalSettingInput[];
 };
 
 function slugify(s: string) {
@@ -66,6 +73,7 @@ export default function FlagModal({
     { key: "control", value: "false" },
     { key: "variant_b", value: "true" },
   ]);
+  const [goalSettings, setGoalSettings] = useState<GoalSettingInput[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,6 +91,18 @@ export default function FlagModal({
           value: stringifyVariantValue(variant.value),
         }))
       );
+
+      // Merge trackedGoals and existing goalSettings
+      const existingSettings = flag.goalSettings || [];
+      const trackedGoals = flag.trackedGoals || [];
+      const mergedSettings = [...existingSettings];
+
+      for (const goalName of trackedGoals) {
+        if (!mergedSettings.some((s) => s.eventName === goalName)) {
+          mergedSettings.push({ eventName: goalName, type: "unique" });
+        }
+      }
+      setGoalSettings(mergedSettings);
       return;
     }
 
@@ -95,6 +115,7 @@ export default function FlagModal({
       { key: "control", value: "false" },
       { key: "variant_b", value: "true" },
     ]);
+    setGoalSettings([]);
   }, [flag, open]);
 
   if (!open) return null;
@@ -117,6 +138,26 @@ export default function FlagModal({
 
   const removeVariant = (idx: number) => {
     setVariants((current) => current.filter((_, currentIdx) => currentIdx !== idx));
+  };
+
+  const addGoalSetting = () => {
+    setGoalSettings((current) => [
+      ...current,
+      { eventName: "", type: "unique" },
+    ]);
+  };
+
+  const updateGoalSetting = (idx: number, patch: Partial<GoalSettingInput>) => {
+    setGoalSettings((current) =>
+      current.map((gs, currentIdx) => {
+        if (currentIdx !== idx) return gs;
+        return { ...gs, ...patch };
+      })
+    );
+  };
+
+  const removeGoalSetting = (idx: number) => {
+    setGoalSettings((current) => current.filter((_, currentIdx) => currentIdx !== idx));
   };
 
   const save = async () => {
@@ -153,6 +194,17 @@ export default function FlagModal({
       return;
     }
 
+    // Validate and filter goalSettings
+    const filteredGoalSettings = goalSettings
+      .map((gs) => ({ eventName: (gs.eventName || "").trim(), type: gs.type }))
+      .filter((gs) => gs.eventName !== "");
+
+    const goalNames = filteredGoalSettings.map((gs) => gs.eventName);
+    if (new Set(goalNames).size !== goalNames.length) {
+      setError("Goal event names must be unique");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -163,6 +215,7 @@ export default function FlagModal({
         status,
         minImpressionsBeforeOptimization,
         variants: normalizedVariants,
+        goalSettings: filteredGoalSettings,
       };
 
       let resData;
@@ -243,10 +296,65 @@ export default function FlagModal({
           </label>
         </div>
 
+        {/* Tracked Goal Counting Strategy Config Section */}
         <div className="border rounded p-3 mb-3">
           <div className="flex items-center justify-between mb-2">
-            <div className="font-medium">Variants</div>
-            <button type="button" className="px-2 py-1 border rounded" onClick={addVariant}>
+            <div className="font-semibold text-sm text-gray-700">Tracked Goal Strategies</div>
+            <button
+              type="button"
+              className="px-2 py-1 text-xs border rounded hover:bg-gray-50 transition font-semibold"
+              onClick={addGoalSetting}
+            >
+              Add Goal Config
+            </button>
+          </div>
+
+          {goalSettings.length === 0 ? (
+            <div className="text-xs text-gray-500 py-1">
+              No custom goal strategies defined. Discovered goals default to "unique" (count once per user).
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="hidden md:grid grid-cols-[3fr_2fr_auto] gap-2 text-xs font-semibold text-gray-500 mb-1">
+                <div>Goal Event Name</div>
+                <div>Counting Strategy</div>
+                <div></div>
+              </div>
+
+              {goalSettings.map((gs, idx) => (
+                <div key={`goal-row-${idx}`} className="grid grid-cols-1 md:grid-cols-[3fr_2fr_auto] gap-2 items-center">
+                  <input
+                    value={gs.eventName}
+                    onChange={(e) => updateGoalSetting(idx, { eventName: e.target.value })}
+                    placeholder="e.g. signup_completed or purchase"
+                    className="border rounded px-2 py-1 text-sm w-full font-mono"
+                  />
+                  <select
+                    value={gs.type}
+                    onChange={(e) => updateGoalSetting(idx, { type: e.target.value as "unique" | "repeatable" })}
+                    className="border rounded px-2 py-1 text-sm w-full bg-white"
+                  >
+                    <option value="unique">Unique (Count once)</option>
+                    <option value="repeatable">Repeatable (Count every time)</option>
+                  </select>
+                  <button
+                    type="button"
+                    className="px-2 py-1 text-xs border rounded hover:bg-red-50 text-red-600 transition font-semibold"
+                    onClick={() => removeGoalSetting(idx)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Variants Section */}
+        <div className="border rounded p-3 mb-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="font-semibold text-sm text-gray-700">Variants</div>
+            <button type="button" className="px-2 py-1 border rounded text-xs font-semibold hover:bg-gray-50" onClick={addVariant}>
               Add Variant
             </button>
           </div>
@@ -263,18 +371,18 @@ export default function FlagModal({
                 value={variant.key}
                 onChange={(e) => updateVariant(idx, { key: slugify(e.target.value) })}
                 placeholder="variant key"
-                className="border rounded px-2 py-1"
+                className="border rounded px-2 py-1 text-sm w-full font-mono"
               />
               <textarea
                 value={variant.value}
                 onChange={(e) => updateVariant(idx, { value: e.target.value })}
                 placeholder='JSON or primitive, e.g. {"btnColor":"green"} or true'
-                className="border rounded px-2 py-1"
+                className="border rounded px-2 py-1 text-sm w-full"
                 rows={2}
               />
               <button
                 type="button"
-                className="px-2 py-1 border rounded disabled:opacity-50"
+                className="px-2 py-1 border rounded text-xs font-semibold disabled:opacity-50"
                 onClick={() => removeVariant(idx)}
                 disabled={variants.length <= 2}
               >
@@ -284,13 +392,13 @@ export default function FlagModal({
           ))}
         </div>
 
-        {error && <div className="text-red-600 mb-2">{error}</div>}
+        {error && <div className="text-red-600 mb-2 text-sm font-semibold">{error}</div>}
 
         <div className="flex justify-end gap-2">
-          <button className="px-3 py-1 rounded" onClick={onClose} disabled={loading}>
+          <button className="px-3 py-1 rounded text-sm font-semibold border hover:bg-gray-50" onClick={onClose} disabled={loading}>
             Cancel
           </button>
-          <button className="bg-blue-600 text-white px-3 py-1 rounded" onClick={save} disabled={loading}>
+          <button className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-blue-700" onClick={save} disabled={loading}>
             {loading ? "Saving..." : "Save"}
           </button>
         </div>

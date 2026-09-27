@@ -85,6 +85,23 @@ export function PromoBanner() {
 }
 ```
 
+#### Goal Counting Strategies
+Flagpilot supports two different counting strategies for tracked goals depending on your experiment:
+* **Unique Goals (Default)**: Count at most once per user per experiment. Ideal for binary lifecycle conversions like `signup_completed`, `workspace_created`, or `trial_started`. Subsequent track calls for the same user are ignored to prevent metric skew.
+* **Repeatable Goals**: Count every occurrence. Perfect for continuous conversion funnels like `purchase`, `invoice_paid`, or `subscription_renewed` where every transaction adds business value.
+
+#### Network Retry Idempotency Protection
+To protect repeatable goals against duplicate metric increments caused by automatic network retries (e.g. during spotty client connections), you can pass a unique `eventId` option to `trackGoal`:
+
+```tsx
+const trackGoal = useTrackGoal();
+
+const handlePurchase = async (orderId) => {
+  // Pass orderId as eventId to prevent accidental duplicate tracks on network retries
+  await trackGoal("purchase", { eventId: `evt_${orderId}` });
+};
+```
+
 ### 3. Identify Authenticated Users (Identity Resolution)
 When a user signs up or logs into your application, call `identify` to merge their anonymous visitor session into their authenticated `user_id`:
 

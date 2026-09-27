@@ -8,6 +8,7 @@ import {
   IFlagpilotVariant,
 } from "../models/flagpilotFeatureFlagModel";
 import { FlagpilotEvaluationLog } from "../models/flagpilotEvaluationLogModel";
+import { FlagpilotTrackedEvent } from "../models/flagpilotTrackedEventModel";
 import { calculateThompsonWeights } from "../lib/mab";
 import { isAuth } from "../utils";
 
@@ -208,6 +209,7 @@ router.post("/flags", isAuth, async (req, res) => {
       description,
       status,
       variants,
+      goalSettings,
       minImpressionsBeforeOptimization,
     } = req.body;
 
@@ -236,6 +238,7 @@ router.post("/flags", isAuth, async (req, res) => {
       status: status || "active",
       minImpressionsBeforeOptimization: minImpressionsBeforeOptimization || 100,
       trackedGoals: [],
+      goalSettings: goalSettings || [],
       variants: normalizedVariants,
     });
 
@@ -314,7 +317,7 @@ router.put("/flags/:id", isAuth, async (req, res) => {
     }
 
     const update: Record<string, unknown> = {};
-    const allowed = ["description", "status", "minImpressionsBeforeOptimization", "variants"];
+    const allowed = ["description", "status", "minImpressionsBeforeOptimization", "variants", "goalSettings"];
 
     for (const key of allowed) {
       if (key in req.body) {
@@ -534,7 +537,7 @@ router.post("/v1/evaluate", async (req, res) => {
 router.post("/v1/track", async (req, res) => {
   try {
     const apiKey = req.header("x-api-key");
-    const { eventName, userId: bodyUserId } = req.body;
+    const { eventName, userId: bodyUserId, eventId } = req.body;
     const headerUserId = req.header("x-user-id") || undefined;
     const userId = bodyUserId || headerUserId;
     const anonUserId = getExistingAnonymousUserId(req);
@@ -552,6 +555,19 @@ router.post("/v1/track", async (req, res) => {
 
     res.status(200).json({ status: "queued" });
 
+    // Idempotency: Protect against automatic retry duplicates of the exact same network request
+    if (eventId) {
+      try {
+        await FlagpilotTrackedEvent.create({ eventId });
+      } catch (err: any) {
+        if (err.code === 11000) {
+          // Silent skip duplicate retries
+          return;
+        }
+        throw err;
+      }
+    }
+
     const matchingFlags = await FlagpilotFeatureFlag.find({
       project: project._id,
       trackedGoals: eventName,
@@ -559,16 +575,25 @@ router.post("/v1/track", async (req, res) => {
     });
 
     for (const flag of matchingFlags) {
+      const setting = flag.goalSettings?.find((gs) => gs.eventName === eventName);
+      const isRepeatable = setting?.type === "repeatable";
+
+      const query: Record<string, any> = {
+        flag: flag._id,
+        $or: [
+          { userId: { $in: userIdsToMatch } },
+          { anonUserId: { $in: userIdsToMatch } },
+        ],
+        goalEvent: eventName,
+      };
+
+      // Unique goals only convert once (from false to true)
+      if (!isRepeatable) {
+        query.converted = false;
+      }
+
       const evalLog = await FlagpilotEvaluationLog.findOneAndUpdate(
-        {
-          flag: flag._id,
-          $or: [
-            { userId: { $in: userIdsToMatch } },
-            { anonUserId: { $in: userIdsToMatch } },
-          ],
-          goalEvent: eventName,
-          converted: false,
-        },
+        query,
         { $set: { converted: true } },
         { new: true }
       );

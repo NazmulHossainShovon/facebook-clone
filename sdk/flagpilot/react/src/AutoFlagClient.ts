@@ -115,7 +115,7 @@ export class AutoFlagClient {
     }
   }
 
-  async trackGoal(eventName: string): Promise<void> {
+  async trackGoal(eventName: string, options?: { eventId?: string }): Promise<void> {
     try {
       await fetch(`${this.baseUrl}/track`, {
         method: "POST",
@@ -124,6 +124,7 @@ export class AutoFlagClient {
         body: JSON.stringify({
           eventName,
           userId: this.userId || undefined,
+          eventId: options?.eventId,
         }),
       });
     } catch {

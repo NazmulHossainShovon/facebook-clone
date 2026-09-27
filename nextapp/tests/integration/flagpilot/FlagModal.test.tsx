@@ -115,6 +115,7 @@ describe("FlagModal Integration Tests", () => {
           { key: "control", value: false },
           { key: "variant_b", value: { theme: "dark" } },
         ],
+        goalSettings: [],
       });
       expect(defaultProps.onSaved).toHaveBeenCalledWith(createdFlag);
       expect(defaultProps.onClose).toHaveBeenCalled();
@@ -168,5 +169,40 @@ describe("FlagModal Integration Tests", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(await screen.findByText("Duplicate flag key for project")).toBeInTheDocument();
+  });
+
+  test("can configure, add, and remove goal settings in the modal UI", async () => {
+    mockedApiClient.post.mockResolvedValueOnce({ data: { _id: "f_1" } });
+
+    render(<FlagModal {...defaultProps} />);
+
+    // Add a goal config row
+    fireEvent.click(screen.getByRole("button", { name: "Add Goal Config" }));
+
+    // Find and update the input and select fields
+    const goalNameInput = screen.getByPlaceholderText("e.g. signup_completed or purchase");
+    fireEvent.change(goalNameInput, { target: { value: "my_repeatable_goal" } });
+
+    const comboboxes = screen.getAllByRole("combobox");
+    const goalTypeSelect = comboboxes[1]; // The second select element in the form is the goal strategy select
+    fireEvent.change(goalTypeSelect, { target: { value: "repeatable" } });
+
+    // Set other required flag fields
+    fireEvent.change(screen.getByLabelText(/flag key/i), { target: { value: "g_flag" } });
+
+    // Save
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(mockedApiClient.post).toHaveBeenCalledWith(
+        "/api/flagpilot/flags",
+        expect.objectContaining({
+          key: "g_flag",
+          goalSettings: [
+            { eventName: "my_repeatable_goal", type: "repeatable" }
+          ]
+        })
+      );
+    });
   });
 });

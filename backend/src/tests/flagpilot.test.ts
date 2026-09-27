@@ -476,4 +476,140 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
       expect(updatedLog?.converted).toBe(true);
     });
   });
+
+  describe("Goal Strategies & Idempotency Rules", () => {
+    let flagId: string;
+    const anonId = "anon_goal_strategy_user";
+
+    beforeAll(async () => {
+      // 1. Create a new flag with both unique and repeatable goals configured
+      const res = await request(app)
+        .post("/api/flagpilot/flags")
+        .set("Authorization", `Bearer ${tokenA}`)
+        .send({
+          projectId: projectIdAlice,
+          key: "checkout_flow_experiment",
+          minImpressionsBeforeOptimization: 100,
+          goalSettings: [
+            { eventName: "signup_completed", type: "unique" },
+            { eventName: "purchase_completed", type: "repeatable" },
+          ],
+          variants: [
+            { key: "control", value: "Standard Checkout" },
+            { key: "variant_b", value: "Simplified Checkout" },
+          ],
+        });
+
+      expect(res.status).toBe(201);
+      flagId = res.body._id;
+    });
+
+    it("should evaluate flag and initialize session log for both goals", async () => {
+      // Evaluate unique goal
+      await request(app)
+        .post("/api/flagpilot/v1/evaluate")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", anonId)
+        .send({
+          flagKey: "checkout_flow_experiment",
+          goalEvent: "signup_completed",
+        });
+
+      // Evaluate repeatable goal
+      await request(app)
+        .post("/api/flagpilot/v1/evaluate")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", anonId)
+        .send({
+          flagKey: "checkout_flow_experiment",
+          goalEvent: "purchase_completed",
+        });
+
+      const logs = await FlagpilotEvaluationLog.find({ flag: flagId, userId: anonId });
+      expect(logs.length).toBe(2);
+    });
+
+    it("should deduct/ignore duplicate conversions for UNIQUE goals (only count once)", async () => {
+      const flagBefore = await FlagpilotFeatureFlag.findById(flagId).lean();
+      const variantKey = (await FlagpilotEvaluationLog.findOne({ flag: flagId, userId: anonId, goalEvent: "signup_completed" }))?.variantKey;
+
+      // Track unique goal once
+      await request(app)
+        .post("/api/flagpilot/v1/track")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", anonId)
+        .send({ eventName: "signup_completed" });
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      let flagAfter = await FlagpilotFeatureFlag.findById(flagId).lean();
+      const matchedIdx = flagAfter?.variants.findIndex((v) => v.key === variantKey) ?? -1;
+      expect(flagAfter?.variants[matchedIdx].conversions).toBe((flagBefore?.variants[matchedIdx].conversions || 0) + 1);
+
+      // Track same unique goal a second time (should be ignored!)
+      await request(app)
+        .post("/api/flagpilot/v1/track")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", anonId)
+        .send({ eventName: "signup_completed" });
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      flagAfter = await FlagpilotFeatureFlag.findById(flagId).lean();
+      expect(flagAfter?.variants[matchedIdx].conversions).toBe((flagBefore?.variants[matchedIdx].conversions || 0) + 1);
+    });
+
+    it("should allow and count multiple occurrences of REPEATABLE goals", async () => {
+      const flagBefore = await FlagpilotFeatureFlag.findById(flagId).lean();
+      const variantKey = (await FlagpilotEvaluationLog.findOne({ flag: flagId, userId: anonId, goalEvent: "purchase_completed" }))?.variantKey;
+      const matchedIdx = flagBefore?.variants.findIndex((v) => v.key === variantKey) ?? -1;
+
+      // Track repeatable goal once
+      await request(app)
+        .post("/api/flagpilot/v1/track")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", anonId)
+        .send({ eventName: "purchase_completed" });
+
+      // Track repeatable goal twice
+      await request(app)
+        .post("/api/flagpilot/v1/track")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", anonId)
+        .send({ eventName: "purchase_completed" });
+
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      const flagAfter = await FlagpilotFeatureFlag.findById(flagId).lean();
+      expect(flagAfter?.variants[matchedIdx].conversions).toBe((flagBefore?.variants[matchedIdx].conversions || 0) + 2);
+    });
+
+    it("should protect against automatic duplicate retries using eventId idempotency", async () => {
+      const flagBefore = await FlagpilotFeatureFlag.findById(flagId).lean();
+      const variantKey = (await FlagpilotEvaluationLog.findOne({ flag: flagId, userId: anonId, goalEvent: "purchase_completed" }))?.variantKey;
+      const matchedIdx = flagBefore?.variants.findIndex((v) => v.key === variantKey) ?? -1;
+
+      const dupEventId = "retry_protection_event_9a8b";
+
+      // Track repeatable goal with unique eventId (first try)
+      await request(app)
+        .post("/api/flagpilot/v1/track")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", anonId)
+        .send({ eventName: "purchase_completed", eventId: dupEventId });
+
+      // Track repeatable goal with same eventId (second try / retry)
+      await request(app)
+        .post("/api/flagpilot/v1/track")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", anonId)
+        .send({ eventName: "purchase_completed", eventId: dupEventId });
+
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      const flagAfter = await FlagpilotFeatureFlag.findById(flagId).lean();
+      // Should only increment conversions by 1 instead of 2!
+      expect(flagAfter?.variants[matchedIdx].conversions).toBe((flagBefore?.variants[matchedIdx].conversions || 0) + 1);
+    });
+  });
 });

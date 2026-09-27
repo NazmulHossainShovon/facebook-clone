@@ -17,3 +17,7 @@ export type UseFlagResult<T> = {
 };
 
 export type UserIdentifyInput = string | { id: string };
+
+export type TrackGoalOptions = {
+  eventId?: string;
+};
