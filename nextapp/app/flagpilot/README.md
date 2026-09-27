@@ -17,6 +17,14 @@ Flagpilot is an intelligent, self-optimizing feature testing platform that helps
 * **Consistent User Experiences**: Ensure your visitors enjoy a seamless journey. Once a visitor sees a specific version of your feature, Flagpilot remembers and continues to show them that exact version on every return visit.
 * **Accurate Success Tracking**: Get clean, reliable metrics. Duplicate conversion events are automatically filtered out so you can trust your performance data.
 
+## Experiment Integrity & Variant Safety Rules
+
+To ensure statistical validity and prevent experiment contamination, Flagpilot enforces strict identity stability rules on active variants:
+
+* **Variant Jumping Prevention**: Once a variant has been served to visitors (`impressions > 0`), deleting or renaming its variant key is strictly blocked. This prevents existing users from silently "jumping" to a different experience midway through an experiment.
+* **Typo Corrections & Content Updates**: Modifying the JSON payload or text content of an *existing* variant key (e.g., fixing a typo like `"Get Premimum Plan"` → `"Get Premium Plan"`) is fully supported. Historical impressions, conversions, and Bayesian weights for that variant key are completely preserved.
+* **Adding New Variants**: Adding a brand-new variant key to an ongoing experiment preserves all historical data for existing variants, while resetting the baseline traffic split evenly (`1/N`) so the new option gets an unbiased start before auto-optimization engages.
+
 ## Interactive Dashboards
 
 * **Project Center**: Easily organize and overview all your ongoing projects in a single, clean workspace.
