@@ -23,7 +23,7 @@ export default function Home() {
   const defaultPrompt = "Read aloud in a warm, welcoming tone.";
 
   const [text, setText] = useState("");
-  const [downloadFileName, setDownloadFileName] = useState("synthesized-speech");
+  const [downloadFileName, setDownloadFileName] = useState("");
   const [prompt, setPrompt] = useState(defaultPrompt);
   const [languageCode, setLanguageCode] = useState("bn-bd");
   const [voiceName, setVoiceName] = useState("Zubenelgenubi");
@@ -465,7 +465,7 @@ export default function Home() {
                     type="text"
                     value={downloadFileName}
                     onChange={(e) => setDownloadFileName(e.target.value)}
-                    placeholder="File name"
+                    placeholder="e.g. my-audio"
                     aria-label="Download MP3 file name"
                     className="bg-transparent text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-36 sm:w-44 font-mono"
                   />
