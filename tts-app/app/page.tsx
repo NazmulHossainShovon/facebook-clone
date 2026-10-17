@@ -19,10 +19,11 @@ import {
 } from 'lucide-react';
 
 export default function Home() {
-  const defaultText = "Movies, oh my gosh, I just just absolutely love them. They're like time machines taking you to different worlds and landscapes, and um, and I just can't get enough of it.";
+  const sampleText = "Movies, oh my gosh, I just just absolutely love them. They're like time machines taking you to different worlds and landscapes, and um, and I just can't get enough of it.";
   const defaultPrompt = "Read aloud in a warm, welcoming tone.";
 
-  const [text, setText] = useState(defaultText);
+  const [text, setText] = useState("");
+  const [downloadFileName, setDownloadFileName] = useState("synthesized-speech");
   const [prompt, setPrompt] = useState(defaultPrompt);
   const [languageCode, setLanguageCode] = useState("bn-bd");
   const [voiceName, setVoiceName] = useState("Zubenelgenubi");
@@ -97,9 +98,12 @@ export default function Home() {
 
   const handleDownloadMp3 = () => {
     if (!result?.mp3Content) return;
+    const sanitized = (downloadFileName.trim() || 'synthesized-speech')
+      .replace(/[/\\?%*:|"<>]/g, '-')
+      .replace(/\.mp3$/i, '');
     const link = document.createElement('a');
     link.href = `data:audio/mp3;base64,${result.mp3Content}`;
-    link.download = `synthesized-speech-${Date.now()}.mp3`;
+    link.download = `${sanitized}.mp3`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -228,17 +232,30 @@ export default function Home() {
               <div className="flex items-center justify-between mb-2">
                 <label htmlFor="inputText" className="text-sm font-semibold text-slate-200 flex items-center gap-2">
                   <span>Input Text</span>
-                  <span className="text-xs font-normal text-slate-400">
-                    ({text.length} characters)
-                  </span>
+                  {text.length > 0 && (
+                    <span className="text-xs font-normal text-slate-400">
+                      ({text.length} characters)
+                    </span>
+                  )}
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setText(defaultText)}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
-                >
-                  <RotateCcw className="w-3 h-3" /> Reset to default
-                </button>
+                <div className="flex items-center gap-3">
+                  {text.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setText('')}
+                      className="text-xs text-slate-400 hover:text-slate-300 transition-colors"
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setText(sampleText)}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                  >
+                    <Sparkles className="w-3 h-3" /> Insert sample text
+                  </button>
+                </div>
               </div>
 
               <textarea
@@ -246,7 +263,7 @@ export default function Home() {
                 rows={5}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="Enter text to synthesize into speech..."
+                placeholder="Type or paste the text you want Gemini TTS to synthesize (e.g. Movies, oh my gosh, I just just absolutely love them...)"
                 className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-y shadow-inner"
               />
             </div>
@@ -442,13 +459,27 @@ export default function Home() {
                 </div>
               </div>
 
-              <button
-                onClick={handleDownloadMp3}
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <Download className="w-4 h-4" />
-                <span>Download MP3</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center bg-slate-950/90 border border-slate-700 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-transparent transition-all shadow-inner">
+                  <input
+                    type="text"
+                    value={downloadFileName}
+                    onChange={(e) => setDownloadFileName(e.target.value)}
+                    placeholder="File name"
+                    aria-label="Download MP3 file name"
+                    className="bg-transparent text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-36 sm:w-44 font-mono"
+                  />
+                  <span className="text-xs text-slate-400 font-mono ml-1">.mp3</span>
+                </div>
+
+                <button
+                  onClick={handleDownloadMp3}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download MP3</span>
+                </button>
+              </div>
             </div>
 
             {/* Custom Audio Player UI */}

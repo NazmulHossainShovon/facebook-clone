@@ -6,8 +6,13 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
 
-    // Default request body matching the user's specification
-    const text = body.input?.text ?? "Movies, oh my gosh, I just just absolutely love them. They're like time machines taking you to different worlds and landscapes, and um, and I just can't get enough of it.";
+    const text = body.input?.text?.trim();
+    if (!text) {
+      return NextResponse.json(
+        { error: { message: 'Input text is required to synthesize audio' } },
+        { status: 400 }
+      );
+    }
     const prompt = body.input?.prompt ?? "Read aloud in a warm, welcoming tone.";
     const audioEncoding = body.audioConfig?.audioEncoding ?? "LINEAR16";
     const pitch = body.audioConfig?.pitch ?? 0;
