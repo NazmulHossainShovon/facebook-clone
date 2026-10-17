@@ -3,6 +3,9 @@ module.exports = {
   testEnvironment: 'jsdom',
   testPathIgnorePatterns: ['/node_modules/', '/.next/'],
   moduleNameMapper: {
+    '^react$': '<rootDir>/node_modules/react',
+    '^react-dom$': '<rootDir>/node_modules/react-dom',
+    '^flagpilot-react$': '<rootDir>/../sdk/flagpilot/react/src/index.ts',
     '^@/(.*)$': '<rootDir>/app/$1',
     '^components/(.*)$': '<rootDir>/components/$1',
     '^utils/(.*)$': '<rootDir>/utils/$1',

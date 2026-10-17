@@ -1,0 +1,50 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import CreateProjectModal from "../../components/flagpilot/CreateProjectModal";
+import apiClient from "../lib/api-client";
+
+type Project = { _id: string; name: string; apiKey?: string };
+
+export default function FlagpilotIndex() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+
+  const load = () => {
+    setLoading(true);
+    apiClient.get("/api/flagpilot/projects")
+      .then((res) => setProjects(res.data || []))
+      .catch(() => setProjects([]))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">Flagpilot Projects</h1>
+        <button className="bg-blue-600 text-white px-3 py-1 rounded" onClick={() => setShowCreate(true)}>Create Project</button>
+      </div>
+
+      {loading && <div>Loading...</div>}
+
+      {!loading && projects.length === 0 && (
+        <div className="p-4 border rounded">No projects yet. Click "Create Project" to add one.</div>
+      )}
+
+      <ul>
+        {projects.map((p) => (
+          <li key={p._id} className="p-2 border rounded mb-2">
+            <a href={`/flagpilot/${p._id}/environments`} className="text-blue-600">{p.name}</a>
+            {p.apiKey && <div className="text-xs text-gray-600 mt-1">API key: {p.apiKey}</div>}
+          </li>
+        ))}
+      </ul>
+
+      <CreateProjectModal open={showCreate} onClose={() => setShowCreate(false)} onCreated={(proj) => setProjects((cur) => [proj, ...cur])} />
+    </div>
+  );
+}

@@ -1,0 +1,23 @@
+export type AutoFlagClientConfig = {
+  apiKey: string;
+  baseUrl?: string;
+};
+
+export type EvaluateResponse = {
+  variant: string;
+  value: unknown;
+  anonUserId?: string;
+  userId?: string;
+};
+
+export type UseFlagResult<T> = {
+  value: T;
+  isLoading: boolean;
+  refetch: () => Promise<void>;
+};
+
+export type UserIdentifyInput = string | { id: string };
+
+export type TrackGoalOptions = {
+  eventId?: string;
+};

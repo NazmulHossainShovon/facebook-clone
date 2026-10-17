@@ -1,0 +1,632 @@
+import express from "express";
+import crypto from "crypto";
+import mongoose from "mongoose";
+import { FlagpilotProject } from "../models/flagpilotProjectModel";
+import {
+  FlagpilotFeatureFlag,
+  IFlagpilotFeatureFlag,
+  IFlagpilotVariant,
+} from "../models/flagpilotFeatureFlagModel";
+import { FlagpilotEvaluationLog } from "../models/flagpilotEvaluationLogModel";
+import { FlagpilotTrackedEvent } from "../models/flagpilotTrackedEventModel";
+import { calculateThompsonWeights } from "../lib/mab";
+import { isAuth } from "../utils";
+
+const router = express.Router();
+
+type CreateVariantInput = {
+  key: string;
+  value: unknown;
+};
+
+function parseCookieHeader(cookieHeader: string | undefined): Record<string, string> {
+  if (!cookieHeader) return {};
+  return cookieHeader.split(";").reduce<Record<string, string>>((acc, part) => {
+    const trimmed = part.trim();
+    const idx = trimmed.indexOf("=");
+    if (idx <= 0) return acc;
+    const key = trimmed.slice(0, idx);
+    const value = decodeURIComponent(trimmed.slice(idx + 1));
+    acc[key] = value;
+    return acc;
+  }, {});
+}
+
+function getAnonymousUserId(req: express.Request): { anonUserId: string; created: boolean } {
+  const anonUserId = getExistingAnonymousUserId(req);
+
+  if (anonUserId) {
+    return { anonUserId, created: false };
+  }
+
+  return { anonUserId: `anon_${crypto.randomUUID()}`, created: true };
+}
+
+function getExistingAnonymousUserId(req: express.Request): string | undefined {
+  const headerAnon = req.header("x-anon-user-id") || undefined;
+  const cookieMap = parseCookieHeader(req.header("cookie"));
+  const cookieAnon = cookieMap.af_anon_id;
+  return headerAnon || cookieAnon;
+}
+
+function buildCookieHeader(value: string): string {
+  const oneYearSeconds = 60 * 60 * 24 * 365;
+  return `af_anon_id=${encodeURIComponent(value)}; Max-Age=${oneYearSeconds}; Path=/; HttpOnly; SameSite=Lax`;
+}
+
+function normalizeVariants(variants: CreateVariantInput[]): IFlagpilotVariant[] {
+  if (!Array.isArray(variants) || variants.length < 2) {
+    throw new Error("At least two variants are required");
+  }
+
+  const dedupe = new Set<string>();
+  return variants.map((variant) => {
+    const key = (variant.key || "").trim();
+    if (!key) {
+      throw new Error("Variant key is required");
+    }
+    if (dedupe.has(key)) {
+      throw new Error(`Duplicate variant key: ${key}`);
+    }
+    dedupe.add(key);
+
+    return {
+      key,
+      value: variant.value,
+      impressions: 0,
+      conversions: 0,
+      currentWeight: 1 / variants.length,
+    } as IFlagpilotVariant;
+  });
+}
+
+function mergeAndValidateVariants(
+  existingVariants: IFlagpilotVariant[],
+  incomingRaw: CreateVariantInput[]
+): IFlagpilotVariant[] {
+  const normalizedIncoming = normalizeVariants(incomingRaw);
+
+  const existingMap = new Map<string, IFlagpilotVariant>();
+  for (const v of existingVariants) {
+    existingMap.set(v.key, v);
+  }
+
+  // Validate against deletion of already served variants
+  for (const oldVar of existingVariants) {
+    if (oldVar.impressions > 0) {
+      const newVar = normalizedIncoming.find((v) => v.key === oldVar.key);
+      if (!newVar) {
+        throw new Error(`Cannot delete variant '${oldVar.key}' because it has already been served to users.`);
+      }
+      // Note: We deliberately allow modifying the "value" of the variant here to support typo/minor corrections
+      // without breaking historical impressions, conversions, or weights!
+    }
+  }
+
+  // Determine if the keys are identical to the existing ones to decide whether to preserve current weights
+  const existingKeys = new Set(existingVariants.map((v) => v.key));
+  const incomingKeys = new Set(normalizedIncoming.map((v) => v.key));
+  const isKeysSetIdentical =
+    existingKeys.size === incomingKeys.size &&
+    [...existingKeys].every((k) => incomingKeys.has(k));
+
+  return normalizedIncoming.map((newVar) => {
+    const matched = existingMap.get(newVar.key);
+    if (matched) {
+      return {
+        key: newVar.key,
+        value: newVar.value,
+        impressions: matched.impressions,
+        conversions: matched.conversions,
+        currentWeight: isKeysSetIdentical ? matched.currentWeight : 1 / normalizedIncoming.length,
+      } as IFlagpilotVariant;
+    } else {
+      return {
+        key: newVar.key,
+        value: newVar.value,
+        impressions: 0,
+        conversions: 0,
+        currentWeight: 1 / normalizedIncoming.length,
+      } as IFlagpilotVariant;
+    }
+  });
+}
+
+function selectWeightedVariant(variants: IFlagpilotVariant[]): IFlagpilotVariant {
+  const rand = Math.random();
+  let cumulative = 0;
+  for (const variant of variants) {
+    cumulative += variant.currentWeight;
+    if (rand <= cumulative) {
+      return variant;
+    }
+  }
+  return variants[variants.length - 1];
+}
+
+async function recalculateFlagWeights(flag: IFlagpilotFeatureFlag): Promise<void> {
+  const newWeights = calculateThompsonWeights(flag.variants);
+
+  const updatedVariants = flag.variants.map((variant) => ({
+    key: variant.key,
+    value: variant.value,
+    impressions: variant.impressions,
+    conversions: variant.conversions,
+    currentWeight: newWeights[variant.key] ?? variant.currentWeight,
+  }));
+
+  await FlagpilotFeatureFlag.updateOne({ _id: flag._id }, { $set: { variants: updatedVariants } });
+}
+
+router.post("/projects", isAuth, async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) {
+      return res.status(400).json({ error: "name is required" });
+    }
+
+    const orgId = req.user!._id;
+
+    const project = new FlagpilotProject({
+      name,
+      orgId,
+      apiKey: `fp_proj_${crypto.randomBytes(12).toString("hex")}`,
+    });
+
+    await project.save();
+    return res.status(201).json(project);
+  } catch (_err) {
+    return res.status(500).json({ error: "failed to create project" });
+  }
+});
+
+router.get("/projects", isAuth, async (req, res) => {
+  try {
+    const projects = await FlagpilotProject.find({ orgId: req.user!._id }).sort({ createdAt: -1 }).lean();
+    return res.json(projects);
+  } catch (_err) {
+    return res.status(500).json({ error: "failed to fetch projects" });
+  }
+});
+
+router.get("/projects/:id", isAuth, async (req, res) => {
+  try {
+    const project = await FlagpilotProject.findOne({ _id: req.params.id, orgId: req.user!._id }).lean();
+    if (!project) {
+      return res.status(404).json({ error: "project not found" });
+    }
+    return res.json(project);
+  } catch (_err) {
+    return res.status(500).json({ error: "failed to fetch project" });
+  }
+});
+
+router.post("/flags", isAuth, async (req, res) => {
+  try {
+    const {
+      projectId,
+      key,
+      description,
+      status,
+      variants,
+      goalSettings,
+      minImpressionsBeforeOptimization,
+    } = req.body;
+
+    if (!projectId || !key || !variants) {
+      return res.status(400).json({
+        error: "projectId, key, and variants are required",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({ error: "invalid projectId" });
+    }
+
+    // Verify project ownership
+    const project = await FlagpilotProject.findOne({ _id: projectId, orgId: req.user!._id }).lean();
+    if (!project) {
+      return res.status(403).json({ error: "Unauthorized access to project" });
+    }
+
+    const normalizedVariants = normalizeVariants(variants);
+
+    const flag = new FlagpilotFeatureFlag({
+      project: projectId,
+      key,
+      description,
+      status: status || "active",
+      minImpressionsBeforeOptimization: minImpressionsBeforeOptimization || 100,
+      trackedGoals: [],
+      goalSettings: goalSettings || [],
+      variants: normalizedVariants,
+    });
+
+    await flag.save();
+    return res.status(201).json(flag);
+  } catch (err: unknown) {
+    if (typeof err === "object" && err !== null && "code" in err && (err as { code?: unknown }).code === 11000) {
+      return res.status(400).json({ error: "duplicate flag key for project" });
+    }
+
+    if (err instanceof Error) {
+      return res.status(400).json({ error: err.message });
+    }
+
+    return res.status(500).json({ error: "failed to create flag" });
+  }
+});
+
+router.get("/flags", isAuth, async (req, res) => {
+  try {
+    const { projectId } = req.query;
+    if (!projectId) {
+      return res.status(400).json({ error: "projectId is required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(projectId as string)) {
+      return res.status(400).json({ error: "invalid projectId" });
+    }
+
+    // Verify project ownership
+    const project = await FlagpilotProject.findOne({ _id: projectId, orgId: req.user!._id }).lean();
+    if (!project) {
+      return res.status(403).json({ error: "Unauthorized access to project" });
+    }
+
+    const flags = await FlagpilotFeatureFlag.find({ project: projectId })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.json(flags);
+  } catch (_err) {
+    return res.status(500).json({ error: "failed to fetch flags" });
+  }
+});
+
+router.get("/flags/:id", isAuth, async (req, res) => {
+  try {
+    const flag = await FlagpilotFeatureFlag.findById(req.params.id);
+    if (!flag) {
+      return res.status(404).json({ error: "flag not found" });
+    }
+
+    // Verify project ownership
+    const project = await FlagpilotProject.findOne({ _id: flag.project, orgId: req.user!._id }).lean();
+    if (!project) {
+      return res.status(403).json({ error: "Unauthorized access to project" });
+    }
+
+    return res.json(flag);
+  } catch (_err) {
+    return res.status(500).json({ error: "failed to fetch flag" });
+  }
+});
+
+router.put("/flags/:id", isAuth, async (req, res) => {
+  try {
+    const flagToUpdate = await FlagpilotFeatureFlag.findById(req.params.id);
+    if (!flagToUpdate) {
+      return res.status(404).json({ error: "flag not found" });
+    }
+
+    // Verify project ownership
+    const project = await FlagpilotProject.findOne({ _id: flagToUpdate.project, orgId: req.user!._id }).lean();
+    if (!project) {
+      return res.status(403).json({ error: "Unauthorized access to project" });
+    }
+
+    const update: Record<string, unknown> = {};
+    const allowed = ["description", "status", "minImpressionsBeforeOptimization", "variants", "goalSettings"];
+
+    for (const key of allowed) {
+      if (key in req.body) {
+        update[key] = req.body[key];
+      }
+    }
+
+    let isKeysSetIdentical = true;
+    if (Array.isArray(update.variants)) {
+      const existingKeys = new Set(flagToUpdate.variants.map((v) => v.key));
+      const incomingKeys = new Set((update.variants as CreateVariantInput[]).map((v) => (v.key || "").trim()));
+      isKeysSetIdentical =
+        existingKeys.size === incomingKeys.size &&
+        [...existingKeys].every((k) => incomingKeys.has(k));
+
+      update.variants = mergeAndValidateVariants(flagToUpdate.variants, update.variants as CreateVariantInput[]);
+    }
+
+    const flag = await FlagpilotFeatureFlag.findByIdAndUpdate(req.params.id, update, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!flag) {
+      return res.status(404).json({ error: "flag not found" });
+    }
+
+    // Automatically recalculate weights if we now meet or exceed the optimization threshold
+    // Only automatically recalculate if the variant keys did NOT change.
+    // If a new variant was added, we want to skip immediate recalculation so the new variant can collect impressions with its initial fair weight!
+    const totalImpressions = flag.variants.reduce((sum, v) => sum + v.impressions, 0);
+    if (isKeysSetIdentical && totalImpressions >= flag.minImpressionsBeforeOptimization) {
+      await recalculateFlagWeights(flag);
+      const updatedFlag = await FlagpilotFeatureFlag.findById(flag._id).lean();
+      return res.json(updatedFlag);
+    }
+
+    return res.json(flag);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return res.status(400).json({ error: err.message });
+    }
+
+    return res.status(500).json({ error: "failed to update flag" });
+  }
+});
+
+// Identify endpoint to link anonymous ID -> authenticated User ID
+router.post("/v1/identify", async (req, res) => {
+  try {
+    const apiKey = req.header("x-api-key");
+    const { anonymousId, userId } = req.body;
+    const headerAnonId = getExistingAnonymousUserId(req);
+    const anonId = anonymousId || headerAnonId;
+
+    if (!apiKey || !userId) {
+      return res.status(400).json({ error: "Missing required parameters: userId is required." });
+    }
+
+    const project = await FlagpilotProject.findOne({ apiKey }).lean();
+    if (!project) {
+      return res.status(401).json({ error: "Invalid API Key" });
+    }
+
+    if (!anonId || anonId === userId) {
+      return res.json({ status: "success", mergedCount: 0 });
+    }
+
+    // Find all evaluation logs previously linked to the anonymous ID
+    const anonLogs = await FlagpilotEvaluationLog.find({
+      $or: [{ userId: anonId }, { anonUserId: anonId }],
+    });
+
+    let mergedCount = 0;
+
+    for (const log of anonLogs) {
+      // Check if user already has an assignment for this flag and goalEvent
+      const existingUserLog = await FlagpilotEvaluationLog.findOne({
+        flag: log.flag,
+        userId: userId,
+        goalEvent: log.goalEvent,
+      });
+
+      if (!existingUserLog) {
+        // Migrate log from anonId -> userId
+        await FlagpilotEvaluationLog.updateOne(
+          { _id: log._id },
+          { $set: { userId: userId, anonUserId: log.anonUserId || anonId } }
+        );
+        mergedCount += 1;
+      }
+    }
+
+    return res.json({ status: "success", mergedCount });
+  } catch (error) {
+    console.error("Flagpilot identify failed", error);
+    return res.status(500).json({ error: "failed to identify user" });
+  }
+});
+
+// Evaluate & track remain public/unauthenticated endpoints since they are called from external client SDKs
+router.post("/v1/evaluate", async (req, res) => {
+  try {
+    const apiKey = req.header("x-api-key");
+    const { flagKey, goalEvent, userId: bodyUserId } = req.body;
+    const headerUserId = req.header("x-user-id") || undefined;
+    const userId = bodyUserId || headerUserId;
+
+    if (!apiKey || !flagKey || !goalEvent) {
+      return res.status(400).json({
+        error: "Missing required parameters: flagKey and goalEvent are required.",
+      });
+    }
+
+    const { anonUserId, created } = getAnonymousUserId(req);
+
+    const project = await FlagpilotProject.findOne({ apiKey }).lean();
+    if (!project) {
+      return res.status(401).json({ error: "Invalid API Key" });
+    }
+
+    const flag = await FlagpilotFeatureFlag.findOne({
+      project: project._id,
+      key: flagKey,
+      status: "active",
+    });
+
+    if (!flag) {
+      return res.status(404).json({ error: "Flag not found or inactive" });
+    }
+
+    if (!flag.trackedGoals.includes(goalEvent)) {
+      await FlagpilotFeatureFlag.updateOne({ _id: flag._id }, { $addToSet: { trackedGoals: goalEvent } });
+      flag.trackedGoals.push(goalEvent);
+    }
+
+    if (created) {
+      res.setHeader("Set-Cookie", buildCookieHeader(anonUserId));
+    }
+
+    // 1. First check if a sticky assignment exists by authenticated userId
+    let existingLog = userId
+      ? await FlagpilotEvaluationLog.findOne({
+          flag: flag._id,
+          userId,
+          goalEvent,
+        }).lean()
+      : null;
+
+    // 2. If not found by userId, check by anonUserId
+    if (!existingLog && anonUserId) {
+      const anonLog = await FlagpilotEvaluationLog.findOne({
+        flag: flag._id,
+        $or: [{ userId: anonUserId }, { anonUserId: anonUserId }],
+        goalEvent,
+      }).lean();
+
+      if (anonLog) {
+        existingLog = anonLog;
+        // Upgrade/associate log to userId
+        if (userId) {
+          await FlagpilotEvaluationLog.updateOne(
+            { _id: anonLog._id },
+            { $set: { userId, anonUserId } }
+          );
+          existingLog.userId = userId;
+        }
+      }
+    }
+
+    if (existingLog) {
+      const variantKey = existingLog.variantKey;
+      const existingVariant = flag.variants.find((variant) => variant.key === variantKey);
+      if (!existingVariant) {
+        return res.status(409).json({ error: "Assigned variant no longer exists for this flag" });
+      }
+
+      return res.json({
+        variant: existingVariant.key,
+        value: existingVariant.value,
+        anonUserId,
+        userId: userId || existingLog.userId,
+      });
+    }
+
+    // 3. New evaluation
+    const selectedVariant = selectWeightedVariant(flag.variants);
+    const activeUserId = userId || anonUserId;
+
+    await Promise.all([
+      FlagpilotEvaluationLog.create({
+        flag: flag._id,
+        userId: activeUserId,
+        anonUserId,
+        variantKey: selectedVariant.key,
+        goalEvent,
+      }),
+      FlagpilotFeatureFlag.updateOne(
+        { _id: flag._id, "variants.key": selectedVariant.key },
+        { $inc: { "variants.$.impressions": 1 } }
+      ),
+    ]).catch((error) => {
+      console.error("Flagpilot evaluate side effects failed", error);
+    });
+
+    return res.json({
+      variant: selectedVariant.key,
+      value: selectedVariant.value,
+      anonUserId,
+      userId: activeUserId,
+    });
+  } catch (_err) {
+    return res.status(500).json({ error: "failed to evaluate flag" });
+  }
+});
+
+router.post("/v1/track", async (req, res) => {
+  try {
+    const apiKey = req.header("x-api-key");
+    const { eventName, userId: bodyUserId, eventId } = req.body;
+    const headerUserId = req.header("x-user-id") || undefined;
+    const userId = bodyUserId || headerUserId;
+    const anonUserId = getExistingAnonymousUserId(req);
+
+    const userIdsToMatch = [userId, anonUserId].filter(Boolean) as string[];
+
+    if (!apiKey || !eventName || userIdsToMatch.length === 0) {
+      return res.status(400).json({ error: "Missing parameters or uninitialized session." });
+    }
+
+    const project = await FlagpilotProject.findOne({ apiKey }).lean();
+    if (!project) {
+      return res.status(401).json({ error: "Invalid API Key" });
+    }
+
+    res.status(200).json({ status: "queued" });
+
+    // Idempotency: Protect against automatic retry duplicates of the exact same network request
+    if (eventId) {
+      try {
+        await FlagpilotTrackedEvent.create({ eventId });
+      } catch (err: any) {
+        if (err.code === 11000) {
+          // Silent skip duplicate retries
+          return;
+        }
+        throw err;
+      }
+    }
+
+    const matchingFlags = await FlagpilotFeatureFlag.find({
+      project: project._id,
+      trackedGoals: eventName,
+      status: "active",
+    });
+
+    for (const flag of matchingFlags) {
+      const setting = flag.goalSettings?.find((gs) => gs.eventName === eventName);
+      const isRepeatable = setting?.type === "repeatable";
+
+      const query: Record<string, any> = {
+        flag: flag._id,
+        $or: [
+          { userId: { $in: userIdsToMatch } },
+          { anonUserId: { $in: userIdsToMatch } },
+        ],
+        goalEvent: eventName,
+      };
+
+      // Unique goals only convert once (from false to true)
+      if (!isRepeatable) {
+        query.converted = false;
+      }
+
+      const evalLog = await FlagpilotEvaluationLog.findOneAndUpdate(
+        query,
+        { $set: { converted: true } },
+        { new: true }
+      );
+
+      if (!evalLog) {
+        continue;
+      }
+
+      await FlagpilotFeatureFlag.updateOne(
+        { _id: flag._id, "variants.key": evalLog.variantKey },
+        { $inc: { "variants.$.conversions": 1 } }
+      );
+
+      const updatedFlag = await FlagpilotFeatureFlag.findById(flag._id);
+      if (!updatedFlag) {
+        continue;
+      }
+
+      const totalImpressions = updatedFlag.variants.reduce(
+        (sum, variant) => sum + variant.impressions,
+        0
+      );
+
+      if (totalImpressions >= updatedFlag.minImpressionsBeforeOptimization) {
+        await recalculateFlagWeights(updatedFlag);
+      }
+    }
+  } catch (error) {
+    console.error("Flagpilot track failed", error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "failed to track event" });
+    }
+  }
+});
+
+export default router;
