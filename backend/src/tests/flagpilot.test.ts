@@ -146,6 +146,7 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
           projectId: projectIdAlice,
           key: "promo_banner_test",
           minImpressionsBeforeOptimization: 2, // Low threshold for easy testing
+          minConversionsBeforeOptimization: 2, // Low threshold for easy testing
           variants: [
             { key: "control", value: { title: "Standard Banner", color: "gray" } },
             { key: "variant_b", value: { title: "Special Discount", color: "blue" } },
@@ -278,6 +279,54 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
 
       // The winner must have conversions and its weight should be much higher than the loser's weight
       expect(variantWinner?.currentWeight).toBeGreaterThan(variantLoser?.currentWeight || 0);
+    });
+
+    it("should prevent early winner bias by keeping traffic split even when conversions threshold is not yet met", async () => {
+      // Create a test flag with minImpressions = 5, but minConversions = 10
+      const resFlag = await request(app)
+        .post("/api/flagpilot/flags")
+        .set("Authorization", `Bearer ${tokenA}`)
+        .send({
+          projectId: projectIdAlice,
+          key: "anti_early_bias_test",
+          minImpressionsBeforeOptimization: 5,
+          minConversionsBeforeOptimization: 10,
+          variants: [
+            { key: "control", value: "A" },
+            { key: "variant_b", value: "B" },
+          ],
+        });
+
+      expect(resFlag.status).toBe(201);
+      const testFlagId = resFlag.body._id;
+
+      // Evaluate for 6 users so impressions threshold (5) is met
+      for (let i = 0; i < 6; i++) {
+        await request(app)
+          .post("/api/flagpilot/v1/evaluate")
+          .set("x-api-key", apiKeyAlice)
+          .set("x-anon-user-id", `anon_user_bias_${i}`)
+          .send({
+            flagKey: "anti_early_bias_test",
+            goalEvent: "bias_event",
+          });
+      }
+
+      // Convert only 1 user (1 conversion < 10 threshold)
+      await request(app)
+        .post("/api/flagpilot/v1/track")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", "anon_user_bias_0")
+        .send({
+          eventName: "bias_event",
+        });
+
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      // Verify weights remained evenly balanced (50/50) because conversions threshold was NOT reached!
+      const flagCheck = await FlagpilotFeatureFlag.findById(testFlagId);
+      expect(flagCheck?.variants[0].currentWeight).toBe(0.5);
+      expect(flagCheck?.variants[1].currentWeight).toBe(0.5);
     });
   });
 

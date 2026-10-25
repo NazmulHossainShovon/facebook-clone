@@ -23,6 +23,7 @@ export interface IFlagpilotFeatureFlag extends Document {
   trackedGoals: string[];
   goalSettings?: IFlagpilotGoalSetting[];
   minImpressionsBeforeOptimization: number;
+  minConversionsBeforeOptimization: number;
   variants: IFlagpilotVariant[];
   createdAt: Date;
 }
@@ -63,6 +64,7 @@ const flagpilotFeatureFlagSchema = new Schema<IFlagpilotFeatureFlag>({
   trackedGoals: [{ type: String }],
   goalSettings: { type: [goalSettingSchema], default: [] },
   minImpressionsBeforeOptimization: { type: Number, default: 100 },
+  minConversionsBeforeOptimization: { type: Number, default: 10 },
   variants: { type: [variantSchema], default: [] },
   createdAt: { type: Date, default: Date.now },
 });

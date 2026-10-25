@@ -211,6 +211,7 @@ router.post("/flags", isAuth, async (req, res) => {
       variants,
       goalSettings,
       minImpressionsBeforeOptimization,
+      minConversionsBeforeOptimization,
     } = req.body;
 
     if (!projectId || !key || !variants) {
@@ -237,6 +238,7 @@ router.post("/flags", isAuth, async (req, res) => {
       description,
       status: status || "active",
       minImpressionsBeforeOptimization: minImpressionsBeforeOptimization || 100,
+      minConversionsBeforeOptimization: minConversionsBeforeOptimization !== undefined ? minConversionsBeforeOptimization : 10,
       trackedGoals: [],
       goalSettings: goalSettings || [],
       variants: normalizedVariants,
@@ -317,7 +319,14 @@ router.put("/flags/:id", isAuth, async (req, res) => {
     }
 
     const update: Record<string, unknown> = {};
-    const allowed = ["description", "status", "minImpressionsBeforeOptimization", "variants", "goalSettings"];
+    const allowed = [
+      "description",
+      "status",
+      "minImpressionsBeforeOptimization",
+      "minConversionsBeforeOptimization",
+      "variants",
+      "goalSettings",
+    ];
 
     for (const key of allowed) {
       if (key in req.body) {
@@ -349,7 +358,14 @@ router.put("/flags/:id", isAuth, async (req, res) => {
     // Only automatically recalculate if the variant keys did NOT change.
     // If a new variant was added, we want to skip immediate recalculation so the new variant can collect impressions with its initial fair weight!
     const totalImpressions = flag.variants.reduce((sum, v) => sum + v.impressions, 0);
-    if (isKeysSetIdentical && totalImpressions >= flag.minImpressionsBeforeOptimization) {
+    const totalConversions = flag.variants.reduce((sum, v) => sum + v.conversions, 0);
+    const minConversions = flag.minConversionsBeforeOptimization !== undefined ? flag.minConversionsBeforeOptimization : 10;
+
+    if (
+      isKeysSetIdentical &&
+      totalImpressions >= flag.minImpressionsBeforeOptimization &&
+      totalConversions >= minConversions
+    ) {
       await recalculateFlagWeights(flag);
       const updatedFlag = await FlagpilotFeatureFlag.findById(flag._id).lean();
       return res.json(updatedFlag);
@@ -616,11 +632,22 @@ router.post("/v1/track", async (req, res) => {
         (sum, variant) => sum + variant.impressions,
         0
       );
+      const totalConversions = updatedFlag.variants.reduce(
+        (sum, variant) => sum + variant.conversions,
+        0
+      );
+      const minConversions =
+        updatedFlag.minConversionsBeforeOptimization !== undefined
+          ? updatedFlag.minConversionsBeforeOptimization
+          : 10;
 
       // Only recalculate live traffic weights if the experiment is still "active"
-      // If the flag is archived or paused, we record the conversion for accurate historical reporting,
-      // but freeze live traffic weight recalculation.
-      if (flag.status === "active" && totalImpressions >= updatedFlag.minImpressionsBeforeOptimization) {
+      // and BOTH minimum impressions AND minimum conversions thresholds are met (preventing early winner bias).
+      if (
+        flag.status === "active" &&
+        totalImpressions >= updatedFlag.minImpressionsBeforeOptimization &&
+        totalConversions >= minConversions
+      ) {
         await recalculateFlagWeights(updatedFlag);
       }
     }

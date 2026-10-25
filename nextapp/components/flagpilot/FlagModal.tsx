@@ -18,6 +18,7 @@ type Flag = {
   description?: string;
   status: "active" | "paused" | "archived";
   minImpressionsBeforeOptimization: number;
+  minConversionsBeforeOptimization?: number;
   variants: { key: string; value: unknown }[];
   trackedGoals?: string[];
   goalSettings?: GoalSettingInput[];
@@ -69,6 +70,7 @@ export default function FlagModal({
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"active" | "paused" | "archived">("active");
   const [minImpressionsBeforeOptimization, setMinImpressionsBeforeOptimization] = useState(100);
+  const [minConversionsBeforeOptimization, setMinConversionsBeforeOptimization] = useState(10);
   const [variants, setVariants] = useState<VariantInput[]>([
     { key: "control", value: "false" },
     { key: "variant_b", value: "true" },
@@ -85,6 +87,9 @@ export default function FlagModal({
       setDescription(flag.description || "");
       setStatus(flag.status || "active");
       setMinImpressionsBeforeOptimization(flag.minImpressionsBeforeOptimization || 100);
+      setMinConversionsBeforeOptimization(
+        flag.minConversionsBeforeOptimization !== undefined ? flag.minConversionsBeforeOptimization : 10
+      );
       setVariants(
         (flag.variants || []).map((variant) => ({
           key: variant.key,
@@ -111,6 +116,7 @@ export default function FlagModal({
     setDescription("");
     setStatus("active");
     setMinImpressionsBeforeOptimization(100);
+    setMinConversionsBeforeOptimization(10);
     setVariants([
       { key: "control", value: "false" },
       { key: "variant_b", value: "true" },
@@ -214,6 +220,7 @@ export default function FlagModal({
         description: description || undefined,
         status,
         minImpressionsBeforeOptimization,
+        minConversionsBeforeOptimization,
         variants: normalizedVariants,
         goalSettings: filteredGoalSettings,
       };
@@ -270,7 +277,7 @@ export default function FlagModal({
           />
         </label>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <label className="block">
             <div className="text-sm text-gray-600">Status</div>
             <select
@@ -291,6 +298,17 @@ export default function FlagModal({
               min={1}
               value={minImpressionsBeforeOptimization}
               onChange={(e) => setMinImpressionsBeforeOptimization(Number(e.target.value) || 100)}
+              className="mt-1 block w-full border rounded px-2 py-1"
+            />
+          </label>
+
+          <label className="block">
+            <div className="text-sm text-gray-600">Min conversions before optimization</div>
+            <input
+              type="number"
+              min={1}
+              value={minConversionsBeforeOptimization}
+              onChange={(e) => setMinConversionsBeforeOptimization(Number(e.target.value) || 10)}
               className="mt-1 block w-full border rounded px-2 py-1"
             />
           </label>

@@ -8,7 +8,8 @@ type VariantStats = {
 
 export function calculateThompsonWeights(
   variants: VariantStats[],
-  samples: number = 10000
+  samples: number = 10000,
+  minExplorationFloor: number = 0.10
 ): Record<string, number> {
   const wins: Record<string, number> = {};
   for (const variant of variants) {
@@ -38,7 +39,7 @@ export function calculateThompsonWeights(
   const weights: Record<string, number> = {};
   for (const variant of variants) {
     const rawWeight = wins[variant.key] / samples;
-    weights[variant.key] = Math.max(0.05, rawWeight);
+    weights[variant.key] = Math.max(minExplorationFloor, rawWeight);
   }
 
   const sumWeights = Object.values(weights).reduce((sum, weight) => sum + weight, 0);

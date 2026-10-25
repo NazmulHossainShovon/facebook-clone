@@ -111,6 +111,7 @@ describe("FlagModal Integration Tests", () => {
         description: "Test description",
         status: "active",
         minImpressionsBeforeOptimization: 100,
+        minConversionsBeforeOptimization: 10,
         variants: [
           { key: "control", value: false },
           { key: "variant_b", value: { theme: "dark" } },
