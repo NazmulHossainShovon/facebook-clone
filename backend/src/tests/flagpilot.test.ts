@@ -611,5 +611,73 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
       // Should only increment conversions by 1 instead of 2!
       expect(flagAfter?.variants[matchedIdx].conversions).toBe((flagBefore?.variants[matchedIdx].conversions || 0) + 1);
     });
+
+    it("should attribute delayed conversions to original variant even after flag is archived (attribution window open)", async () => {
+      const delayedUser = "anon_delayed_buyer_99";
+
+      // 1. User evaluates flag while it is active
+      const evalRes = await request(app)
+        .post("/api/flagpilot/v1/evaluate")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", delayedUser)
+        .send({
+          flagKey: "checkout_flow_experiment",
+          goalEvent: "purchase_completed",
+        });
+
+      expect(evalRes.status).toBe(200);
+      const assignedVariant = evalRes.body.variant;
+
+      // 2. Experiment ends: Alice archives the flag
+      const archiveRes = await request(app)
+        .put(`/api/flagpilot/flags/${flagId}`)
+        .set("Authorization", `Bearer ${tokenA}`)
+        .send({
+          status: "archived",
+        });
+
+      expect(archiveRes.status).toBe(200);
+      expect(archiveRes.body.status).toBe("archived");
+
+      // Verify flag is inactive for new evaluations (404 for new users)
+      const newEvalRes = await request(app)
+        .post("/api/flagpilot/v1/evaluate")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", "anon_new_user_after_archive")
+        .send({
+          flagKey: "checkout_flow_experiment",
+          goalEvent: "purchase_completed",
+        });
+      expect(newEvalRes.status).toBe(404);
+
+      // 3. Delayed conversion: delayedUser converts later!
+      const flagBeforeConversion = await FlagpilotFeatureFlag.findById(flagId).lean();
+      const matchedIdx = flagBeforeConversion?.variants.findIndex((v) => v.key === assignedVariant) ?? -1;
+
+      const trackRes = await request(app)
+        .post("/api/flagpilot/v1/track")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", delayedUser)
+        .send({ eventName: "purchase_completed" });
+
+      expect(trackRes.status).toBe(200);
+      expect(trackRes.body.status).toBe("queued");
+
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      // 4. Verify conversion was accurately attributed to the archived flag and assigned variant
+      const flagAfterConversion = await FlagpilotFeatureFlag.findById(flagId).lean();
+      expect(flagAfterConversion?.variants[matchedIdx].conversions).toBe(
+        (flagBeforeConversion?.variants[matchedIdx].conversions || 0) + 1
+      );
+
+      // 5. Verify the user's evaluation log is marked as converted
+      const log = await FlagpilotEvaluationLog.findOne({
+        flag: flagId,
+        userId: delayedUser,
+        goalEvent: "purchase_completed",
+      });
+      expect(log?.converted).toBe(true);
+    });
   });
 });

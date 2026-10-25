@@ -17,7 +17,7 @@ const flagpilotEvaluationLogSchema = new Schema<IFlagpilotEvaluationLog>({
   variantKey: { type: String, required: true },
   goalEvent: { type: String, required: true, index: true },
   converted: { type: Boolean, default: false },
-  timestamp: { type: Date, default: Date.now, expires: "30d" },
+  timestamp: { type: Date, default: Date.now, expires: "90d" },
 });
 
 flagpilotEvaluationLogSchema.index({ flag: 1, userId: 1, goalEvent: 1 }, { unique: true });

@@ -571,7 +571,7 @@ router.post("/v1/track", async (req, res) => {
     const matchingFlags = await FlagpilotFeatureFlag.find({
       project: project._id,
       trackedGoals: eventName,
-      status: "active",
+      status: { $in: ["active", "archived", "paused"] },
     });
 
     for (const flag of matchingFlags) {
@@ -617,7 +617,10 @@ router.post("/v1/track", async (req, res) => {
         0
       );
 
-      if (totalImpressions >= updatedFlag.minImpressionsBeforeOptimization) {
+      // Only recalculate live traffic weights if the experiment is still "active"
+      // If the flag is archived or paused, we record the conversion for accurate historical reporting,
+      // but freeze live traffic weight recalculation.
+      if (flag.status === "active" && totalImpressions >= updatedFlag.minImpressionsBeforeOptimization) {
         await recalculateFlagWeights(updatedFlag);
       }
     }
