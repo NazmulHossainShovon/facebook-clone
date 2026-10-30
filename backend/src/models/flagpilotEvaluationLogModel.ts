@@ -6,6 +6,7 @@ export interface IFlagpilotEvaluationLog extends Document {
   anonUserId?: string;
   variantKey: string;
   goalEvent: string;
+  attributes?: Record<string, any>;
   converted: boolean;
   timestamp: Date;
 }
@@ -16,6 +17,7 @@ const flagpilotEvaluationLogSchema = new Schema<IFlagpilotEvaluationLog>({
   anonUserId: { type: String, index: true },
   variantKey: { type: String, required: true },
   goalEvent: { type: String, required: true, index: true },
+  attributes: { type: Schema.Types.Mixed, default: {} },
   converted: { type: Boolean, default: false },
   timestamp: { type: Date, default: Date.now, expires: "90d" },
 });

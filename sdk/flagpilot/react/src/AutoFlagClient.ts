@@ -1,16 +1,31 @@
-import type { AutoFlagClientConfig, EvaluateResponse, UserIdentifyInput } from "./types";
+import type {
+  AutoFlagClientConfig,
+  EvaluateOptions,
+  EvaluateResponse,
+  TrackGoalOptions,
+  UserAttributes,
+  UserIdentifyInput,
+} from "./types";
 
 export class AutoFlagClient {
   private readonly apiKey: string;
   private readonly baseUrl: string;
+  private readonly defaultAttributes: UserAttributes;
+  private userAttributes: UserAttributes;
   private anonUserId: string | null;
   private userId: string | null;
 
-  constructor({ apiKey, baseUrl = "http://localhost:4000/api/flagpilot/v1" }: AutoFlagClientConfig) {
+  constructor({
+    apiKey,
+    baseUrl = "http://localhost:4000/api/flagpilot/v1",
+    defaultAttributes = {},
+  }: AutoFlagClientConfig) {
     this.apiKey = apiKey;
     this.baseUrl = baseUrl.replace(/\/$/, "");
+    this.defaultAttributes = defaultAttributes;
     this.anonUserId = this.getOrInitAnonId();
     this.userId = this.getExistingUserId();
+    this.userAttributes = this.getExistingUserAttributes();
   }
 
   private getOrInitAnonId(): string | null {
@@ -35,6 +50,18 @@ export class AutoFlagClient {
     return window.localStorage.getItem("af_user_id");
   }
 
+  private getExistingUserAttributes(): UserAttributes {
+    if (typeof window === "undefined" || !window.localStorage) {
+      return {};
+    }
+    try {
+      const stored = window.localStorage.getItem("af_user_attributes");
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  }
+
   private baseHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -52,16 +79,30 @@ export class AutoFlagClient {
     return headers;
   }
 
-  async identify(user: UserIdentifyInput): Promise<void> {
+  private getMergedAttributes(local?: UserAttributes): UserAttributes {
+    return {
+      ...this.defaultAttributes,
+      ...this.userAttributes,
+      ...(local || {}),
+    };
+  }
+
+  async identify(user: UserIdentifyInput, attributes?: UserAttributes): Promise<void> {
     const targetUserId = typeof user === "string" ? user.trim() : (user?.id || "").trim();
     if (!targetUserId) return;
 
     this.userId = targetUserId;
+    if (attributes && typeof attributes === "object") {
+      this.userAttributes = { ...this.userAttributes, ...attributes };
+    }
+
     if (typeof window !== "undefined" && window.localStorage) {
       window.localStorage.setItem("af_user_id", targetUserId);
+      window.localStorage.setItem("af_user_attributes", JSON.stringify(this.userAttributes));
     }
 
     try {
+      const merged = this.getMergedAttributes(attributes);
       await fetch(`${this.baseUrl}/identify`, {
         method: "POST",
         headers: this.baseHeaders(),
@@ -69,6 +110,7 @@ export class AutoFlagClient {
         body: JSON.stringify({
           anonymousId: this.anonUserId,
           userId: targetUserId,
+          attributes: Object.keys(merged).length > 0 ? merged : undefined,
         }),
       });
     } catch {
@@ -76,15 +118,31 @@ export class AutoFlagClient {
     }
   }
 
-  resetIdentity(): void {
-    this.userId = null;
+  setAttributes(attributes: UserAttributes): void {
+    if (!attributes || typeof attributes !== "object") return;
+    this.userAttributes = { ...this.userAttributes, ...attributes };
     if (typeof window !== "undefined" && window.localStorage) {
-      window.localStorage.removeItem("af_user_id");
+      window.localStorage.setItem("af_user_attributes", JSON.stringify(this.userAttributes));
     }
   }
 
-  async getValue<T = unknown>(flagKey: string, goalEvent: string, defaultValue: T): Promise<T> {
+  resetIdentity(): void {
+    this.userId = null;
+    this.userAttributes = {};
+    if (typeof window !== "undefined" && window.localStorage) {
+      window.localStorage.removeItem("af_user_id");
+      window.localStorage.removeItem("af_user_attributes");
+    }
+  }
+
+  async getValue<T = unknown>(
+    flagKey: string,
+    goalEvent: string,
+    defaultValue: T,
+    options?: EvaluateOptions
+  ): Promise<T> {
     try {
+      const merged = this.getMergedAttributes(options?.attributes);
       const res = await fetch(`${this.baseUrl}/evaluate`, {
         method: "POST",
         headers: this.baseHeaders(),
@@ -93,6 +151,7 @@ export class AutoFlagClient {
           flagKey,
           goalEvent,
           userId: this.userId || undefined,
+          attributes: Object.keys(merged).length > 0 ? merged : undefined,
         }),
       });
 
@@ -115,8 +174,9 @@ export class AutoFlagClient {
     }
   }
 
-  async trackGoal(eventName: string, options?: { eventId?: string }): Promise<void> {
+  async trackGoal(eventName: string, options?: TrackGoalOptions): Promise<void> {
     try {
+      const merged = this.getMergedAttributes(options?.attributes);
       await fetch(`${this.baseUrl}/track`, {
         method: "POST",
         headers: this.baseHeaders(),
@@ -125,6 +185,7 @@ export class AutoFlagClient {
           eventName,
           userId: this.userId || undefined,
           eventId: options?.eventId,
+          attributes: Object.keys(merged).length > 0 ? merged : undefined,
         }),
       });
     } catch {

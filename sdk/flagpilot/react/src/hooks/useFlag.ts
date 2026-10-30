@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useFlagpilotContext } from "../FlagpilotProvider";
-import type { UseFlagResult } from "../types";
+import type { EvaluateOptions, TrackGoalOptions, UseFlagResult, UserAttributes } from "../types";
 
 export function useFlag<T = unknown>(
   flagKey: string,
   goalEvent: string,
-  defaultValue: T
+  defaultValue: T,
+  options?: EvaluateOptions
 ): UseFlagResult<T> {
   const { client } = useFlagpilotContext();
   const [value, setValue] = useState<T>(defaultValue);
@@ -13,10 +14,10 @@ export function useFlag<T = unknown>(
 
   const fetchValue = useCallback(async () => {
     setIsLoading(true);
-    const nextValue = await client.getValue(flagKey, goalEvent, defaultValue);
+    const nextValue = await client.getValue(flagKey, goalEvent, defaultValue, options);
     setValue(nextValue);
     setIsLoading(false);
-  }, [client, defaultValue, flagKey, goalEvent]);
+  }, [client, defaultValue, flagKey, goalEvent, JSON.stringify(options?.attributes)]);
 
   useEffect(() => {
     fetchValue();
@@ -35,11 +36,12 @@ export function useTrackGoal() {
 }
 
 export function useFlagpilot() {
-  const { client, trackGoal, identify, resetIdentity } = useFlagpilotContext();
+  const { client, trackGoal, identify, setAttributes, resetIdentity } = useFlagpilotContext();
   return {
     client,
     trackGoal,
     identify,
+    setAttributes,
     resetIdentity,
   };
 }

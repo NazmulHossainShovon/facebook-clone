@@ -385,7 +385,7 @@ router.put("/flags/:id", isAuth, async (req, res) => {
 router.post("/v1/identify", async (req, res) => {
   try {
     const apiKey = req.header("x-api-key");
-    const { anonymousId, userId } = req.body;
+    const { anonymousId, userId, attributes } = req.body;
     const headerAnonId = getExistingAnonymousUserId(req);
     const anonId = anonymousId || headerAnonId;
 
@@ -417,13 +417,27 @@ router.post("/v1/identify", async (req, res) => {
         goalEvent: log.goalEvent,
       });
 
+      const updateFields: Record<string, any> = {
+        userId: userId,
+        anonUserId: log.anonUserId || anonId,
+      };
+
+      if (attributes && typeof attributes === "object") {
+        updateFields.attributes = { ...(log.attributes || {}), ...attributes };
+      }
+
       if (!existingUserLog) {
         // Migrate log from anonId -> userId
         await FlagpilotEvaluationLog.updateOne(
           { _id: log._id },
-          { $set: { userId: userId, anonUserId: log.anonUserId || anonId } }
+          { $set: updateFields }
         );
         mergedCount += 1;
+      } else if (attributes && typeof attributes === "object") {
+        await FlagpilotEvaluationLog.updateOne(
+          { _id: existingUserLog._id },
+          { $set: { attributes: { ...(existingUserLog.attributes || {}), ...attributes } } }
+        );
       }
     }
 
@@ -438,7 +452,7 @@ router.post("/v1/identify", async (req, res) => {
 router.post("/v1/evaluate", async (req, res) => {
   try {
     const apiKey = req.header("x-api-key");
-    const { flagKey, goalEvent, userId: bodyUserId } = req.body;
+    const { flagKey, goalEvent, userId: bodyUserId, attributes } = req.body;
     const headerUserId = req.header("x-user-id") || undefined;
     const userId = bodyUserId || headerUserId;
 
@@ -505,6 +519,13 @@ router.post("/v1/evaluate", async (req, res) => {
     }
 
     if (existingLog) {
+      if (attributes && typeof attributes === "object") {
+        await FlagpilotEvaluationLog.updateOne(
+          { _id: existingLog._id },
+          { $set: { attributes: { ...(existingLog.attributes || {}), ...attributes } } }
+        );
+      }
+
       const variantKey = existingLog.variantKey;
       const existingVariant = flag.variants.find((variant) => variant.key === variantKey);
       if (!existingVariant) {
@@ -530,6 +551,7 @@ router.post("/v1/evaluate", async (req, res) => {
         anonUserId,
         variantKey: selectedVariant.key,
         goalEvent,
+        attributes: (attributes && typeof attributes === "object") ? attributes : {},
       }),
       FlagpilotFeatureFlag.updateOne(
         { _id: flag._id, "variants.key": selectedVariant.key },
@@ -553,7 +575,7 @@ router.post("/v1/evaluate", async (req, res) => {
 router.post("/v1/track", async (req, res) => {
   try {
     const apiKey = req.header("x-api-key");
-    const { eventName, userId: bodyUserId, eventId } = req.body;
+    const { eventName, userId: bodyUserId, eventId, attributes } = req.body;
     const headerUserId = req.header("x-user-id") || undefined;
     const userId = bodyUserId || headerUserId;
     const anonUserId = getExistingAnonymousUserId(req);

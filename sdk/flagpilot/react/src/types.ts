@@ -1,6 +1,9 @@
+export type UserAttributes = Record<string, string | number | boolean | string[] | null | undefined>;
+
 export type AutoFlagClientConfig = {
   apiKey: string;
   baseUrl?: string;
+  defaultAttributes?: UserAttributes;
 };
 
 export type EvaluateResponse = {
@@ -18,6 +21,11 @@ export type UseFlagResult<T> = {
 
 export type UserIdentifyInput = string | { id: string };
 
+export type EvaluateOptions = {
+  attributes?: UserAttributes;
+};
+
 export type TrackGoalOptions = {
   eventId?: string;
+  attributes?: UserAttributes;
 };

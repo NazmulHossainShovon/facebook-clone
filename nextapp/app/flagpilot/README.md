@@ -114,22 +114,63 @@ export function LoginForm() {
   const { identify, resetIdentity } = useFlagpilot();
 
   const handleLoginSuccess = async (user) => {
-    // Merges anonymous visitor session -> user.id
-    await identify(user.id);
+    // Merges anonymous visitor session -> user.id with optional account attributes
+    await identify(user.id, {
+      plan: user.plan,
+      company_size: user.companySize,
+      country: user.country,
+    });
   };
 
   const handleLogout = () => {
-    // Clears user_id state on logout
+    // Clears user_id and identified attributes state on logout
     resetIdentity();
   };
 
   return (
-    <button onClick={() => handleLoginSuccess({ id: "user_123" })}>
+    <button onClick={() => handleLoginSuccess({ id: "user_123", plan: "pro", country: "US" })}>
       Sign In
     </button>
   );
 }
 ```
+
+### 4. Dynamic User Attributes & Audience Segments
+To prevent uneven traffic sources (like Google Ads vs. TikTok visitors) from skewing experiment results (Simpson's Paradox), you can pass arbitrary contextual attributes at both the global and per-evaluation levels without needing separate experiments:
+
+#### Global Attributes (Provider level)
+```tsx
+<FlagpilotProvider 
+  apiKey="YOUR_PROJECT_API_KEY"
+  baseUrl="http://localhost:4000/api/flagpilot/v1"
+  defaultAttributes={{
+    app_version: "1.2.0",
+    platform: "web",
+  }}
+>
+  {children}
+</FlagpilotProvider>
+```
+
+#### Per-Evaluation Context Attributes
+Pass contextual attributes (such as marketing source, device, or geographic location) directly into `useFlag`:
+
+```tsx
+const { value } = useFlag(
+  "pricing_table_experiment",
+  "subscription_started",
+  "standard_pricing",
+  {
+    attributes: {
+      source: "google_ads", // Differentiates paid from organic traffic
+      device: "desktop",
+      country: "US",
+    },
+  }
+);
+```
+
+The SDK automatically merges `defaultAttributes` + `identifiedAttributes` + `evaluationAttributes` into a single dynamic context payload for seamless backend segmentation and analysis.
 
 ## Backend API Endpoints Reference
 

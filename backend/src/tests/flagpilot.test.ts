@@ -50,7 +50,7 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
     if (mongoose.connection.db) {
       await mongoose.connection.db.dropDatabase();
     }
-  });
+  }, 30000);
 
   afterAll(async () => {
     // Clean/drop the entire test database completely after testing
@@ -63,7 +63,7 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
 
     // Close mongoose connection safely so Jest exits cleanly
     await mongoose.connection.close();
-  });
+  }, 30000);
 
   describe("Project Management & Isolation", () => {
     it("should allow Alice to create a project, setting her orgId and generating an apiKey", async () => {
@@ -727,6 +727,81 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
         goalEvent: "purchase_completed",
       });
       expect(log?.converted).toBe(true);
+    });
+  });
+
+  describe("Dynamic User Attributes & Audience Context", () => {
+    it("should store arbitrary dynamic attributes on evaluation", async () => {
+      const anonUserAttrs = "anon_attr_user_1";
+      const customAttributes = {
+        source: "google_ads",
+        country: "US",
+        device: "desktop",
+        plan: "enterprise",
+      };
+
+      const res = await request(app)
+        .post("/api/flagpilot/v1/evaluate")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", anonUserAttrs)
+        .send({
+          flagKey: "promo_banner_test",
+          goalEvent: "banner_clicked",
+          attributes: customAttributes,
+        });
+
+      expect(res.status).toBe(200);
+
+      const log = await FlagpilotEvaluationLog.findOne({
+        flag: flagIdAlice,
+        userId: anonUserAttrs,
+      });
+
+      expect(log).not.toBeNull();
+      expect(log?.attributes).toEqual(customAttributes);
+    });
+
+    it("should merge and update attributes when user calls /v1/identify", async () => {
+      const anonUserAttrs = "anon_attr_merge_source";
+      const authenticatedUserId = "user_attrs_merged_123";
+
+      // 1. Initial anonymous evaluation with initial traffic source attribute
+      await request(app)
+        .post("/api/flagpilot/v1/evaluate")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", anonUserAttrs)
+        .send({
+          flagKey: "promo_banner_test",
+          goalEvent: "banner_clicked",
+          attributes: { source: "tiktok", device: "mobile" },
+        });
+
+      // 2. User signs up and identifies with additional user attributes (e.g. plan, company size)
+      const resIdentify = await request(app)
+        .post("/api/flagpilot/v1/identify")
+        .set("x-api-key", apiKeyAlice)
+        .send({
+          anonymousId: anonUserAttrs,
+          userId: authenticatedUserId,
+          attributes: { plan: "pro", company_size: 25 },
+        });
+
+      expect(resIdentify.status).toBe(200);
+      expect(resIdentify.body.status).toBe("success");
+
+      // Verify the log now contains merged attributes (traffic source + account attributes)
+      const mergedLog = await FlagpilotEvaluationLog.findOne({
+        flag: flagIdAlice,
+        userId: authenticatedUserId,
+      });
+
+      expect(mergedLog).not.toBeNull();
+      expect(mergedLog?.attributes).toEqual({
+        source: "tiktok",
+        device: "mobile",
+        plan: "pro",
+        company_size: 25,
+      });
     });
   });
 });
