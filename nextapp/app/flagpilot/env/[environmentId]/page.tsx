@@ -11,12 +11,19 @@ type Variant = {
   currentWeight: number;
 };
 
+type TargetingRule = {
+  attributeKey: string;
+  operator: string;
+  attributeValue: string;
+};
+
 type Flag = {
   _id: string;
   key: string;
   description?: string;
   status: "active" | "paused" | "archived";
   trackedGoals: string[];
+  targetingRules?: TargetingRule[];
   minImpressionsBeforeOptimization: number;
   variants: Variant[];
 };
@@ -63,6 +70,18 @@ export default function FlagDetailPage() {
         <div className="mt-3 text-sm">
           AUTO-DETECTED GOALS: {flag.trackedGoals?.length ? flag.trackedGoals.join(", ") : "None yet"}
         </div>
+        {flag.targetingRules && flag.targetingRules.length > 0 && (
+          <div className="mt-2 text-sm bg-blue-50 border border-blue-100 p-2 rounded">
+            <span className="font-semibold text-blue-900">Audience Targeting Rules:</span>
+            <ul className="list-disc list-inside mt-1 text-xs text-blue-800 space-y-0.5">
+              {flag.targetingRules.map((rule, idx) => (
+                <li key={idx}>
+                  <code className="font-mono bg-blue-100 px-1 py-0.5 rounded">{rule.attributeKey}</code> {rule.operator} <code className="font-mono bg-blue-100 px-1 py-0.5 rounded">{rule.attributeValue}</code>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div className="mt-1 text-xs text-gray-500">
           Optimization threshold: {flag.minImpressionsBeforeOptimization} impressions
         </div>

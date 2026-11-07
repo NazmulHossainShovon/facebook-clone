@@ -5,6 +5,7 @@ import { FlagpilotProject } from "../models/flagpilotProjectModel";
 import {
   FlagpilotFeatureFlag,
   IFlagpilotFeatureFlag,
+  IFlagpilotTargetingRule,
   IFlagpilotVariant,
 } from "../models/flagpilotFeatureFlagModel";
 import { FlagpilotEvaluationLog } from "../models/flagpilotEvaluationLogModel";
@@ -132,6 +133,42 @@ function mergeAndValidateVariants(
   });
 }
 
+function matchesTargetingRules(
+  rules: IFlagpilotTargetingRule[] | undefined,
+  attributes: Record<string, any> | undefined
+): boolean {
+  if (!rules || rules.length === 0) return true;
+  const attrs = attributes || {};
+
+  for (const rule of rules) {
+    const userVal = attrs[rule.attributeKey];
+    const targetVal = rule.attributeValue;
+
+    if (userVal === undefined || userVal === null) {
+      if (rule.operator === "not_equals") continue;
+      return false;
+    }
+
+    const strUserVal = String(userVal).trim().toLowerCase();
+    const strTargetVal = String(targetVal).trim().toLowerCase();
+
+    if (rule.operator === "equals") {
+      if (strUserVal !== strTargetVal) return false;
+    } else if (rule.operator === "not_equals") {
+      if (strUserVal === strTargetVal) return false;
+    } else if (rule.operator === "contains") {
+      if (!strUserVal.includes(strTargetVal)) return false;
+    } else if (rule.operator === "in") {
+      const allowedValues = strTargetVal
+        .split(",")
+        .map((s) => s.trim().toLowerCase());
+      if (!allowedValues.includes(strUserVal)) return false;
+    }
+  }
+
+  return true;
+}
+
 function selectWeightedVariant(variants: IFlagpilotVariant[]): IFlagpilotVariant {
   const rand = Math.random();
   let cumulative = 0;
@@ -210,6 +247,7 @@ router.post("/flags", isAuth, async (req, res) => {
       status,
       variants,
       goalSettings,
+      targetingRules,
       minImpressionsBeforeOptimization,
       minConversionsBeforeOptimization,
     } = req.body;
@@ -241,6 +279,7 @@ router.post("/flags", isAuth, async (req, res) => {
       minConversionsBeforeOptimization: minConversionsBeforeOptimization !== undefined ? minConversionsBeforeOptimization : 10,
       trackedGoals: [],
       goalSettings: goalSettings || [],
+      targetingRules: targetingRules || [],
       variants: normalizedVariants,
     });
 
@@ -326,6 +365,7 @@ router.put("/flags/:id", isAuth, async (req, res) => {
       "minConversionsBeforeOptimization",
       "variants",
       "goalSettings",
+      "targetingRules",
     ];
 
     for (const key of allowed) {
@@ -486,6 +526,19 @@ router.post("/v1/evaluate", async (req, res) => {
 
     if (created) {
       res.setHeader("Set-Cookie", buildCookieHeader(anonUserId));
+    }
+
+    // Check Audience Targeting Rules: if visitor does not match rules, serve default control without enrolling in experiment
+    const isTargetMatch = matchesTargetingRules(flag.targetingRules, attributes);
+    if (!isTargetMatch) {
+      const defaultVariant = flag.variants[0] || { key: "control", value: null };
+      return res.json({
+        variant: defaultVariant.key,
+        value: defaultVariant.value,
+        anonUserId,
+        userId,
+        targeted: false,
+      });
     }
 
     // 1. First check if a sticky assignment exists by authenticated userId

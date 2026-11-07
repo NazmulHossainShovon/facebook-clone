@@ -15,6 +15,12 @@ export interface IFlagpilotGoalSetting {
   type: "unique" | "repeatable";
 }
 
+export interface IFlagpilotTargetingRule {
+  attributeKey: string;
+  operator: "equals" | "not_equals" | "contains" | "in";
+  attributeValue: string;
+}
+
 export interface IFlagpilotFeatureFlag extends Document {
   project: mongoose.Types.ObjectId;
   key: string;
@@ -22,6 +28,7 @@ export interface IFlagpilotFeatureFlag extends Document {
   status: FlagStatus;
   trackedGoals: string[];
   goalSettings?: IFlagpilotGoalSetting[];
+  targetingRules?: IFlagpilotTargetingRule[];
   minImpressionsBeforeOptimization: number;
   minConversionsBeforeOptimization: number;
   variants: IFlagpilotVariant[];
@@ -47,6 +54,19 @@ const goalSettingSchema = new Schema<IFlagpilotGoalSetting>(
   { _id: false }
 );
 
+const targetingRuleSchema = new Schema<IFlagpilotTargetingRule>(
+  {
+    attributeKey: { type: String, required: true },
+    operator: {
+      type: String,
+      enum: ["equals", "not_equals", "contains", "in"],
+      default: "equals",
+    },
+    attributeValue: { type: String, required: true },
+  },
+  { _id: false }
+);
+
 const flagpilotFeatureFlagSchema = new Schema<IFlagpilotFeatureFlag>({
   project: { type: Schema.Types.ObjectId, ref: "FlagpilotProject", required: true, index: true },
   key: {
@@ -63,6 +83,7 @@ const flagpilotFeatureFlagSchema = new Schema<IFlagpilotFeatureFlag>({
   status: { type: String, enum: ["active", "paused", "archived"], default: "active" },
   trackedGoals: [{ type: String }],
   goalSettings: { type: [goalSettingSchema], default: [] },
+  targetingRules: { type: [targetingRuleSchema], default: [] },
   minImpressionsBeforeOptimization: { type: Number, default: 100 },
   minConversionsBeforeOptimization: { type: Number, default: 10 },
   variants: { type: [variantSchema], default: [] },

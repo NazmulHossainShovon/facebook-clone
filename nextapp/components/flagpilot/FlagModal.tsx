@@ -12,6 +12,12 @@ type GoalSettingInput = {
   type: "unique" | "repeatable";
 };
 
+type TargetingRuleInput = {
+  attributeKey: string;
+  operator: "equals" | "not_equals" | "contains" | "in";
+  attributeValue: string;
+};
+
 type Flag = {
   _id?: string;
   key: string;
@@ -22,6 +28,7 @@ type Flag = {
   variants: { key: string; value: unknown }[];
   trackedGoals?: string[];
   goalSettings?: GoalSettingInput[];
+  targetingRules?: TargetingRuleInput[];
 };
 
 function slugify(s: string) {
@@ -76,6 +83,7 @@ export default function FlagModal({
     { key: "variant_b", value: "true" },
   ]);
   const [goalSettings, setGoalSettings] = useState<GoalSettingInput[]>([]);
+  const [targetingRules, setTargetingRules] = useState<TargetingRuleInput[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -108,6 +116,7 @@ export default function FlagModal({
         }
       }
       setGoalSettings(mergedSettings);
+      setTargetingRules(flag.targetingRules || []);
       return;
     }
 
@@ -122,6 +131,7 @@ export default function FlagModal({
       { key: "variant_b", value: "true" },
     ]);
     setGoalSettings([]);
+    setTargetingRules([]);
   }, [flag, open]);
 
   if (!open) return null;
@@ -164,6 +174,26 @@ export default function FlagModal({
 
   const removeGoalSetting = (idx: number) => {
     setGoalSettings((current) => current.filter((_, currentIdx) => currentIdx !== idx));
+  };
+
+  const addTargetingRule = () => {
+    setTargetingRules((current) => [
+      ...current,
+      { attributeKey: "", operator: "equals", attributeValue: "" },
+    ]);
+  };
+
+  const updateTargetingRule = (idx: number, patch: Partial<TargetingRuleInput>) => {
+    setTargetingRules((current) =>
+      current.map((rule, currentIdx) => {
+        if (currentIdx !== idx) return rule;
+        return { ...rule, ...patch };
+      })
+    );
+  };
+
+  const removeTargetingRule = (idx: number) => {
+    setTargetingRules((current) => current.filter((_, currentIdx) => currentIdx !== idx));
   };
 
   const save = async () => {
@@ -211,6 +241,15 @@ export default function FlagModal({
       return;
     }
 
+    // Filter valid targeting rules
+    const filteredTargetingRules = targetingRules
+      .map((r) => ({
+        attributeKey: (r.attributeKey || "").trim(),
+        operator: r.operator,
+        attributeValue: (r.attributeValue || "").trim(),
+      }))
+      .filter((r) => r.attributeKey !== "" && r.attributeValue !== "");
+
     setLoading(true);
 
     try {
@@ -223,6 +262,7 @@ export default function FlagModal({
         minConversionsBeforeOptimization,
         variants: normalizedVariants,
         goalSettings: filteredGoalSettings,
+        targetingRules: filteredTargetingRules,
       };
 
       let resData;
@@ -312,6 +352,76 @@ export default function FlagModal({
               className="mt-1 block w-full border rounded px-2 py-1"
             />
           </label>
+        </div>
+
+        {/* Audience Targeting Rules Section */}
+        <div className="border rounded p-3 mb-3">
+          <div className="flex items-center justify-between mb-1">
+            <div className="font-semibold text-sm text-gray-700">Audience Targeting Rules (Optional)</div>
+            <button
+              type="button"
+              className="px-2 py-1 text-xs border rounded hover:bg-gray-50 transition font-semibold"
+              onClick={addTargetingRule}
+            >
+              Add Targeting Rule
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mb-2">
+            Only visitors matching these attribute conditions enter the experiment. Non-matching traffic automatically receives the default control.
+          </p>
+
+          {targetingRules.length === 0 ? (
+            <div className="text-xs text-gray-400 py-1 italic">
+              No targeting rules configured. All visitor traffic will participate in this experiment.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="hidden md:grid grid-cols-[2fr_2fr_3fr_auto] gap-2 text-xs font-semibold text-gray-500 mb-1">
+                <div>Attribute Key</div>
+                <div>Operator</div>
+                <div>Target Value</div>
+                <div></div>
+              </div>
+
+              {targetingRules.map((rule, idx) => (
+                <div key={`rule-row-${idx}`} className="grid grid-cols-1 md:grid-cols-[2fr_2fr_3fr_auto] gap-2 items-center">
+                  <input
+                    value={rule.attributeKey}
+                    onChange={(e) => updateTargetingRule(idx, { attributeKey: e.target.value })}
+                    placeholder="e.g. source or country"
+                    className="border rounded px-2 py-1 text-sm w-full font-mono"
+                  />
+                  <select
+                    value={rule.operator}
+                    onChange={(e) =>
+                      updateTargetingRule(idx, {
+                        operator: e.target.value as "equals" | "not_equals" | "contains" | "in",
+                      })
+                    }
+                    className="border rounded px-2 py-1 text-sm w-full bg-white"
+                  >
+                    <option value="equals">equals</option>
+                    <option value="not_equals">not equals</option>
+                    <option value="contains">contains</option>
+                    <option value="in">in (comma-separated)</option>
+                  </select>
+                  <input
+                    value={rule.attributeValue}
+                    onChange={(e) => updateTargetingRule(idx, { attributeValue: e.target.value })}
+                    placeholder="e.g. google_ads or US,CA"
+                    className="border rounded px-2 py-1 text-sm w-full font-mono"
+                  />
+                  <button
+                    type="button"
+                    className="px-2 py-1 text-xs border rounded hover:bg-red-50 text-red-600 transition font-semibold"
+                    onClick={() => removeTargetingRule(idx)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Tracked Goal Counting Strategy Config Section */}

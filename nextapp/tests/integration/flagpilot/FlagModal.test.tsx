@@ -117,6 +117,7 @@ describe("FlagModal Integration Tests", () => {
           { key: "variant_b", value: { theme: "dark" } },
         ],
         goalSettings: [],
+        targetingRules: [],
       });
       expect(defaultProps.onSaved).toHaveBeenCalledWith(createdFlag);
       expect(defaultProps.onClose).toHaveBeenCalled();
@@ -202,6 +203,40 @@ describe("FlagModal Integration Tests", () => {
           goalSettings: [
             { eventName: "my_repeatable_goal", type: "repeatable" }
           ]
+        })
+      );
+    });
+  });
+
+  test("can configure, add, and save targeting rules in the modal UI", async () => {
+    mockedApiClient.post.mockResolvedValueOnce({ data: { _id: "f_target_1" } });
+
+    render(<FlagModal {...defaultProps} />);
+
+    // Add a targeting rule row
+    fireEvent.click(screen.getByRole("button", { name: "Add Targeting Rule" }));
+
+    // Find and update the rule inputs
+    const attrKeyInput = screen.getByPlaceholderText("e.g. source or country");
+    fireEvent.change(attrKeyInput, { target: { value: "source" } });
+
+    const attrValueInput = screen.getByPlaceholderText("e.g. google_ads or US,CA");
+    fireEvent.change(attrValueInput, { target: { value: "google_ads" } });
+
+    // Set flag key
+    fireEvent.change(screen.getByLabelText(/flag key/i), { target: { value: "target_flag" } });
+
+    // Save
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(mockedApiClient.post).toHaveBeenCalledWith(
+        "/api/flagpilot/flags",
+        expect.objectContaining({
+          key: "target_flag",
+          targetingRules: [
+            { attributeKey: "source", operator: "equals", attributeValue: "google_ads" },
+          ],
         })
       );
     });

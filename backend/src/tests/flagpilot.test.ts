@@ -804,4 +804,134 @@ describe("Flagpilot API Endpoints Integration Tests", () => {
       });
     });
   });
+
+  describe("Audience Targeting Rules (Confounding Bias & Simpson's Paradox Protection)", () => {
+    let targetedFlagId: string;
+
+    beforeAll(async () => {
+      // Create a flag configured with an audience targeting rule: source == "google_ads"
+      const res = await request(app)
+        .post("/api/flagpilot/flags")
+        .set("Authorization", `Bearer ${tokenA}`)
+        .send({
+          projectId: projectIdAlice,
+          key: "paid_landing_hero_test",
+          minImpressionsBeforeOptimization: 10,
+          targetingRules: [
+            { attributeKey: "source", operator: "equals", attributeValue: "google_ads" },
+          ],
+          variants: [
+            { key: "control", value: "Default Landing" },
+            { key: "variant_b", value: "Targeted Landing B" },
+          ],
+        });
+
+      expect(res.status).toBe(201);
+      targetedFlagId = res.body._id;
+    });
+
+    it("should allow matching visitors (google_ads) to enter the experiment and record impressions", async () => {
+      const qualifyingUser = "anon_qualifying_google_visitor";
+
+      const res = await request(app)
+        .post("/api/flagpilot/v1/evaluate")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", qualifyingUser)
+        .send({
+          flagKey: "paid_landing_hero_test",
+          goalEvent: "hero_cta_clicked",
+          attributes: { source: "google_ads" },
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("variant");
+      expect(res.body.targeted).not.toBe(false);
+
+      // Verify impression was logged
+      const log = await FlagpilotEvaluationLog.findOne({
+        flag: targetedFlagId,
+        userId: qualifyingUser,
+      });
+      expect(log).not.toBeNull();
+      expect(log?.attributes).toEqual({ source: "google_ads" });
+
+      const flag = await FlagpilotFeatureFlag.findById(targetedFlagId);
+      const totalImpressions = flag?.variants.reduce((sum, v) => sum + v.impressions, 0);
+      expect(totalImpressions).toBe(1);
+    });
+
+    it("should exclude non-matching visitors (tiktok) from the experiment, serving control with 0 impressions", async () => {
+      const nonQualifyingUser = "anon_social_tiktok_visitor";
+
+      const res = await request(app)
+        .post("/api/flagpilot/v1/evaluate")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", nonQualifyingUser)
+        .send({
+          flagKey: "paid_landing_hero_test",
+          goalEvent: "hero_cta_clicked",
+          attributes: { source: "tiktok" },
+        });
+
+      expect(res.status).toBe(200);
+      // Receives control variant
+      expect(res.body.variant).toBe("control");
+      expect(res.body.value).toBe("Default Landing");
+      expect(res.body.targeted).toBe(false);
+
+      // Verify NO evaluation log was created for the non-qualifying user
+      const log = await FlagpilotEvaluationLog.findOne({
+        flag: targetedFlagId,
+        userId: nonQualifyingUser,
+      });
+      expect(log).toBeNull();
+
+      // Verify total impressions did NOT increase (remains 1 from previous test)
+      const flag = await FlagpilotFeatureFlag.findById(targetedFlagId);
+      const totalImpressions = flag?.variants.reduce((sum, v) => sum + v.impressions, 0);
+      expect(totalImpressions).toBe(1);
+    });
+
+    it("should support comma-separated multi-value 'in' operator rules (e.g. countries)", async () => {
+      // Update flag targeting rules to: country in "US, CA, GB"
+      const resUpdate = await request(app)
+        .put(`/api/flagpilot/flags/${targetedFlagId}`)
+        .set("Authorization", `Bearer ${tokenA}`)
+        .send({
+          targetingRules: [
+            { attributeKey: "country", operator: "in", attributeValue: "US, CA, GB" },
+          ],
+        });
+
+      expect(resUpdate.status).toBe(200);
+      expect(resUpdate.body.targetingRules[0].operator).toBe("in");
+
+      // Evaluation from qualifying country ("CA")
+      const resCA = await request(app)
+        .post("/api/flagpilot/v1/evaluate")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", "anon_canada_user")
+        .send({
+          flagKey: "paid_landing_hero_test",
+          goalEvent: "hero_cta_clicked",
+          attributes: { country: "CA" },
+        });
+      expect(resCA.status).toBe(200);
+      expect(resCA.body.targeted).not.toBe(false);
+
+      // Evaluation from non-qualifying country ("FR")
+      const resFR = await request(app)
+        .post("/api/flagpilot/v1/evaluate")
+        .set("x-api-key", apiKeyAlice)
+        .set("x-anon-user-id", "anon_france_user")
+        .send({
+          flagKey: "paid_landing_hero_test",
+          goalEvent: "hero_cta_clicked",
+          attributes: { country: "FR" },
+        });
+      expect(resFR.status).toBe(200);
+      expect(resFR.body.targeted).toBe(false);
+      expect(resFR.body.variant).toBe("control");
+    });
+  });
 });
